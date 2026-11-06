@@ -179,6 +179,11 @@
         <div class="row"><label>Dust &amp; scratches</label><input type="range" id="dust" min="0" max="100" value="25" /><span class="val" id="dustV">25</span></div>
         <div class="row"><label>Vignette</label><input type="range" id="vignette" min="0" max="100" value="25" /><span class="val" id="vignetteV">25</span></div>
 
+        <div class="row" style="margin-top:16px">
+          <label style="width:auto">Full-resolution export</label>
+          <input type="checkbox" id="fullres" style="width:18px;height:18px;accent-color:#e8a54b;" />
+          <span style="font-size:12px;color:#7d7059;">Develops the original file (e.g. 6000&times;4000 from the a6300) &mdash; takes a few extra seconds</span>
+        </div>
         <div class="btns">
           <button class="primary" id="download">Download developed JPEG</button>
           <button class="ghost" id="reset">Reset sliders</button>
@@ -194,6 +199,7 @@
       var outCanvas = document.getElementById("out");
       var srcCtx = srcCanvas.getContext("2d");
       var outCtx = outCanvas.getContext("2d");
+      var previewCtx = outCtx; // the on-screen preview target
       var img = null;
       var photoSeed = 1; // content-derived, so each photo gets its own imperfection pattern
       var MAX = 2400; // work at up to 2400px long edge
@@ -389,10 +395,16 @@
 
       function render() {
         if (!img) return;
-        var p = getParams();
-        var w = outCanvas.width, h = outCanvas.height;
+        developTo(outCtx, srcCtx, outCanvas.width, outCanvas.height, getParams());
+      }
 
-        var data = srcCtx.getImageData(0, 0, w, h);
+      // Full development pipeline: colour grade + halation + grain + dust +
+      // vignette. Works at any resolution — the on-screen preview runs at
+      // ~2400px, and the full-resolution export runs this exact same pipeline
+      // on the original file, so exports match the preview 1:1.
+      function developTo(destCtx, sourceCtx, w, h, p) {
+        outCtx = destCtx; // spatial effects (halation/grain/dust) draw here
+        var data = sourceCtx.getImageData(0, 0, w, h);
         var px = data.data;
 
         var st = stocks[currentStock] || stocks.gold;
@@ -453,7 +465,7 @@
           px[i] = clamp(r); px[i + 1] = clamp(g); px[i + 2] = clamp(b);
         }
 
-        outCtx.putImageData(data, 0, 0);
+        destCtx.putImageData(data, 0, 0);
 
         // halation: each stock glows its own colour (CineStill = deep red)
         if (p.halation > 0) halation(p.halation * st.halBoost, w, h, st.hal);
@@ -466,6 +478,7 @@
 
         // vignette
         if (p.vignette > 0) vignette(p.vignette, w, h);
+        outCtx = previewCtx; // restore the on-screen preview target
       }
 
       // Film characteristic ("D-log E") curve: soft toe, midtone contrast,
@@ -686,15 +699,41 @@
       }
 
       // --- download ---
+      // --- download ---
+      function saveBlob(blob) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = currentStock + "-film.jpg";
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+
       document.getElementById("download").addEventListener("click", function () {
         if (!img) return;
-        outCanvas.toBlob(function (blob) {
-          var a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = currentStock + "-film.jpg";
-          a.click();
-          setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-        }, "image/jpeg", 0.92);
+        var btn = this;
+        if (!document.getElementById("fullres").checked) {
+          outCanvas.toBlob(saveBlob, "image/jpeg", 0.92);
+          return;
+        }
+        // re-run the whole pipeline on the original file at native resolution
+        btn.disabled = true;
+        btn.textContent = "Developing full resolution\u2026";
+        setTimeout(function () {
+          try {
+            var w = img.naturalWidth, h = img.naturalHeight;
+            var fullSrc = document.createElement("canvas");
+            fullSrc.width = w; fullSrc.height = h;
+            fullSrc.getContext("2d").drawImage(img, 0, 0);
+            var fullOut = document.createElement("canvas");
+            fullOut.width = w; fullOut.height = h;
+            developTo(fullOut.getContext("2d"), fullSrc.getContext("2d"), w, h, getParams());
+            fullOut.toBlob(saveBlob, "image/jpeg", 0.92);
+          } finally {
+            outCtx = previewCtx;
+            btn.disabled = false;
+            btn.textContent = "Download developed JPEG";
+          }
+        }, 30);
       });
     </script>
   </body>
