@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kodak Gold 200 Studio</title>
+    <style>
+      :root {
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        background: #14100c;
+        color: #f3ead9;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; }
+      .app {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+      header h1 {
+        font-size: 26px;
+        margin: 0 0 4px;
+        letter-spacing: 0.5px;
+      }
+      header h1 .gold {
+        background: linear-gradient(90deg, #ffca6b, #e8a54b, #ffdf9a);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      header p.sub {
+        margin: 0 0 20px;
+        color: #a89a83;
+        font-size: 13px;
+      }
+      .drop {
+        border: 2px dashed #5c4c33;
+        border-radius: 16px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        background: #1b1712;
+      }
+      .drop:hover, .drop.over { border-color: #e8a54b; background: #211b13; }
+      .drop .big { font-size: 17px; font-weight: 600; }
+      .drop .small { font-size: 13px; color: #a89a83; margin-top: 6px; }
+      .work {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+      @media (max-width: 700px) { .work { grid-template-columns: 1fr; } }
+      .pane {
+        background: #1b1712;
+        border: 1px solid #33291b;
+        border-radius: 16px;
+        padding: 12px;
+      }
+      .pane h2 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin: 4px 4px 10px;
+        color: #a89a83;
+      }
+      .pane canvas { width: 100%; height: auto; border-radius: 10px; display: block; background: #000; }
+      .controls {
+        margin-top: 16px;
+        background: #1b1712;
+        border: 1px solid #33291b;
+        border-radius: 16px;
+        padding: 16px 18px;
+      }
+      .controls h2 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin: 0 0 14px;
+        color: #a89a83;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 10px 0;
+        font-size: 13px;
+      }
+      .row label { width: 120px; color: #cfc2ab; }
+      .row input[type="range"] { flex: 1; accent-color: #e8a54b; }
+      .row .val { width: 34px; text-align: right; color: #a89a83; font-variant-numeric: tabular-nums; }
+      .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+      button {
+        font: inherit;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .primary { background: linear-gradient(90deg, #e8a54b, #ffca6b); color: #241703; }
+      .ghost { background: #2a2118; color: #f3ead9; border: 1px solid #4a3b25 !important; }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+      .preset {
+        background: #2a2118;
+        color: #e9dcc3;
+        border: 1px solid #4a3b25;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .preset.active { background: #e8a54b; color: #241703; border-color: #e8a54b; }
+      .note { font-size: 12px; color: #7d7059; margin-top: 14px; line-height: 1.5; }
+      #grainPreview { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1><span class="gold">Kodak Gold 200</span> Studio</h1>
+        <p class="sub">Drop in a shot from your Sony a6300 and develop it with the classic warm negative-film look. Everything runs locally in your browser.</p>
+      </header>
+
+      <div class="drop" id="drop">
+        <div class="big">Drag a photo here, or tap to browse</div>
+        <div class="small">JPEG / PNG from your a6300 &mdash; nothing is uploaded anywhere</div>
+        <input type="file" id="file" accept="image/*" hidden />
+      </div>
+
+      <div class="work" id="work" style="display:none">
+        <div class="pane">
+          <h2>Original</h2>
+          <canvas id="src"></canvas>
+        </div>
+        <div class="pane">
+          <h2>Kodak Gold 200</h2>
+          <canvas id="out"></canvas>
+        </div>
+      </div>
+
+      <div class="controls" id="controls" style="display:none">
+        <h2>Film development controls</h2>
+        <div class="presets" id="presets">
+          <div class="preset active" data-p="classic">Classic Gold</div>
+          <div class="preset" data-p="sunny">Sunny Day</div>
+          <div class="preset" data-p="muted">Muted Print</div>
+          <div class="preset" data-p="push">Push +1</div>
+          <div class="preset" data-p="wellworn">Well-Worn Roll</div>
+        </div>
+
+        <div class="row"><label>Warmth</label><input type="range" id="warmth" min="0" max="100" value="55" /><span class="val" id="warmthV">55</span></div>
+        <div class="row"><label>Golden highlights</label><input type="range" id="gold" min="0" max="100" value="60" /><span class="val" id="goldV">60</span></div>
+        <div class="row"><label>Contrast</label><input type="range" id="contrast" min="0" max="100" value="45" /><span class="val" id="contrastV">45</span></div>
+        <div class="row"><label>Faded blacks</label><input type="range" id="fade" min="0" max="100" value="40" /><span class="val" id="fadeV">40</span></div>
+        <div class="row"><label>Saturation</label><input type="range" id="sat" min="0" max="100" value="50" /><span class="val" id="satV">50</span></div>
+        <div class="row"><label>Halation glow</label><input type="range" id="halation" min="0" max="100" value="35" /><span class="val" id="halationV">35</span></div>
+        <div class="row"><label>Grain</label><input type="range" id="grain" min="0" max="100" value="40" /><span class="val" id="grainV">40</span></div>
+        <div class="row"><label>Dust &amp; scratches</label><input type="range" id="dust" min="0" max="100" value="25" /><span class="val" id="dustV">25</span></div>
+        <div class="row"><label>Vignette</label><input type="range" id="vignette" min="0" max="100" value="25" /><span class="val" id="vignetteV">25</span></div>
+
+        <div class="btns">
+          <button class="primary" id="download">Download developed JPEG</button>
+          <button class="ghost" id="reset">Reset sliders</button>
+          <button class="ghost" id="newPhoto">Load another photo</button>
+        </div>
+        <p class="note">Tip: for the most film-like results, shoot with slightly overexposed, flat profiles on the a6300 (e.g. Creative Style Neutral, -1 contrast) so this app has latitude to work with.</p>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+      var srcCanvas = document.getElementById("src");
+      var outCanvas = document.getElementById("out");
+      var srcCtx = srcCanvas.getContext("2d");
+      var outCtx = outCanvas.getContext("2d");
+      var img = null;
+      var photoSeed = 1; // content-derived, so each photo gets its own imperfection pattern
+      var MAX = 2400; // work at up to 2400px long edge
+
+      var presets = {
+        classic: { warmth: 55, gold: 60, contrast: 45, fade: 40, sat: 50, halation: 35, grain: 40, dust: 25, vignette: 25 },
+        sunny:   { warmth: 70, gold: 75, contrast: 55, fade: 30, sat: 60, halation: 45, grain: 35, dust: 20, vignette: 20 },
+        muted:   { warmth: 40, gold: 35, contrast: 30, fade: 60, sat: 30, halation: 20, grain: 30, dust: 15, vignette: 15 },
+        push:    { warmth: 60, gold: 55, contrast: 70, fade: 20, sat: 55, halation: 50, grain: 70, dust: 40, vignette: 30 },
+        wellworn:{ warmth: 55, gold: 60, contrast: 45, fade: 45, sat: 50, halation: 40, grain: 55, dust: 70, vignette: 30 }
+      };
+
+      var sliders = ["warmth", "gold", "contrast", "fade", "sat", "halation", "grain", "dust", "vignette"];
+
+      function getParams() {
+        var p = {};
+        sliders.forEach(function (k) {
+          p[k] = (+document.getElementById(k).value) / 100;
+        });
+        return p;
+      }
+
+      function setUI(p) {
+        sliders.forEach(function (k) {
+          document.getElementById(k).value = p[k];
+          document.getElementById(k + "V").textContent = p[k];
+        });
+      }
+
+      sliders.forEach(function (k) {
+        document.getElementById(k).addEventListener("input", function () {
+          document.getElementById(k + "V").textContent = this.value;
+          clearPresets();
+          scheduleRender();
+        });
+      });
+
+      document.getElementById("presets").addEventListener("click", function (e) {
+        var el = e.target.closest(".preset");
+        if (!el) return;
+        clearPresets();
+        el.classList.add("active");
+        setUI(presets[el.dataset.p]);
+        render();
+      });
+      function clearPresets() {
+        document.querySelectorAll(".preset").forEach(function (p) { p.classList.remove("active"); });
+      }
+
+      // --- loading ---
+      var drop = document.getElementById("drop");
+      var fileInput = document.getElementById("file");
+      drop.addEventListener("click", function () { fileInput.click(); });
+      fileInput.addEventListener("change", function () { if (fileInput.files[0]) load(fileInput.files[0]); });
+      ["dragover", "dragenter"].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); });
+      });
+      ["dragleave", "drop"].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); });
+      });
+      drop.addEventListener("drop", function (e) {
+        var f = e.dataTransfer.files[0];
+        if (f) load(f);
+      });
+      document.getElementById("newPhoto").addEventListener("click", function () { fileInput.click(); });
+      document.getElementById("reset").addEventListener("click", function () {
+        setUI(presets.classic);
+        clearPresets();
+        document.querySelector('[data-p="classic"]').classList.add("active");
+        render();
+      });
+
+      function load(file) {
+        if (!file.type.startsWith("image/")) return;
+        var url = URL.createObjectURL(file);
+        var im = new Image();
+        im.onload = function () {
+          img = im;
+          var scale = Math.min(1, MAX / Math.max(im.width, im.height));
+          var w = Math.round(im.width * scale), h = Math.round(im.height * scale);
+          srcCanvas.width = outCanvas.width = w;
+          srcCanvas.height = outCanvas.height = h;
+          srcCtx.drawImage(im, 0, 0, w, h);
+          // derive a seed from the photo's own pixels so every photo gets
+          // its own (but stable) dust, scratches and grain pattern
+          var s = srcCtx.getImageData(0, 0, w, h).data;
+          var acc = 0x811c9dc5;
+          for (var si = 0; si < s.length; si += 4096) {
+            acc = ((acc ^ s[si]) * 16777619) >>> 0;
+          }
+          photoSeed = acc || 1;
+          document.getElementById("work").style.display = "grid";
+          document.getElementById("controls").style.display = "block";
+          render();
+          URL.revokeObjectURL(url);
+        };
+        im.src = url;
+      }
+
+      // --- the Kodak Gold 200 look ---
+      var renderPending = false;
+      function scheduleRender() {
+        if (renderPending) return;
+        renderPending = true;
+        setTimeout(function () { renderPending = false; render(); }, 90);
+      }
+
+      function render() {
+        if (!img) return;
+        var p = getParams();
+        var w = outCanvas.width, h = outCanvas.height;
+
+        var data = srcCtx.getImageData(0, 0, w, h);
+        var px = data.data;
+
+        var warmth = p.warmth, goldAmt = p.gold, contrast = p.contrast, fade = p.fade;
+        var satAmt = p.sat;
+
+        // per-pixel colour grade, modelled on Gold 200's dye-layer behaviour
+        var f = fade * 22;           // black point lift (film base + fog)
+        var c = 1 + contrast * 0.6;  // midtone contrast
+        for (var i = 0; i < px.length; i += 4) {
+          var r = px[i], g = px[i + 1], b = px[i + 2];
+
+          // 1) per-channel density curves. Gold's red layer holds detail
+          //    deep into the highlights (soft shoulder) while its blue layer
+          //    saturates early and its toe lifts less — that asymmetry is
+          //    where golden highlights and warm brown shadows come from.
+          r = density(r, f,       c, 0.92);
+          g = density(g, f,       c, 0.82);
+          b = density(b, f * 0.5, c, 0.62);
+
+          // 2) punchy consumer-grade saturation
+          var lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          r = lum + (r - lum) * (1 + satAmt * 0.50);
+          g = lum + (g - lum) * (1 + satAmt * 0.42);
+          b = lum + (b - lum) * (1 + satAmt * 0.46);
+
+          // 3) Gold's signature hue rendering (skipped for near-neutral
+          //    pixels): greens go yellow-olive, yellows glow, skin shifts
+          //    red-orange rather than yellow, blues recede but stay clean.
+          if (r !== g || g !== b) {
+            var hsv = rgb2hsv(r, g, b);
+            var gw = hmask(hsv[0], 70, 170, 30);  // greens
+            var yw = hmask(hsv[0], 42, 70, 14);    // yellows
+            var ow = hmask(hsv[0], 14, 42, 10);    // oranges / skin
+            var bw = hmask(hsv[0], 190, 265, 30); // blues
+            if (gw + yw + ow + bw > 0.01) {
+              hsv[0] = (hsv[0] - 11 * gw - 4 * ow + 360) % 360;
+              hsv[1] = hsv[1] * (1 + 0.16 * yw + 0.04 * ow - 0.13 * gw - 0.12 * bw);
+              hsv[2] = hsv[2] * (1 + 0.05 * yw - 0.04 * gw);
+              var rgb = hsv2rgb(hsv[0], hsv[1], hsv[2]);
+              r = rgb[0]; g = rgb[1]; b = rgb[2];
+            }
+          }
+
+          // 4) amber warmth, strongest in shadows (Gold lifts warm/brown)
+          var sw = sh(lum);
+          r += warmth * (8 + 10 * sw);
+          g += warmth * (3 + 5 * sw);
+          b -= warmth * (10 - 5 * sw);
+
+          // 5) golden highlights
+          var hlw = smooth((lum - 150) / 105);
+          r += goldAmt * hlw * 14;
+          g += goldAmt * hlw * 18;
+          b -= goldAmt * hlw * 10;
+
+          px[i] = clamp(r); px[i + 1] = clamp(g); px[i + 2] = clamp(b);
+        }
+
+        outCtx.putImageData(data, 0, 0);
+
+        // halation: soft warm glow from highlights
+        if (p.halation > 0) halation(p.halation, w, h);
+
+        // grain: clumped, like real silver-halide crystals
+        if (p.grain > 0) grain(p.grain, w, h);
+
+        // dust, scratches, light leaks, channel misregistration
+        if (p.dust > 0) imperfections(p.dust, w, h);
+
+        // vignette
+        if (p.vignette > 0) vignette(p.vignette, w, h);
+      }
+
+      // Film characteristic ("D-log E") curve: soft toe, midtone contrast,
+      // and a filmic highlight shoulder that rolls off gently instead of
+      // clipping to white — negative film never blows out the way digital does.
+      // shoulder: 0–1, lower = earlier/softer highlight rolloff.
+      function density(v, f, c, shoulder) {
+        v = v * (1 - f / 255) + f * 0.9;   // toe (film base + fog)
+        v = (v - 128) * c + 128;            // midtone contrast
+        var k = 205;                        // shoulder knee
+        if (v > k) {
+          var t = Math.min(1, (v - k) / (255 - k));
+          v = k + (255 - k) * (1 - Math.pow(1 - t, shoulder));
+        }
+        return v;
+      }
+      function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+      function sh(v) { return 1 - v / 255; } // shadow weight
+      function smooth(t) { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
+
+      function rgb2hsv(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+        var h = 0;
+        if (d > 0.0005) {
+          if (mx === r) h = 60 * (((g - b) / d) % 6);
+          else if (mx === g) h = 60 * ((b - r) / d + 2);
+          else h = 60 * ((r - g) / d + 4);
+          if (h < 0) h += 360;
+        }
+        return [h, mx === 0 ? 0 : d / mx, mx];
+      }
+      function hsv2rgb(h, s, v) {
+        var c = v * s, hp = h / 60, x = c * (1 - Math.abs(hp % 2 - 1));
+        var r = 0, g = 0, b = 0;
+        if (hp < 1) { r = c; g = x; }
+        else if (hp < 2) { r = x; g = c; }
+        else if (hp < 3) { g = c; b = x; }
+        else if (hp < 4) { g = x; b = c; }
+        else if (hp < 5) { r = x; b = c; }
+        else { r = c; b = x; }
+        var m = v - c;
+        return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+      }
+      // 1 inside [lo,hi] hue band, smoothstep falloff outside
+      function hmask(h, lo, hi, soft) {
+        if (h >= lo && h <= hi) return 1;
+        var d = h < lo ? lo - h : h - hi;
+        return d < soft ? smooth(1 - d / soft) : 0;
+      }
+
+      function halation(amt, w, h) {
+        // extract highlights, blur them, screen-add warm glow
+        var tmp = outCtx.getImageData(0, 0, w, h);
+        var px = tmp.data;
+        var outPx = outCtx.getImageData(0, 0, w, h).data;
+        for (var i = 0; i < px.length; i += 4) {
+          var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+          var e = smooth((lum - 165) / 90);
+          // real colour-film halation glows red-orange: red light penetrates
+          // past the anti-halation backing and scatters off the film base
+          px[i] = px[i] * e; px[i + 1] = px[i + 1] * e * 0.42; px[i + 2] = px[i + 2] * e * 0.20;
+        }
+        // downscale-blur via drawing small then back
+        var small = document.createElement("canvas");
+        small.width = Math.max(1, Math.round(w / 8)); small.height = Math.max(1, Math.round(h / 8));
+        var sctx = small.getContext("2d");
+        sctx.putImageData(thumb(tmp, w, h, small.width, small.height), 0, 0);
+        outCtx.save();
+        outCtx.globalCompositeOperation = "screen";
+        outCtx.globalAlpha = amt * 0.55;
+        outCtx.filter = "blur(0px)";
+        outCtx.drawImage(small, 0, 0, w, h);
+        outCtx.restore();
+      }
+
+      function thumb(imgData, w, h, tw, th) {
+        var t = document.createElement("canvas");
+        t.width = w; t.height = h;
+        t.getContext("2d").putImageData(imgData, 0, 0);
+        var c2 = document.createElement("canvas");
+        c2.width = tw; c2.height = th;
+        var ctx = c2.getContext("2d");
+        ctx.drawImage(t, 0, 0, w, h, 0, 0, tw, th);
+        return ctx.getImageData(0, 0, tw, th);
+      }
+
+      // Seeded PRNG so a photo always develops the same way
+      function prng(seed) {
+        var s = seed >>> 0;
+        return function () {
+          s = (s * 1664525 + 1013904223) >>> 0;
+          return s / 4294967296;
+        };
+      }
+
+      function grain(amt, w, h) {
+        // Two octaves: soft clumps (film crystal clusters) + fine sparkle.
+        var strength = amt * 30;
+        var rand = prng(0x9e3779b9 ^ photoSeed);
+        var data = outCtx.getImageData(0, 0, w, h);
+        var px = data.data;
+
+        // Octave 1: clumped noise on a 1/3-scale buffer, upscaled
+        var cw = Math.max(2, Math.round(w / 3)), ch = Math.max(2, Math.round(h / 3));
+        var clumps = new Float32Array(cw * ch);
+        for (var i = 0; i < clumps.length; i++) clumps[i] = rand() - 0.5;
+
+        // Octave 2: per-pixel fine grain, seeded
+        var fine = new Float32Array(w * h);
+        for (var j = 0; j < fine.length; j += 3) {
+          var v = rand() - 0.5;
+          fine[j] = v; fine[j + 1] = v * 0.7; fine[j + 2] = v * 0.9; // slight clumping even in fine pass
+        }
+
+        for (var y = 0; y < h; y++) {
+          var cy = Math.min(ch - 1, (y / h * ch) | 0);
+          for (var x = 0; x < w; x++) {
+            var idx = (y * w + x) * 4;
+            var lum = (px[idx] + px[idx + 1] + px[idx + 2]) / 765;
+            // grain lives mostly in midtones, fades near black & white
+            var m = 4 * lum * (1 - lum);
+
+            var cx = Math.min(cw - 1, (x / w * cw) | 0);
+            // neutral (luminance-only) grain: same value across all channels
+            var clump = clumps[cy * cw + cx] * 1.6;
+            var fj = y * w + x;
+            var n = (clump * 0.65 + fine[fj] * 0.35) * strength * m;
+
+            px[idx]     = clamp(px[idx] + n);
+            px[idx + 1] = clamp(px[idx + 1] + n * 0.97);
+            px[idx + 2] = clamp(px[idx + 2] + n * 0.97);
+          }
+        }
+        outCtx.putImageData(data, 0, 0);
+      }
+
+      function imperfections(amt, w, h) {
+        var rand = prng(0x1234abcd ^ photoSeed);
+
+        // 1) dust specks: bright (on negative = dark on print) and dark specks
+        var specks = Math.round(amt * 140);
+        for (var s = 0; s < specks; s++) {
+          var x = rand() * w, y = rand() * h;
+          var r = (0.4 + rand() * 2.2) * (w / 1200 + 0.4);
+          var bright = rand() < 0.55;
+          outCtx.save();
+          outCtx.globalAlpha = 0.25 + rand() * 0.5;
+          outCtx.fillStyle = bright ? "#fff6e0" : "#1a0e00";
+          if (rand() < 0.7) {
+            outCtx.beginPath();
+            outCtx.arc(x, y, r, 0, Math.PI * 2);
+            outCtx.fill();
+          } else {
+            outCtx.fillRect(x, y, r * 2, r * (0.4 + rand()));
+          }
+          outCtx.restore();
+        }
+
+        // 3) hairline scratches: thin vertical abrasion lines
+        var scratches = Math.round(amt * 5);
+        for (var k = 0; k < scratches; k++) {
+          var sx = rand() * w;
+          var len = h * (0.5 + rand() * 0.5);
+          var sy = rand() * (h - len);
+          outCtx.save();
+          outCtx.globalAlpha = 0.1 + rand() * 0.25 * amt;
+          outCtx.strokeStyle = rand() < 0.6 ? "#fff2d8" : "#0e0800";
+          outCtx.lineWidth = 0.6 + rand() * 1.2;
+          outCtx.beginPath();
+          outCtx.moveTo(sx, sy);
+          // slightly wavy, not perfectly straight
+          outCtx.bezierCurveTo(sx + (rand() - 0.5) * 8, sy + len / 3, sx + (rand() - 0.5) * 8, sy + 2 * len / 3, sx + (rand() - 0.5) * 6, sy + len);
+          outCtx.stroke();
+          outCtx.restore();
+        }
+
+        // 4) light leak: warm streak bleeding in from one edge (only sometimes)
+        if (rand() < amt * 0.9) {
+          var edge = Math.floor(rand() * 4);
+          outCtx.save();
+          var g;
+          var leakAlpha = 0.12 + rand() * 0.22 * amt;
+          if (edge === 0) { g = outCtx.createLinearGradient(0, 0, w * (0.2 + rand() * 0.3), 0); }
+          else if (edge === 1) { g = outCtx.createLinearGradient(w, 0, w * (1 - (0.2 + rand() * 0.3)), 0); }
+          else if (edge === 2) { g = outCtx.createLinearGradient(0, 0, 0, h * (0.2 + rand() * 0.3)); }
+          else { g = outCtx.createLinearGradient(0, h, 0, h * (1 - (0.2 + rand() * 0.3))); }
+          g.addColorStop(0, "rgba(255,150,60," + leakAlpha + ")");
+          g.addColorStop(1, "rgba(255,150,60,0)");
+          outCtx.globalCompositeOperation = "screen";
+          outCtx.fillStyle = g;
+          outCtx.fillRect(0, 0, w, h);
+          outCtx.restore();
+        }
+
+        // 5) subtle horizontal density fluctuation (roller/processing banding)
+        if (amt > 0.3) {
+          outCtx.save();
+          outCtx.globalCompositeOperation = "overlay";
+          outCtx.globalAlpha = amt * 0.12;
+          for (var by = 0; by < h; by += Math.round(h / 18)) {
+            var bandA = rand() * 0.5;
+            outCtx.fillStyle = bandA < 0.25 ? "#ffe9c4" : "#241a10";
+            outCtx.fillRect(0, by, w, Math.round(h / 40));
+          }
+          outCtx.restore();
+        }
+      }
+
+      function vignette(amt, w, h) {
+        outCtx.save();
+        var g = outCtx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.45, w / 2, h / 2, Math.max(w, h) * 0.75);
+        g.addColorStop(0, "rgba(0,0,0,0)");
+        g.addColorStop(1, "rgba(20,8,0," + (amt * 0.5) + ")");
+        outCtx.fillStyle = g;
+        outCtx.fillRect(0, 0, w, h);
+        outCtx.restore();
+      }
+
+      // --- download ---
+      document.getElementById("download").addEventListener("click", function () {
+        if (!img) return;
+        outCanvas.toBlob(function (blob) {
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "kodak-gold-200.jpg";
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+        }, "image/jpeg", 0.92);
+      });
+    </script>
+  </body>
+</html>
