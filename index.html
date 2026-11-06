@@ -114,6 +114,15 @@
         cursor: pointer;
       }
       .preset.active { background: #e8a54b; color: #241703; border-color: #e8a54b; }
+      .row select {
+        flex: 1;
+        background: #2a2118;
+        color: #f3ead9;
+        border: 1px solid #4a3b25;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font: inherit;
+      }
       .note { font-size: 12px; color: #7d7059; margin-top: 14px; line-height: 1.5; }
       #grainPreview { display: none; }
     </style>
@@ -121,8 +130,8 @@
   <body>
     <div class="app">
       <header>
-        <h1><span class="gold">Kodak Gold 200</span> Studio</h1>
-        <p class="sub">Drop in a shot from your Sony a6300 and develop it with the classic warm negative-film look. Everything runs locally in your browser.</p>
+        <h1><span class="gold">Analog Film</span> Studio</h1>
+        <p class="sub">Develop photos from your Sony a6300 on five classic emulsions &mdash; Gold 200, Portra 400, Ektar 100, CineStill 800T and Superia 400. Everything runs locally in your browser.</p>
       </header>
 
       <div class="drop" id="drop">
@@ -137,15 +146,23 @@
           <canvas id="src"></canvas>
         </div>
         <div class="pane">
-          <h2>Kodak Gold 200</h2>
+          <h2 id="stockLabel">Kodak Gold 200</h2>
           <canvas id="out"></canvas>
         </div>
       </div>
 
       <div class="controls" id="controls" style="display:none">
         <h2>Film development controls</h2>
+        <div class="row"><label>Film stock</label>
+          <select id="stock">
+            <option value="gold" selected>Kodak Gold 200</option>
+            <option value="portra">Kodak Portra 400</option>
+            <option value="ektar">Kodak Ektar 100</option>
+            <option value="cinestill">CineStill 800T</option>
+            <option value="superia">Fuji Superia 400</option>
+          </select>
+        </div>
         <div class="presets" id="presets">
-          <div class="preset active" data-p="classic">Classic Gold</div>
           <div class="preset" data-p="sunny">Sunny Day</div>
           <div class="preset" data-p="muted">Muted Print</div>
           <div class="preset" data-p="push">Push +1</div>
@@ -181,12 +198,81 @@
       var photoSeed = 1; // content-derived, so each photo gets its own imperfection pattern
       var MAX = 2400; // work at up to 2400px long edge
 
+      var currentStock = "gold";
+
+      // Per-stock emulation profiles: hue rendering, dye-layer density
+      // curves (toe + shoulder per channel), warmth bias, halation colour,
+      // grain character, and each stock's recommended baseline settings.
+      var stocks = {
+        gold: {
+          label: "Kodak Gold 200",
+          gShift: -11, gSat: -0.13, gVal: -0.04, // greens -> yellow-olive
+          ySat: 0.16, yVal: 0.05,                // yellows glow
+          oShift: -4, oSat: 0.04,                // skin -> red-orange
+          bSat: -0.12,                           // blues recede, stay clean
+          toe: [1, 1, 0.5], shoulder: [0.92, 0.82, 0.62],
+          warmBias: 0, goldBias: 1.0,
+          hal: [1, 0.42, 0.20], halBoost: 1.0,   // red-orange halation
+          grain: 1.0,                            // visible, clumpy (PGI 44)
+          base: { warmth: 55, gold: 60, contrast: 45, fade: 40, sat: 50, halation: 35, grain: 40, dust: 25, vignette: 25 }
+        },
+        portra: {
+          label: "Kodak Portra 400",
+          gShift: -3, gSat: -0.05, gVal: 0,      // gentle, neutral
+          ySat: 0.04, yVal: 0.02,
+          oShift: -2, oSat: 0.02,                // creamy skin
+          bSat: -0.04,
+          toe: [0.8, 0.8, 0.8], shoulder: [0.95, 0.9, 0.85], // long latitude
+          warmBias: -0.02, goldBias: 0.25,
+          hal: [1, 0.8, 0.72], halBoost: 0.6,
+          grain: 0.55,                           // fine grain
+          base: { warmth: 25, gold: 20, contrast: 30, fade: 45, sat: 30, halation: 20, grain: 30, dust: 15, vignette: 15 }
+        },
+        ektar: {
+          label: "Kodak Ektar 100",
+          gShift: 2, gSat: 0.08, gVal: 0.02,     // vivid greens stay green
+          ySat: 0.10, yVal: 0.05,
+          oShift: -2, oSat: 0.10,
+          bSat: 0.15,                            // punchy, saturated blues
+          toe: [0.7, 0.7, 0.7], shoulder: [0.85, 0.85, 0.8],
+          warmBias: -0.08, goldBias: 0.1,
+          hal: [1, 0.55, 0.45], halBoost: 0.5,
+          grain: 0.35,                           // world's finest-grain colour neg
+          base: { warmth: 15, gold: 10, contrast: 55, fade: 20, sat: 75, halation: 15, grain: 20, dust: 10, vignette: 15 }
+        },
+        cinestill: {
+          label: "CineStill 800T",
+          gShift: 6, gSat: -0.05, gVal: 0,       // cool, cinematic
+          ySat: 0.02, yVal: 0,
+          oShift: 0, oSat: 0,
+          bSat: 0.05,
+          toe: [0.6, 0.8, 1.3], shoulder: [0.88, 0.85, 0.8], // cyan-blu lifted shadows
+          warmBias: -0.18, goldBias: 0.05,
+          hal: [1, 0.18, 0.12], halBoost: 2.2,   // the famous deep-red halation
+          grain: 1.5,                            // pushed high-speed look
+          base: { warmth: 5, gold: 5, contrast: 45, fade: 35, sat: 40, halation: 60, grain: 55, dust: 20, vignette: 30 }
+        },
+        superia: {
+          label: "Fuji Superia 400",
+          gShift: 8, gSat: 0.10, gVal: 0.03,     // vivid Fuji greens
+          ySat: 0.05, yVal: 0.02,
+          oShift: 2, oSat: 0.02,
+          bSat: 0.05,
+          toe: [0.9, 1.05, 1.0], shoulder: [0.9, 0.82, 0.78], // green-tilted shadows
+          warmBias: -0.05, goldBias: 0.15,
+          hal: [1, 0.5, 0.4], halBoost: 0.7,
+          grain: 1.0,
+          base: { warmth: 10, gold: 15, contrast: 50, fade: 35, sat: 60, halation: 25, grain: 45, dust: 20, vignette: 20 }
+        }
+      };
+
+      // Presets are relative recipes applied on top of the current stock's
+      // baseline, so they work sensibly on every emulsion.
       var presets = {
-        classic: { warmth: 55, gold: 60, contrast: 45, fade: 40, sat: 50, halation: 35, grain: 40, dust: 25, vignette: 25 },
-        sunny:   { warmth: 70, gold: 75, contrast: 55, fade: 30, sat: 60, halation: 45, grain: 35, dust: 20, vignette: 20 },
-        muted:   { warmth: 40, gold: 35, contrast: 30, fade: 60, sat: 30, halation: 20, grain: 30, dust: 15, vignette: 15 },
-        push:    { warmth: 60, gold: 55, contrast: 70, fade: 20, sat: 55, halation: 50, grain: 70, dust: 40, vignette: 30 },
-        wellworn:{ warmth: 55, gold: 60, contrast: 45, fade: 45, sat: 50, halation: 40, grain: 55, dust: 70, vignette: 30 }
+        sunny:   { warmth: 15, gold: 15, contrast: 10, fade: -10, sat: 10, halation: 10, grain: -5,  dust: -5,  vignette: -5 },
+        muted:   { warmth: -15, gold: -25, contrast: -15, fade: 20, sat: -20, halation: -15, grain: -10, dust: -10, vignette: -10 },
+        push:    { warmth: 5, gold: -5, contrast: 25, fade: -20, sat: 5, halation: 15, grain: 30, dust: 15, vignette: 5 },
+        wellworn:{ fade: 5, halation: 5, grain: 15, dust: 45, vignette: 5 }
       };
 
       var sliders = ["warmth", "gold", "contrast", "fade", "sat", "halation", "grain", "dust", "vignette"];
@@ -214,12 +300,30 @@
         });
       });
 
+      function applyPreset(key) {
+        var st = stocks[currentStock];
+        var out = {};
+        sliders.forEach(function (k) {
+          out[k] = Math.max(0, Math.min(100, st.base[k] + (presets[key][k] || 0)));
+        });
+        setUI(out);
+      }
+
+      document.getElementById("stock").addEventListener("change", function () {
+        currentStock = this.value;
+        var st = stocks[currentStock];
+        setUI(st.base);
+        clearPresets();
+        document.getElementById("stockLabel").textContent = st.label;
+        render();
+      });
+
       document.getElementById("presets").addEventListener("click", function (e) {
         var el = e.target.closest(".preset");
         if (!el) return;
         clearPresets();
         el.classList.add("active");
-        setUI(presets[el.dataset.p]);
+        applyPreset(el.dataset.p);
         render();
       });
       function clearPresets() {
@@ -243,9 +347,8 @@
       });
       document.getElementById("newPhoto").addEventListener("click", function () { fileInput.click(); });
       document.getElementById("reset").addEventListener("click", function () {
-        setUI(presets.classic);
+        setUI(stocks[currentStock].base);
         clearPresets();
-        document.querySelector('[data-p="classic"]').classList.add("active");
         render();
       });
 
@@ -292,22 +395,24 @@
         var data = srcCtx.getImageData(0, 0, w, h);
         var px = data.data;
 
-        var warmth = p.warmth, goldAmt = p.gold, contrast = p.contrast, fade = p.fade;
-        var satAmt = p.sat;
+        var st = stocks[currentStock] || stocks.gold;
+        var contrast = p.contrast, fade = p.fade, satAmt = p.sat;
+        var warmth = Math.min(1.15, p.warmth + st.warmBias);
+        var goldAmt = Math.max(0, p.gold * st.goldBias);
 
-        // per-pixel colour grade, modelled on Gold 200's dye-layer behaviour
+        // per-pixel colour grade, modelled on the stock's dye-layer behaviour
         var f = fade * 22;           // black point lift (film base + fog)
         var c = 1 + contrast * 0.6;  // midtone contrast
         for (var i = 0; i < px.length; i += 4) {
           var r = px[i], g = px[i + 1], b = px[i + 2];
 
-          // 1) per-channel density curves. Gold's red layer holds detail
-          //    deep into the highlights (soft shoulder) while its blue layer
-          //    saturates early and its toe lifts less — that asymmetry is
-          //    where golden highlights and warm brown shadows come from.
-          r = density(r, f,       c, 0.92);
-          g = density(g, f,       c, 0.82);
-          b = density(b, f * 0.5, c, 0.62);
+          // 1) per-channel density curves. Each stock's dye layers behave
+          //    differently: e.g. Gold's red layer holds detail deep into
+          //    the highlights while its blue saturates early (golden
+          //    highlights); CineStill lifts its blue toe (cyan shadows).
+          r = density(r, f * st.toe[0], c, st.shoulder[0]);
+          g = density(g, f * st.toe[1], c, st.shoulder[1]);
+          b = density(b, f * st.toe[2], c, st.shoulder[2]);
 
           // 2) punchy consumer-grade saturation
           var lum = 0.299 * r + 0.587 * g + 0.114 * b;
@@ -325,9 +430,9 @@
             var ow = hmask(hsv[0], 14, 42, 10);    // oranges / skin
             var bw = hmask(hsv[0], 190, 265, 30); // blues
             if (gw + yw + ow + bw > 0.01) {
-              hsv[0] = (hsv[0] - 11 * gw - 4 * ow + 360) % 360;
-              hsv[1] = hsv[1] * (1 + 0.16 * yw + 0.04 * ow - 0.13 * gw - 0.12 * bw);
-              hsv[2] = hsv[2] * (1 + 0.05 * yw - 0.04 * gw);
+              hsv[0] = (hsv[0] + st.gShift * gw + st.oShift * ow + 360) % 360;
+              hsv[1] = hsv[1] * (1 + st.ySat * yw + st.oSat * ow + st.gSat * gw + st.bSat * bw);
+              hsv[2] = hsv[2] * (1 + st.yVal * yw + st.gVal * gw);
               var rgb = hsv2rgb(hsv[0], hsv[1], hsv[2]);
               r = rgb[0]; g = rgb[1]; b = rgb[2];
             }
@@ -350,11 +455,11 @@
 
         outCtx.putImageData(data, 0, 0);
 
-        // halation: soft warm glow from highlights
-        if (p.halation > 0) halation(p.halation, w, h);
+        // halation: each stock glows its own colour (CineStill = deep red)
+        if (p.halation > 0) halation(p.halation * st.halBoost, w, h, st.hal);
 
         // grain: clumped, like real silver-halide crystals
-        if (p.grain > 0) grain(p.grain, w, h);
+        if (p.grain > 0) grain(Math.min(1.3, p.grain * st.grain), w, h);
 
         // dust, scratches, light leaks, channel misregistration
         if (p.dust > 0) imperfections(p.dust, w, h);
@@ -412,7 +517,7 @@
         return d < soft ? smooth(1 - d / soft) : 0;
       }
 
-      function halation(amt, w, h) {
+      function halation(amt, w, h, hal) {
         // extract highlights, blur them, screen-add warm glow
         var tmp = outCtx.getImageData(0, 0, w, h);
         var px = tmp.data;
@@ -420,9 +525,9 @@
         for (var i = 0; i < px.length; i += 4) {
           var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
           var e = smooth((lum - 165) / 90);
-          // real colour-film halation glows red-orange: red light penetrates
-          // past the anti-halation backing and scatters off the film base
-          px[i] = px[i] * e; px[i + 1] = px[i + 1] * e * 0.42; px[i + 2] = px[i + 2] * e * 0.20;
+          // halation colour is stock-specific: red light penetrates past
+          // the anti-halation backing and scatters off the film base
+          px[i] = px[i] * e; px[i + 1] = px[i + 1] * e * hal[1]; px[i + 2] = px[i + 2] * e * hal[2];
         }
         // downscale-blur via drawing small then back
         var small = document.createElement("canvas");
@@ -431,7 +536,7 @@
         sctx.putImageData(thumb(tmp, w, h, small.width, small.height), 0, 0);
         outCtx.save();
         outCtx.globalCompositeOperation = "screen";
-        outCtx.globalAlpha = amt * 0.55;
+        outCtx.globalAlpha = Math.min(0.85, amt * 0.55);
         outCtx.filter = "blur(0px)";
         outCtx.drawImage(small, 0, 0, w, h);
         outCtx.restore();
@@ -586,7 +691,7 @@
         outCanvas.toBlob(function (blob) {
           var a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
-          a.download = "kodak-gold-200.jpg";
+          a.download = currentStock + "-film.jpg";
           a.click();
           setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
         }, "image/jpeg", 0.92);
