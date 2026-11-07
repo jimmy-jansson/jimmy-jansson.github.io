@@ -4,343 +4,248 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Analog Film Studio</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --film-black: #0a0806;
-      --film-base: #14100c;
-      --film-brown: #1b1712;
-      --film-warm: #2a2118;
-      --film-gold: #d4a574;
-      --film-gold-light: #e8c098;
-      --film-text: #f0e6d8;
-      --film-text-muted: #a09688;
-      --film-border: #362e22;
+      color-scheme: dark;
+      --film-black: #0b0e0b;
+      --film-base: #141813;
+      --film-brown: #1c211b;
+      --film-warm: #292e24;
+      --film-gold: #d9a86e;
+      --film-gold-light: #f0c994;
+      --film-rust: #a64f35;
+      --film-text: #f3ead8;
+      --film-text-muted: #a7a18e;
+      --film-border: #343a30;
+      --film-soft-border: rgba(225, 195, 145, 0.12);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { 
-      min-height: 100vh; 
-      font-family: 'IBM Plex Mono', monospace; 
-      background: var(--film-black); 
+    html, body { min-height: 100%; }
+    body {
+      min-height: 100vh;
       color: var(--film-text);
+      font-family: 'DM Mono', monospace;
+      background:
+        radial-gradient(ellipse at 50% -15%, rgba(149, 100, 52, 0.18), transparent 52%),
+        radial-gradient(ellipse at 100% 75%, rgba(57, 73, 48, 0.12), transparent 42%),
+        var(--film-black);
     }
-    .app { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; }
-    header { text-align: center; margin-bottom: 24px; }
-    header h1 { 
-      font-family: 'Playfair Display', serif; 
-      font-size: 32px; 
-      margin: 0 0 8px; 
-      letter-spacing: 2px;
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      content: "";
+      pointer-events: none;
+      opacity: 0.13;
+      background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgba(245, 226, 190, 0.025) 3px 4px);
     }
-    header h1 .gold { 
-      background: linear-gradient(135deg, #e8c098, #d4a574, #b88c5a); 
-      -webkit-background-clip: text; 
-      background-clip: text; 
-      color: transparent;
+    .app { position: relative; z-index: 1; width: min(1240px, calc(100% - 48px)); margin: 0 auto; padding: 34px 0 70px; }
+    header {
+      position: relative;
+      margin-bottom: 28px;
+      padding: 14px 2px 26px;
+      border-bottom: 1px solid var(--film-soft-border);
     }
-    header p.sub { 
-      margin: 0 auto 20px; 
-      color: var(--film-text-muted); 
-      font-size: 14px; 
-      max-width: 650px; 
-      line-height: 1.6;
+    header::after {
+      position: absolute;
+      right: 2px;
+      bottom: -2px;
+      width: 78px;
+      height: 3px;
+      content: "";
+      background: var(--film-gold);
     }
-    .drop { 
-      border: 3px dashed var(--film-border); 
-      border-radius: 20px; 
-      padding: 40px 20px; 
-      text-align: center; 
-      cursor: pointer; 
-      background: var(--film-base);
-      transition: all 0.3s;
+    .eyebrow, .header-stamp, .section-kicker, .pane-meta, .roll-head, .control-group h3 {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
-    .drop:hover, .drop.over { 
-      border-color: var(--film-gold); 
-      background: var(--film-brown); 
-      box-shadow: 0 0 20px rgba(212, 165, 116, 0.2);
+    .eyebrow { margin-bottom: 12px; color: var(--film-gold); }
+    .eyebrow::before { content: "✳"; margin-right: 9px; color: var(--film-rust); }
+    .masthead { display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 6vw, 68px);
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
     }
-    .drop .big { font-size: 18px; font-weight: 600; color: var(--film-gold-light); }
-    .drop .small { font-size: 13px; color: var(--film-text-muted); margin-top: 8px; }
-    .drop:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--film-gold); outline-offset: 3px; }
-    
-    .work { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 16px; 
-      margin-top: 24px;
-      background: var(--film-base);
-      border: 1px solid var(--film-border);
+    header h1 .gold { color: var(--film-text); }
+    header h1 .studio { color: var(--film-gold); font-style: italic; }
+    header p.sub { max-width: 580px; margin-top: 15px; color: var(--film-text-muted); font-size: 13px; line-height: 1.8; }
+    .header-stamp {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      color: var(--film-text-muted);
+      text-align: right;
+      line-height: 1.8;
+    }
+    .header-stamp::before { width: 8px; height: 8px; border-radius: 50%; content: ""; background: #9aa778; box-shadow: 0 0 12px rgba(154, 167, 120, 0.5); }
+    .drop {
+      position: relative;
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      align-items: center;
+      min-height: 142px;
+      padding: 26px 34px;
+      overflow: hidden;
+      border: 1px dashed rgba(217, 168, 110, 0.45);
       border-radius: 16px;
-      padding: 16px;
+      background: linear-gradient(115deg, rgba(217, 168, 110, 0.055), transparent 55%), var(--film-base);
+      box-shadow: inset 0 1px rgba(255, 244, 218, 0.035), 0 18px 55px rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+      transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
     }
-    @media (max-width: 700px) { 
-      .work { grid-template-columns: 1fr; }
-    }
-    .pane { 
-      background: var(--film-brown); 
-      border: 1px solid var(--film-border); 
-      border-radius: 12px; 
-      padding: 16px;
-    }
-    .pane h2 { 
-      font-size: 12px; 
-      text-transform: uppercase; 
-      letter-spacing: 1.5px; 
-      margin: 8px 8px 12px;
+    .drop::before {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      border: 1px solid rgba(217, 168, 110, 0.5);
+      border-radius: 50%;
       color: var(--film-gold);
-      font-weight: 600;
+      content: "＋";
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      background: radial-gradient(circle, rgba(217, 168, 110, 0.12) 0 38%, transparent 40%), var(--film-brown);
+      box-shadow: 0 0 0 7px rgba(217, 168, 110, 0.035), 0 0 0 14px rgba(217, 168, 110, 0.02);
     }
-    .pane canvas { 
-      width: 100%; 
-      height: auto; 
-      border-radius: 8px; 
-      display: block; 
-      background: #000;
+    .drop::after {
+      position: absolute;
+      top: 0;
+      right: 24px;
+      width: 64px;
+      height: 5px;
+      content: "";
+      background: repeating-linear-gradient(90deg, var(--film-gold) 0 8px, transparent 8px 13px);
+      opacity: 0.55;
     }
-    
-    .roll { 
-      display: flex; 
-      gap: 8px; 
-      flex-wrap: wrap; 
-      margin-top: 20px; 
-      padding: 12px;
-      background: var(--film-base); 
-      border: 1px solid var(--film-border); 
-      border-radius: 12px;
+    .drop:hover, .drop.over { border-color: var(--film-gold); background-color: #1a2018; transform: translateY(-2px); }
+    .drop .big { grid-column: 2; color: var(--film-text); font-family: 'Playfair Display', serif; font-size: 23px; }
+    .drop .small { grid-column: 2; margin-top: 6px; color: var(--film-text-muted); font-size: 11px; }
+    .drop:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--film-gold); outline-offset: 4px; }
+    .work {
+      margin-top: 24px;
+      padding: 14px;
+      border: 1px solid var(--film-soft-border);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(255, 245, 220, 0.025), transparent 50%), #10140f;
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.22);
     }
-    .roll .thumb { 
-      position: relative; 
-      width: 64px; 
-      height: 64px; 
-      padding: 0; 
-      border: 2px solid var(--film-border); 
-      border-radius: 8px; 
-      background: #000;
-      overflow: hidden; 
-      cursor: pointer; 
-      transition: all 0.2s;
+    .pane { min-width: 0; padding: 17px; border: 1px solid var(--film-border); border-radius: 13px; background: var(--film-base); }
+    .pane h2 { display: flex; align-items: center; justify-content: space-between; min-height: 25px; margin: 0 2px 13px; color: var(--film-gold-light); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; }
+    .pane h2::after { color: var(--film-text-muted); content: "DRAG IMAGE TO COMPARE"; font-size: 9px; letter-spacing: 0.11em; opacity: 0.7; }
+    .compare-stage { --compare-split: 50%; position: relative; width: 100%; overflow: hidden; aspect-ratio: 3 / 2; border: 1px solid rgba(240, 221, 186, 0.1); border-radius: 6px; background: #050605; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.26); cursor: col-resize; touch-action: pan-y; user-select: none; }
+    .compare-stage canvas { position: absolute; top: 0; left: 0; display: block; width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+    #src { z-index: 1; pointer-events: none; }
+    #out { z-index: 2; clip-path: inset(0 0 0 var(--compare-split)); pointer-events: none; }
+    .compare-tag { position: absolute; z-index: 3; top: 13px; padding: 7px 10px; border: 1px solid rgba(240, 221, 186, 0.24); border-radius: 3px; color: var(--film-text); background: rgba(11, 14, 11, 0.72); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; pointer-events: none; }
+    .compare-tag.before { left: 13px; }
+    .compare-tag.after { right: 13px; }
+    .compare-divider { position: absolute; z-index: 4; top: 0; bottom: 0; left: var(--compare-split); width: 1px; background: rgba(255, 242, 215, 0.95); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 0 18px rgba(255, 242, 215, 0.5); pointer-events: none; }
+    .compare-divider::after { position: absolute; top: 50%; left: 50%; display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(255, 242, 215, 0.8); border-radius: 50%; color: #16140f; background: var(--film-gold-light); content: "↔"; font-size: 16px; transform: translate(-50%, -50%); }
+    .compare-control { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 13px; padding: 13px 4px 1px; color: var(--film-text-muted); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .compare-control input { width: 100%; accent-color: var(--film-gold); }
+    .roll-shell { margin-top: 17px; padding: 15px 17px 17px; border: 1px solid var(--film-border); border-radius: 14px; background: var(--film-base); }
+    .roll-head { display: flex; justify-content: space-between; margin-bottom: 12px; color: var(--film-gold); }
+    .roll-head span { color: var(--film-text-muted); letter-spacing: 0.08em; }
+    .roll { display: flex; gap: 10px; flex-wrap: wrap; }
+    .roll .thumb { position: relative; width: 70px; height: 70px; padding: 3px; overflow: hidden; border: 1px solid var(--film-border); border-radius: 4px; background: #080a08; cursor: pointer; transition: transform 180ms ease, border-color 180ms ease; }
+    .roll .thumb:hover { z-index: 1; transform: translateY(-3px); border-color: var(--film-gold); }
+    .roll .thumb.active { border-color: var(--film-gold); box-shadow: 0 0 0 2px rgba(217, 168, 110, 0.35); }
+    .roll .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .roll .thumb .rm { position: absolute; top: 4px; right: 4px; width: 19px; height: 19px; padding: 0; border: 1px solid rgba(240, 221, 186, 0.35); border-radius: 50%; color: var(--film-text); background: rgba(11, 14, 11, 0.82); font-size: 13px; line-height: 16px; text-align: center; cursor: pointer; }
+    .roll .thumb .rm:hover { color: #15120e; background: var(--film-gold); }
+    .controls { margin-top: 24px; padding: 23px; border: 1px solid var(--film-soft-border); border-radius: 18px; background: linear-gradient(145deg, rgba(255, 245, 220, 0.025), transparent 60%), var(--film-base); box-shadow: 0 18px 55px rgba(0, 0, 0, 0.16); }
+    .controls > h2 { margin: 0 0 5px; color: var(--film-text); font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 400; }
+    .controls > .section-kicker { margin-bottom: 19px; color: var(--film-gold); }
+    .control-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .control-group { min-width: 0; padding: 16px 17px; border: 1px solid var(--film-border); border-radius: 12px; background: rgba(8, 11, 8, 0.28); }
+    .control-group h3 { margin-bottom: 13px; padding-bottom: 10px; border-bottom: 1px solid var(--film-soft-border); color: var(--film-gold); }
+    .row { display: flex; align-items: center; gap: 12px; min-height: 33px; margin: 10px 0; }
+    .row label { flex: 0 0 118px; color: var(--film-text-muted); font-size: 11px; }
+    .row input[type="range"] { flex: 1; min-width: 55px; height: 4px; border-radius: 4px; accent-color: var(--film-gold); background: #393b30; -webkit-appearance: none; appearance: none; }
+    .row input[type="range"]::-webkit-slider-thumb { width: 14px; height: 14px; border: 2px solid #221a11; border-radius: 50%; background: var(--film-gold); box-shadow: 0 0 0 1px var(--film-gold); cursor: pointer; -webkit-appearance: none; }
+    .row input[type="range"]::-moz-range-thumb { width: 11px; height: 11px; border: 2px solid #221a11; border-radius: 50%; background: var(--film-gold); box-shadow: 0 0 0 1px var(--film-gold); cursor: pointer; }
+    .row input[type="range"]:disabled { opacity: 0.35; cursor: not-allowed; }
+    .row .val { flex: 0 0 42px; color: var(--film-gold-light); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; }
+    .tip { position: relative; cursor: help; text-decoration: underline dotted rgba(167, 161, 142, 0.5); text-underline-offset: 3px; }
+    .tip:hover::after { position: absolute; z-index: 10; top: 100%; left: 0; width: 260px; margin-top: 8px; padding: 10px 12px; border: 1px solid var(--film-gold); border-radius: 7px; color: var(--film-text); background: #292e24; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); content: attr(data-tip); font-size: 11px; line-height: 1.55; }
+    .row select, .row input[type="text"], .row input[type="date"] { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--film-border); border-radius: 7px; color: var(--film-text); background: #20251e; font: inherit; font-size: 12px; }
+    .row select:focus, .row input[type="text"]:focus, .row input[type="date"]:focus { border-color: var(--film-gold); outline: none; }
+    .row input[type="checkbox"] { width: 17px; height: 17px; flex: none; accent-color: var(--film-gold); }
+    .export-hint { flex: 1; color: var(--film-text-muted); font-size: 9px; line-height: 1.5; }
+    .presets { display: flex; gap: 7px; flex-wrap: wrap; }
+    .saved-look-tools { display: grid; grid-template-columns: minmax(120px, 1fr) auto; gap: 8px; margin-top: 12px; }
+    .saved-look-tools input, .saved-look-tools select { min-width: 0; padding: 9px 10px; border: 1px solid var(--film-border); border-radius: 5px; color: var(--film-text); background: #20251e; font: inherit; font-size: 10px; }
+    .saved-look-tools select { grid-column: 1 / -1; }
+    .saved-look-actions { display: flex; grid-column: 1 / -1; gap: 7px; }
+    .saved-look-actions button { flex: 1; padding: 9px 10px; font-size: 9px; }
+    .saved-look-status { grid-column: 1 / -1; min-height: 14px; color: var(--film-text-muted); font-size: 9px; }
+    .preset { padding: 8px 12px; border: 1px solid var(--film-border); border-radius: 4px; color: var(--film-text-muted); background: #20251e; cursor: pointer; font: inherit; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 160ms ease; }
+    .preset:hover { border-color: var(--film-gold); color: var(--film-gold-light); }
+    .preset.active { border-color: var(--film-gold); color: #1a1711; background: var(--film-gold); }
+    .btns { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 18px; }
+    button { border: 0; border-radius: 5px; padding: 12px 16px; cursor: pointer; font: inherit; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; transition: transform 160ms ease, background 160ms ease, border-color 160ms ease; }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    .primary { color: #19140e; background: var(--film-gold); box-shadow: inset 0 1px rgba(255, 245, 220, 0.35); }
+    .primary:hover:not(:disabled) { background: var(--film-gold-light); }
+    .ghost { border: 1px solid var(--film-border); color: var(--film-text); background: #20251e; }
+    .ghost:hover:not(:disabled) { border-color: var(--film-gold); color: var(--film-gold-light); }
+    button:disabled { opacity: 0.42; cursor: not-allowed; }
+    .note { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--film-soft-border); color: var(--film-text-muted); font-size: 10px; line-height: 1.7; }
+    .site-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 25px; padding: 14px 2px 0; border-top: 1px solid var(--film-soft-border); color: #777b69; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+    @media (max-width: 760px) {
+      .app { width: min(100% - 30px, 620px); padding-top: 22px; }
+      .masthead { align-items: start; }
+      .header-stamp { display: none; }
+      .control-layout { grid-template-columns: 1fr; }
     }
-    .roll .thumb:hover { 
-      transform: scale(1.05); 
-      box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
-      border-color: var(--film-gold);
+    @media (max-width: 480px) {
+      .app { width: calc(100% - 22px); padding-top: 13px; }
+      header { margin-bottom: 19px; padding-bottom: 19px; }
+      header h1 { font-size: 42px; }
+      header p.sub { font-size: 11px; }
+      .drop { grid-template-columns: 54px 1fr; min-height: 116px; padding: 19px 15px; }
+      .drop::before { width: 42px; height: 42px; font-size: 26px; }
+      .drop .big { font-size: 18px; }
+      .drop .small { font-size: 9px; line-height: 1.6; }
+      .work { padding: 9px; border-radius: 14px; }
+      .pane { padding: 11px; }
+      .pane h2 { font-size: 9px; }
+      .pane h2::after { font-size: 7px; }
+      .compare-control { gap: 7px; font-size: 7px; }
+      .controls { padding: 15px; }
+      .control-group { padding: 13px 11px; }
+      .row { gap: 8px; }
+      .row label { flex-basis: 91px; font-size: 10px; }
+      .row .val { flex-basis: 38px; font-size: 10px; }
+      .btns button { flex: 1 1 145px; }
+      .site-footer { flex-direction: column; gap: 7px; font-size: 8px; }
     }
-    .roll .thumb.active { 
-      border-color: var(--film-gold); 
-      box-shadow: 0 0 0 2px var(--film-gold);
-    }
-    .roll .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .roll .thumb .rm { 
-      position: absolute; 
-      top: 2px; 
-      right: 2px; 
-      width: 18px; 
-      height: 18px; 
-      padding: 0; 
-      border-radius: 50%; 
-      background: rgba(0,0,0,0.8); 
-      color: var(--film-gold-light); 
-      font-size: 12px; 
-      line-height: 18px; 
-      text-align: center; 
-      cursor: pointer;
-    }
-    .roll .thumb .rm:hover { 
-      background: var(--film-gold); 
-      color: #000;
-    }
-    
-    .controls { 
-      margin-top: 20px; 
-      background: var(--film-base); 
-      border: 1px solid var(--film-border); 
-      border-radius: 16px; 
-      padding: 20px;
-    }
-    .controls h2 { 
-      font-size: 12px; 
-      text-transform: uppercase; 
-      letter-spacing: 1.5px; 
-      margin: 0 0 20px;
-      color: var(--film-gold); 
-      padding-bottom: 10px; 
-      border-bottom: 1px solid var(--film-border);
-      font-weight: 600;
-    }
-    
-    .row { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      margin: 12px 0;
-    }
-    .row label { 
-      width: 140px; 
-      color: var(--film-text-muted); 
-      font-size: 12px;
-    }
-    .row input[type="range"] { 
-      flex: 1; 
-      -webkit-appearance: none; 
-      height: 6px; 
-      background: var(--film-warm); 
-      border-radius: 3px; 
-      accent-color: var(--film-gold);
-      outline: none;
-    }
-    .row input[type="range"]::-webkit-slider-thumb { 
-      -webkit-appearance: none; 
-      width: 18px; 
-      height: 18px; 
-      background: var(--film-gold); 
-      border-radius: 50%; 
-      cursor: pointer;
-    }
-    .row .val { 
-      width: 36px; 
-      text-align: right; 
-      color: var(--film-gold-light); 
-      font-variant-numeric: tabular-nums; 
-      background: var(--film-warm); 
-      padding: 2px 6px; 
-      border-radius: 4px; 
-      font-size: 12px;
-    }
-    
-    .tip { 
-      position: relative; 
-      cursor: help; 
-      text-decoration: underline dotted rgba(160, 150, 136, 0.5); 
-      text-underline-offset: 3px;
-    }
-    .tip:hover::after { 
-      content: attr(data-tip); 
-      position: absolute; 
-      left: 0; 
-      top: 100%; 
-      margin-top: 8px; 
-      width: 280px; 
-      background: var(--film-warm); 
-      border: 1px solid var(--film-gold); 
-      color: var(--film-text); 
-      padding: 10px 12px; 
-      border-radius: 8px; 
-      font-size: 12px; 
-      z-index: 100;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-      line-height: 1.5;
-    }
-    
-    .presets { 
-      display: flex; 
-      gap: 8px; 
-      flex-wrap: wrap; 
-      margin-bottom: 16px; 
-      padding: 12px;
-      background: var(--film-brown); 
-      border: 1px solid var(--film-border); 
-      border-radius: 12px;
-    }
-    .preset { 
-      background: var(--film-warm); 
-      color: var(--film-text-muted); 
-      border: 1px solid var(--film-border); 
-      border-radius: 20px; 
-      padding: 8px 16px; 
-      font-size: 12px; 
-      cursor: pointer; 
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .preset:hover { 
-      border-color: var(--film-gold); 
-      color: var(--film-gold-light);
-    }
-    .preset.active { 
-      background: var(--film-gold); 
-      color: #000; 
-      border-color: var(--film-gold);
-    }
-    
-    .btns { 
-      display: flex; 
-      gap: 12px; 
-      flex-wrap: wrap; 
-      margin-top: 20px;
-    }
-    button { 
-      font: inherit; 
-      border: none; 
-      border-radius: 10px; 
-      padding: 12px 20px; 
-      cursor: pointer; 
-      font-weight: 600; 
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 13px;
-    }
-    .primary { 
-      background: var(--film-gold); 
-      color: #000;
-    }
-    .primary:hover { opacity: 0.95; }
-    .ghost { 
-      background: var(--film-warm); 
-      color: var(--film-text); 
-      border: 1px solid var(--film-border);
-    }
-    .ghost:hover { 
-      border-color: var(--film-gold); 
-      color: var(--film-gold-light);
-    }
-    button:disabled { 
-      opacity: 0.4; 
-      cursor: not-allowed;
-    }
-    
-    .row select, .row input[type="text"] { 
-      flex: 1; 
-      background: var(--film-warm); 
-      color: var(--film-text); 
-      border: 1px solid var(--film-border); 
-      border-radius: 8px; 
-      padding: 8px 10px;
-    }
-    .row input[type="checkbox"] { 
-      width: 18px; 
-      height: 18px; 
-      flex: none; 
-      accent-color: var(--film-gold);
-    }
-    
-    .note { 
-      font-size: 12px; 
-      color: #8a7c68; 
-      margin-top: 16px; 
-      line-height: 1.6; 
-      padding: 12px;
-      background: var(--film-brown); 
-      border: 1px solid var(--film-border); 
-      border-radius: 8px;
-      font-style: italic;
-    }
-    
-    @media (max-width: 600px) { 
-      .row label { width: 110px; } 
-      .row .val { width: 32px; } 
-      .btns { gap: 8px; } 
-      button { padding: 10px 14px; font-size: 12px; } 
-      header h1 { font-size: 28px; letter-spacing: 1px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <h1><span class="gold">Analog Film</span> Studio</h1>
-      <p class="sub">Develop photos on classic emulsions. Everything runs locally in your browser.</p>
+      <div class="eyebrow">The analog room / Film processing</div>
+      <div class="masthead">
+        <div>
+          <h1><span class="gold">Analog Film</span> <span class="studio">Studio</span></h1>
+          <p class="sub">A small darkroom for your digital photographs. Choose an emulsion, make a print, and keep every frame local to your browser.</p>
+        </div>
+        <div class="header-stamp">LOCAL DEVELOPMENT<br />35 MM COLOR LAB</div>
+      </div>
     </header>
     
     <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose photos to develop">
@@ -351,112 +256,172 @@
     
     <div class="work" id="work" style="display:none">
       <div class="pane">
-        <h2>Original</h2>
-        <canvas id="src"></canvas>
-      </div>
-      <div class="pane">
         <h2 id="stockLabel">Kodak Gold 200</h2>
-        <canvas id="out"></canvas>
+        <div class="compare-stage" id="compareStage">
+          <canvas id="src" aria-label="Original photo"></canvas>
+          <canvas id="out" aria-label="Developed photo"></canvas>
+          <span class="compare-tag before">Original</span>
+          <span class="compare-tag after">Developed</span>
+          <span class="compare-divider" aria-hidden="true"></span>
+        </div>
+        <div class="compare-control">
+          <span>Original</span>
+          <input type="range" id="compareSlider" min="0" max="100" value="50" aria-label="Compare original and developed photo" />
+          <span>Developed</span>
+        </div>
       </div>
     </div>
     
-    <div class="roll" id="rollStrip" style="display:none"></div>
+    <div class="roll-shell" id="rollShell" style="display:none">
+      <div class="roll-head">Contact sheet <span id="rollCount">0 frames</span></div>
+      <div class="roll" id="rollStrip"></div>
+    </div>
     
     <div class="controls" id="controls" style="display:none">
-      <h2>Film development controls</h2>
+      <h2>Developing bench</h2>
+      <div class="section-kicker">Color negative / custom print</div>
+      <div class="control-layout">
+        <section class="control-group">
+          <h3>01 / Emulsion</h3>
+          <div class="row">
+            <label for="stock">Film stock</label>
+            <select id="stock">
+              <option value="gold" selected>Kodak Gold 200</option>
+              <option value="portra">Kodak Portra 400</option>
+              <option value="ektar">Kodak Ektar 100</option>
+              <option value="cinestill">CineStill 800T</option>
+              <option value="superia">Fuji Superia 400</option>
+            </select>
+          </div>
+          <div class="presets" id="presets">
+            <div class="preset" data-p="natural">Natural</div>
+            <div class="preset" data-p="vibrant">Vibrant</div>
+            <div class="preset" data-p="muted">Muted</div>
+            <div class="preset" data-p="vintage">Vintage</div>
+          </div>
+          <div class="saved-look-tools">
+            <input id="lookName" type="text" maxlength="32" placeholder="Name this look" aria-label="Name this look" />
+            <button class="ghost" id="saveLook" type="button">Save look</button>
+            <select id="savedLooks" aria-label="Saved looks">
+              <option value="">Saved looks</option>
+            </select>
+            <div class="saved-look-actions">
+              <button class="ghost" id="loadLook" type="button" disabled>Apply</button>
+              <button class="ghost" id="deleteLook" type="button" disabled>Delete</button>
+            </div>
+            <span class="saved-look-status" id="savedLookStatus" role="status" aria-live="polite"></span>
+          </div>
+        </section>
 
-      <div class="row">
-        <label>Film stock</label>
-        <select id="stock">
-          <option value="gold" selected>Kodak Gold 200</option>
-          <option value="portra">Kodak Portra 400</option>
-          <option value="ektar">Kodak Ektar 100</option>
-          <option value="cinestill">CineStill 800T</option>
-          <option value="superia">Fuji Superia 400</option>
-        </select>
-      </div>
-      
-      <div class="presets" id="presets">
-        <div class="preset" data-p="natural">Natural</div>
-        <div class="preset" data-p="vibrant">Vibrant</div>
-        <div class="preset" data-p="muted">Muted</div>
-        <div class="preset" data-p="vintage">Vintage</div>
-      </div>
+        <section class="control-group">
+          <h3>02 / Tone &amp; color</h3>
+          <div class="row">
+            <label class="tip" for="warmth" data-tip="Subtle warmth. Gold 200 has a slight warm cast.">Warmth</label>
+            <input type="range" id="warmth" min="-10" max="10" value="0" />
+            <span class="val" id="warmthV">0</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="exposure" data-tip="Exposure compensation in stops. Use this to correct a bright or dark source before adding the film look.">Exposure</label>
+            <input type="range" id="exposure" min="-10" max="10" value="0" />
+            <span class="val" id="exposureV">0.0 EV</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="contrast" data-tip="Film contrast curve. Higher = more punchy, lower = flatter.">Contrast</label>
+            <input type="range" id="contrast" min="-10" max="10" value="2" />
+            <span class="val" id="contrastV">2</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="fade" data-tip="Lifts shadows like film base + fog.">Faded blacks</label>
+            <input type="range" id="fade" min="0" max="10" value="1" />
+            <span class="val" id="fadeV">1</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="sat" data-tip="Overall color intensity.">Saturation</label>
+            <input type="range" id="sat" min="-10" max="10" value="-1" />
+            <span class="val" id="satV">-1</span>
+          </div>
+        </section>
 
-      <div class="row">
-        <label class="tip" data-tip="Subtle warmth. Gold 200 has a slight warm cast.">Warmth</label>
-        <input type="range" id="warmth" min="-10" max="10" value="0" />
-        <span class="val" id="warmthV">0</span>
-      </div>
+        <section class="control-group">
+          <h3>03 / Film character</h3>
+          <div class="row">
+            <label class="tip" for="halation" data-tip="Soft glow from bright areas. Most visible in CineStill 800T.">Halation</label>
+            <input type="range" id="halation" min="0" max="10" value="0" />
+            <span class="val" id="halationV">0</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="lightLeak" data-tip="Optional warm light leak near the edge of the frame. Keep it subtle for a natural result.">Light leak</label>
+            <input type="range" id="lightLeak" min="0" max="10" value="0" />
+            <span class="val" id="lightLeakV">0</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="grain" data-tip="Organic multi-scale grain. Raise it for a more pronounced scanned-negative texture.">Grain</label>
+            <input type="range" id="grain" min="0" max="10" value="4" />
+            <span class="val" id="grainV">4</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="grainSize" data-tip="Fine grain looks like a slow, finely scanned film. Larger grain gives a rougher, faster-film texture.">Grain size</label>
+            <input type="range" id="grainSize" min="0" max="10" value="4" />
+            <span class="val" id="grainSizeV">4</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="dust" data-tip="Physical wear: dust and scratches.">Dust &amp; scratches</label>
+            <input type="range" id="dust" min="0" max="10" value="0" />
+            <span class="val" id="dustV">0</span>
+          </div>
+          <div class="row">
+            <label class="tip" for="vignette" data-tip="Darkens corners like old lens falloff.">Vignette</label>
+            <input type="range" id="vignette" min="0" max="10" value="1" />
+            <span class="val" id="vignetteV">1</span>
+          </div>
+        </section>
 
-      <div class="row">
-        <label class="tip" data-tip="Exposure compensation in stops. Use this to correct a bright or dark source before adding the film look.">Exposure</label>
-        <input type="range" id="exposure" min="-10" max="10" value="0" />
-        <span class="val" id="exposureV">0.0 EV</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Film contrast curve. Higher = more punchy, lower = flatter.">Contrast</label>
-        <input type="range" id="contrast" min="-10" max="10" value="2" />
-        <span class="val" id="contrastV">2</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Lifts shadows like film base + fog.">Faded blacks</label>
-        <input type="range" id="fade" min="0" max="10" value="1" />
-        <span class="val" id="fadeV">1</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Overall color intensity.">Saturation</label>
-        <input type="range" id="sat" min="-10" max="10" value="-1" />
-        <span class="val" id="satV">-1</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Soft glow from bright areas. Most visible in CineStill 800T.">Halation</label>
-        <input type="range" id="halation" min="0" max="10" value="0" />
-        <span class="val" id="halationV">0</span>
-      </div>
-
-      <div class="row">
-        <label class="tip" data-tip="Optional warm light leak near the edge of the frame. Keep it subtle for a natural result.">Light leak</label>
-        <input type="range" id="lightLeak" min="0" max="10" value="0" />
-        <span class="val" id="lightLeakV">0</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Film grain texture. Most visible in midtones.">Grain</label>
-        <input type="range" id="grain" min="0" max="10" value="4" />
-        <span class="val" id="grainV">4</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Physical wear: dust, scratches.">Dust &amp; scratches</label>
-        <input type="range" id="dust" min="0" max="10" value="0" />
-        <span class="val" id="dustV">0</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Darkens corners like old lens falloff.">Vignette</label>
-        <input type="range" id="vignette" min="0" max="10" value="1" />
-        <span class="val" id="vignetteV">1</span>
-      </div>
-
-      <div class="row">
-        <label class="tip" data-tip="Adds a 35mm film-strip border with sprocket holes.">35mm film frame</label>
-        <input type="checkbox" id="frame" checked />
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Date stamp in corner. Leave empty for none.">Date stamp</label>
-        <input type="text" id="datetext" maxlength="24" placeholder="e.g. 98 24 12" />
-      </div>
-
-      <div class="row" style="margin-top:18px">
-        <label style="width:auto">Full-resolution export</label>
-        <input type="checkbox" id="fullres" />
-        <span style="font-size:12px;color:#8a7c68;">Develops the original file — takes a few extra seconds</span>
+        <section class="control-group">
+          <h3>04 / Print &amp; export</h3>
+          <div class="row">
+            <label class="tip" for="cropRatio" data-tip="Applies a centered crop. The selected ratio is used in the comparison, preview, and export.">Crop / aspect</label>
+            <select id="cropRatio">
+              <option value="original">Original</option>
+              <option value="1:1">Square · 1:1</option>
+              <option value="4:5">Portrait · 4:5</option>
+              <option value="3:2">Classic · 3:2</option>
+              <option value="16:9">Wide · 16:9</option>
+            </select>
+          </div>
+          <div class="row">
+            <label class="tip" for="frame" data-tip="Adds a 35mm film-strip border with sprocket holes.">35mm film frame</label>
+            <input type="checkbox" id="frame" checked />
+          </div>
+          <div class="row">
+            <label class="tip" for="datetext" data-tip="Choose a date for a small orange-red camera imprint. Leave empty for no stamp.">Camera date</label>
+            <input type="date" id="datetext" />
+          </div>
+          <div class="row">
+            <label for="dateFormat">Date order</label>
+            <select id="dateFormat">
+              <option value="yy.mm.dd" selected>Year · month · day</option>
+              <option value="mm.dd.yy">Month · day · year</option>
+              <option value="dd.mm.yy">Day · month · year</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="exportFormat">Export format</label>
+            <select id="exportFormat">
+              <option value="image/jpeg" selected>JPEG</option>
+              <option value="image/png">PNG · lossless</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="exportQuality">JPEG quality</label>
+            <input type="range" id="exportQuality" min="50" max="100" value="92" />
+            <span class="val" id="exportQualityV">92%</span>
+          </div>
+          <div class="row">
+            <label for="fullres">Full-resolution export</label>
+            <input type="checkbox" id="fullres" />
+            <span class="export-hint">Develops the original file. Takes a few extra seconds.</span>
+          </div>
+        </section>
       </div>
       
       <div class="btns">
@@ -466,8 +431,12 @@
         <button class="ghost" id="newPhoto">Add photos to roll</button>
       </div>
       
-      <p class="note">Tip: start with low values. Film looks natural, not extreme.</p>
+      <p class="note">For a natural print, start with the stock defaults and adjust exposure before adding character effects.</p>
     </div>
+    <footer class="site-footer">
+      <span>Analog Room / Color negative department</span>
+      <span>Exposed locally · Printed in your browser</span>
+    </footer>
   </div>
 
   <script>
@@ -493,7 +462,7 @@
         toe: [0.95, 0.95, 0.7], shoulder: [0.92, 0.88, 0.75],
         hal: [1, 0.5, 0.3], halBoost: 0.6,
         grain: 1.0,
-        base: { warmth: 0, exposure: 0, contrast: 2, fade: 1, sat: -1, halation: 0, lightLeak: 0, grain: 4, dust: 0, vignette: 1 }
+        base: { warmth: 0, exposure: 0, contrast: 2, fade: 1, sat: -1, halation: 0, lightLeak: 0, grain: 4, grainSize: 4, dust: 0, vignette: 1 }
       },
       portra: {
         label: "Kodak Portra 400",
@@ -504,7 +473,7 @@
         toe: [0.85, 0.85, 0.85], shoulder: [0.96, 0.94, 0.92],
         hal: [1, 0.6, 0.5], halBoost: 0.4,
         grain: 0.65,
-        base: { warmth: -1, exposure: 0, contrast: 0, fade: 2, sat: -2, halation: 0, lightLeak: 0, grain: 3, dust: 0, vignette: 0 }
+        base: { warmth: -1, exposure: 0, contrast: 0, fade: 2, sat: -2, halation: 0, lightLeak: 0, grain: 3, grainSize: 3, dust: 0, vignette: 0 }
       },
       ektar: {
         label: "Kodak Ektar 100",
@@ -515,7 +484,7 @@
         toe: [0.8, 0.8, 0.8], shoulder: [0.85, 0.88, 0.85],
         hal: [1, 0.4, 0.35], halBoost: 0.3,
         grain: 0.3,
-        base: { warmth: 0, exposure: 0, contrast: 3, fade: 0, sat: 2, halation: 0, lightLeak: 0, grain: 2, dust: 0, vignette: 0 }
+        base: { warmth: 0, exposure: 0, contrast: 3, fade: 0, sat: 2, halation: 0, lightLeak: 0, grain: 2, grainSize: 2, dust: 0, vignette: 0 }
       },
       cinestill: {
         label: "CineStill 800T",
@@ -526,7 +495,7 @@
         toe: [0.7, 0.8, 1.1], shoulder: [0.85, 0.83, 0.8],
         hal: [1, 0.15, 0.1], halBoost: 1.8,
         grain: 1.2,
-        base: { warmth: 0, exposure: 0, contrast: 1, fade: 2, sat: 0, halation: 2, lightLeak: 1, grain: 3, dust: 0, vignette: 1 }
+        base: { warmth: 0, exposure: 0, contrast: 1, fade: 2, sat: 0, halation: 2, lightLeak: 1, grain: 3, grainSize: 6, dust: 0, vignette: 1 }
       },
       superia: {
         label: "Fuji Superia 400",
@@ -537,7 +506,7 @@
         toe: [0.95, 1.0, 1.0], shoulder: [0.88, 0.85, 0.82],
         hal: [1, 0.45, 0.38], halBoost: 0.5,
         grain: 0.8,
-        base: { warmth: 1, exposure: 0, contrast: 2, fade: 1, sat: 0, halation: 0, lightLeak: 0, grain: 3, dust: 0, vignette: 0 }
+        base: { warmth: 1, exposure: 0, contrast: 2, fade: 1, sat: 0, halation: 0, lightLeak: 0, grain: 3, grainSize: 5, dust: 0, vignette: 0 }
       }
     };
 
@@ -548,7 +517,7 @@
       vintage: { warmth: 1, exposure: 0, contrast: 0, fade: 2, sat: -1, halation: 0, lightLeak: 2, grain: 0, dust: 1, vignette: 1 }
     };
 
-    var sliders = ["warmth", "exposure", "contrast", "fade", "sat", "halation", "lightLeak", "grain", "dust", "vignette"];
+    var sliders = ["warmth", "exposure", "contrast", "fade", "sat", "halation", "lightLeak", "grain", "grainSize", "dust", "vignette"];
 
     function getParams() {
       var p = {};
@@ -557,6 +526,7 @@
       });
       p.frame = document.getElementById("frame").checked;
       p.dateText = document.getElementById("datetext").value.trim();
+      p.dateFormat = document.getElementById("dateFormat").value;
       return p;
     }
 
@@ -609,8 +579,136 @@
       document.querySelectorAll(".preset").forEach(function (p) { p.classList.remove("active"); });
     }
 
+    var savedLooksKey = "analog-film-studio:looks:v1";
+    function readSavedLooks() {
+      try {
+        var looks = JSON.parse(localStorage.getItem(savedLooksKey) || "[]");
+        return Array.isArray(looks) ? looks : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function refreshSavedLooks() {
+      var select = document.getElementById("savedLooks");
+      var looks = readSavedLooks();
+      select.innerHTML = "";
+      var placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = looks.length ? "Choose a saved look" : "No saved looks yet";
+      select.appendChild(placeholder);
+      looks.forEach(function (look, i) {
+        var option = document.createElement("option");
+        option.value = String(i);
+        option.textContent = look.name;
+        select.appendChild(option);
+      });
+      updateSavedLookButtons();
+    }
+
+    function selectedSavedLookIndex() {
+      var value = document.getElementById("savedLooks").value;
+      return value === "" ? -1 : parseInt(value, 10);
+    }
+
+    function updateSavedLookButtons() {
+      var disabled = selectedSavedLookIndex() < 0;
+      document.getElementById("loadLook").disabled = disabled;
+      document.getElementById("deleteLook").disabled = disabled;
+    }
+
+    document.getElementById("saveLook").addEventListener("click", function () {
+      var nameInput = document.getElementById("lookName");
+      var name = nameInput.value.trim();
+      var status = document.getElementById("savedLookStatus");
+      if (!name) {
+        status.textContent = "Give this look a name first.";
+        nameInput.focus();
+        return;
+      }
+      var looks = readSavedLooks();
+      var look = {
+        name: name,
+        stock: currentStock,
+        params: getParams(),
+        cropRatio: document.getElementById("cropRatio").value
+      };
+      var existing = looks.findIndex(function (saved) { return saved.name.toLowerCase() === name.toLowerCase(); });
+      if (existing >= 0) looks[existing] = look;
+      else looks.push(look);
+      try {
+        localStorage.setItem(savedLooksKey, JSON.stringify(looks));
+        refreshSavedLooks();
+        document.getElementById("savedLooks").value = String(existing >= 0 ? existing : looks.length - 1);
+        updateSavedLookButtons();
+        status.textContent = existing >= 0 ? "Saved look updated." : "Look saved in this browser.";
+      } catch (e) {
+        status.textContent = "Could not save. Browser storage may be unavailable.";
+      }
+    });
+
+    document.getElementById("loadLook").addEventListener("click", function () {
+      var i = selectedSavedLookIndex();
+      var looks = readSavedLooks();
+      if (i < 0 || !looks[i]) return;
+      var look = looks[i];
+      currentStock = stocks[look.stock] ? look.stock : "gold";
+      document.getElementById("stock").value = currentStock;
+      document.getElementById("stockLabel").textContent = stocks[currentStock].label;
+      setUI(look.params);
+      document.getElementById("frame").checked = !!look.params.frame;
+      document.getElementById("datetext").value = look.params.dateText || "";
+      document.getElementById("dateFormat").value = look.params.dateFormat || "yy.mm.dd";
+      document.getElementById("cropRatio").value = look.cropRatio || "original";
+      document.getElementById("savedLookStatus").textContent = "Look applied.";
+      clearPresets();
+      if (img) showPhoto(active);
+    });
+
+    document.getElementById("deleteLook").addEventListener("click", function () {
+      var i = selectedSavedLookIndex();
+      var looks = readSavedLooks();
+      if (i < 0 || !looks[i]) return;
+      looks.splice(i, 1);
+      try {
+        localStorage.setItem(savedLooksKey, JSON.stringify(looks));
+        refreshSavedLooks();
+        document.getElementById("savedLookStatus").textContent = "Saved look deleted.";
+      } catch (e) {
+        document.getElementById("savedLookStatus").textContent = "Could not update browser storage.";
+      }
+    });
+    document.getElementById("savedLooks").addEventListener("change", function () {
+      updateSavedLookButtons();
+    });
+    refreshSavedLooks();
+
     document.getElementById("frame").addEventListener("change", scheduleRender);
     document.getElementById("datetext").addEventListener("input", scheduleRender);
+    document.getElementById("dateFormat").addEventListener("change", scheduleRender);
+    document.getElementById("compareSlider").addEventListener("input", updateCompareSplit);
+    var compareStage = document.getElementById("compareStage");
+    var compareDragging = false;
+    compareStage.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      compareDragging = true;
+      compareStage.setPointerCapture(e.pointerId);
+      updateCompareFromPointer(e);
+    });
+    compareStage.addEventListener("pointermove", function (e) {
+      if (compareDragging) updateCompareFromPointer(e);
+    });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (eventName) {
+      compareStage.addEventListener(eventName, function () { compareDragging = false; });
+    });
+    document.getElementById("cropRatio").addEventListener("change", function () {
+      if (img) showPhoto(active);
+    });
+    document.getElementById("exportQuality").addEventListener("input", function () {
+      document.getElementById("exportQualityV").textContent = this.value + "%";
+    });
+    document.getElementById("exportFormat").addEventListener("change", updateExportQualityState);
+    updateExportQualityState();
 
     var drop = document.getElementById("drop");
     var fileInput = document.getElementById("file");
@@ -706,15 +804,66 @@
       active = i;
       img = roll[i].img;
       photoSeed = roll[i].seed;
-      var scale = Math.min(1, MAX / Math.max(img.width, img.height));
-      var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-      srcCanvas.width = outCanvas.width = w;
-      srcCanvas.height = outCanvas.height = h;
-      srcCtx.drawImage(img, 0, 0, w, h);
-      document.getElementById("work").style.display = "grid";
+      drawCroppedPhoto(img, srcCanvas, MAX);
+      outCanvas.width = srcCanvas.width;
+      outCanvas.height = srcCanvas.height;
+      document.getElementById("work").style.display = "block";
       document.getElementById("controls").style.display = "block";
       buildThumbs();
       render();
+    }
+
+    function getCropRect(im, choice) {
+      var iw = im.naturalWidth || im.width;
+      var ih = im.naturalHeight || im.height;
+      var parts = (choice || document.getElementById("cropRatio").value).split(":");
+      if (parts.length !== 2) return { x: 0, y: 0, width: iw, height: ih };
+      var targetRatio = parseFloat(parts[0]) / parseFloat(parts[1]);
+      if (!isFinite(targetRatio) || targetRatio <= 0) return { x: 0, y: 0, width: iw, height: ih };
+      var imageRatio = iw / ih;
+      if (imageRatio > targetRatio) {
+        var cropWidth = ih * targetRatio;
+        return { x: (iw - cropWidth) / 2, y: 0, width: cropWidth, height: ih };
+      }
+      var cropHeight = iw / targetRatio;
+      return { x: 0, y: (ih - cropHeight) / 2, width: iw, height: cropHeight };
+    }
+
+    function drawCroppedPhoto(im, canvas, maxDimension, cropChoice) {
+      var crop = getCropRect(im, cropChoice);
+      var scale = maxDimension ? Math.min(1, maxDimension / Math.max(crop.width, crop.height)) : 1;
+      var w = Math.max(1, Math.round(crop.width * scale));
+      var h = Math.max(1, Math.round(crop.height * scale));
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(im, crop.x, crop.y, crop.width, crop.height, 0, 0, w, h);
+      return { width: w, height: h };
+    }
+
+    function updateCompareSplit() {
+      var value = document.getElementById("compareSlider").value;
+      document.getElementById("compareStage").style.setProperty("--compare-split", value + "%");
+    }
+
+    function updateCompareFromPointer(e) {
+      var bounds = compareStage.getBoundingClientRect();
+      var position = Math.max(0, Math.min(1, (e.clientX - bounds.left) / bounds.width));
+      document.getElementById("compareSlider").value = String(Math.round(position * 100));
+      updateCompareSplit();
+    }
+
+    function updateCompareLayout() {
+      if (!srcCanvas.width || !outCanvas.width) return;
+      var stage = document.getElementById("compareStage");
+      var framed = outCanvas.width !== srcCanvas.width || outCanvas.height !== srcCanvas.height;
+      var mx = framed ? Math.round(srcCanvas.width * 0.035) : 0;
+      var mt = framed ? Math.round(srcCanvas.height * 0.12) : 0;
+      stage.style.aspectRatio = outCanvas.width + " / " + outCanvas.height;
+      srcCanvas.style.left = (mx / outCanvas.width * 100) + "%";
+      srcCanvas.style.top = (mt / outCanvas.height * 100) + "%";
+      srcCanvas.style.width = (srcCanvas.width / outCanvas.width * 100) + "%";
+      srcCanvas.style.height = (srcCanvas.height / outCanvas.height * 100) + "%";
+      updateCompareSplit();
     }
 
     function rollEmpty() {
@@ -728,7 +877,9 @@
     function buildThumbs() {
       var strip = document.getElementById("rollStrip");
       strip.innerHTML = "";
-      strip.style.display = roll.length ? "flex" : "none";
+      strip.style.display = "flex";
+      document.getElementById("rollShell").style.display = roll.length ? "block" : "none";
+      document.getElementById("rollCount").textContent = roll.length + (roll.length === 1 ? " frame" : " frames");
       roll.forEach(function (entry, i) {
         var b = document.createElement("button");
         b.className = "thumb" + (i === active ? " active" : "");
@@ -770,16 +921,18 @@
       if (!img) return;
       frameNo = roll[active] ? roll[active].no : 1;
       developTo(outCtx, srcCtx, srcCanvas.width, srcCanvas.height, getParams());
+      updateCompareLayout();
     }
 
-    function developTo(destCtx, sourceCtx, w, h, p) {
+    function developTo(destCtx, sourceCtx, w, h, p, stockOverride) {
       outCtx = destCtx;
       if (destCtx.canvas.width !== w) destCtx.canvas.width = w;
       if (destCtx.canvas.height !== h) destCtx.canvas.height = h;
 
       var data = sourceCtx.getImageData(0, 0, w, h);
       var px = data.data;
-      var st = stocks[currentStock] || stocks.gold;
+      var stockKey = stocks[stockOverride] ? stockOverride : currentStock;
+      var st = stocks[stockKey] || stocks.gold;
       
       var warmth = p.warmth / 10;
       var exposure = Math.pow(2, p.exposure / 10);
@@ -838,10 +991,10 @@
 
       if (p.halation > 0) halation(halationAmt * st.halBoost * 0.4, w, h, st.hal);
       if (p.lightLeak > 0) lightLeak(lightLeakAmt, w, h);
-      if (p.grain > 0) grain(grainAmt * st.grain * 1.5, w, h);
+      if (p.grain > 0) grain(grainAmt * st.grain * 1.5, w, h, p.grainSize);
       if (p.dust > 0) imperfections(dustAmt * 0.4, w, h);
       if (p.vignette > 0) vignette(vignetteAmt * 0.4, w, h);
-      if (p.dateText) stampDate(destCtx, w, h, p.dateText);
+      if (p.dateText) stampDate(destCtx, w, h, p.dateText, p.dateFormat);
       if (p.frame) applyFrame(destCtx, st.label);
       
       outCtx = previewCtx;
@@ -952,15 +1105,16 @@
       };
     }
 
-    function grain(amt, w, h) {
+    function grain(amt, w, h, size) {
       if (amt <= 0.001) return;
       var strength = amt * 48;
+      var sizeScale = 0.55 + (size / 10) * 1.5;
       var rand = prng(0x9e3779b9 ^ photoSeed);
       var data = outCtx.getImageData(0, 0, w, h);
       var px = data.data;
-      var o1 = noiseLattice(Math.max(3, Math.round(w / 28)), Math.max(3, Math.round(h / 28)), rand);
-      var o2 = noiseLattice(Math.max(4, Math.round(w / 9)), Math.max(4, Math.round(h / 9)), rand);
-      var o3 = noiseLattice(Math.max(6, Math.round(w / 2.5)), Math.max(6, Math.round(h / 2.5)), rand);
+      var o1 = noiseLattice(Math.max(3, Math.round(w / (28 * sizeScale))), Math.max(3, Math.round(h / (28 * sizeScale))), rand);
+      var o2 = noiseLattice(Math.max(4, Math.round(w / (9 * sizeScale))), Math.max(4, Math.round(h / (9 * sizeScale))), rand);
+      var o3 = noiseLattice(Math.max(6, Math.round(w / (2.5 * sizeScale))), Math.max(6, Math.round(h / (2.5 * sizeScale))), rand);
       for (var y = 0; y < h; y++) {
         var fy = y / h;
         for (var x = 0; x < w; x++) {
@@ -1044,66 +1198,89 @@
       outCtx.restore();
     }
 
-    function stampDate(ctx, w, h, text) {
-      if (!text) return;
-      var fs = Math.max(12, Math.round(h * 0.034));
+    function stampDate(ctx, w, h, value, format) {
+      if (!value) return;
+      var match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      var text = value;
+      if (match) {
+        var yy = match[1].slice(-2), mm = match[2], dd = match[3];
+        var dateParts = { "yy.mm.dd": [yy, mm, dd], "mm.dd.yy": [mm, dd, yy], "dd.mm.yy": [dd, mm, yy] };
+        text = (dateParts[format] || dateParts["yy.mm.dd"]).join(".");
+      }
+      var fs = Math.max(11, Math.round(h * 0.027));
+      var x = w - Math.round(w * 0.027);
+      var y = h - Math.round(h * 0.026);
       ctx.save();
-      ctx.font = "700 " + fs + "px 'Courier New', monospace";
+      ctx.globalCompositeOperation = "screen";
+      ctx.globalAlpha = 0.86;
+      ctx.font = "600 " + fs + "px 'DM Mono', 'Courier New', monospace";
       ctx.textAlign = "right";
-      var x = w - Math.round(w * 0.035);
-      var y = h - Math.round(h * 0.035);
-      ctx.fillStyle = "rgba(0,0,0,0.7)";
-      ctx.fillText(text, x + fs * 0.05 + 2, y + fs * 0.05 + 2);
-      ctx.fillStyle = "#ffb648";
+      ctx.textBaseline = "alphabetic";
+      ctx.shadowColor = "rgba(236, 77, 35, 0.58)";
+      ctx.shadowBlur = fs * 0.18;
+      ctx.fillStyle = "#ff874d";
       ctx.fillText(text, x, y);
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = "#ffe0b5";
+      ctx.fillText(text, x, y - Math.max(1, fs * 0.035));
       ctx.restore();
     }
 
     function applyFrame(ctx, stockLabel) {
       var src = ctx.canvas;
       var w = src.width, h = src.height;
-      var mx = Math.round(w * 0.035);
-      var mt = Math.round(h * 0.12);
+      var mx = Math.max(6, Math.round(w * 0.025));
+      var mt = Math.max(8, Math.round(h * 0.115));
       var fw = w + mx * 2, fh = h + mt * 2;
       var c = document.createElement("canvas");
       c.width = fw; c.height = fh;
       var g = c.getContext("2d");
-      g.fillStyle = "#0f0c08";
+      g.fillStyle = "#17150f";
       g.fillRect(0, 0, fw, fh);
       var frand = prng(0x51a3b7 ^ photoSeed);
       for (var i = 0; i < fw / 6; i++) {
-        g.fillStyle = "rgba(255,240,210," + (frand() * 0.02).toFixed(3) + ")";
+        g.fillStyle = "rgba(239,205,151," + (frand() * 0.026).toFixed(3) + ")";
         g.fillRect(frand() * fw, 0, 1, fh);
       }
-      var holeW = Math.max(5, Math.round(fw * 0.022));
-      var holeH = Math.max(4, Math.round(mt * 0.35));
-      var rr = Math.min(holeW, holeH) * 0.35;
-      var count = Math.floor(fw / (holeW * 1.4));
-      if (count < 4) count = 4;
-      var pad = Math.round(holeW * 0.8);
+      g.fillStyle = "rgba(216, 168, 105, 0.07)";
+      g.fillRect(0, 0, fw, mt);
+      g.fillRect(0, fh - mt, fw, mt);
+
+      // Eight rounded perforations per frame, with a thin warm film edge.
+      var holeW = Math.max(7, Math.round(fw * 0.055));
+      var holeH = Math.max(5, Math.round(mt * 0.4));
+      var rr = Math.min(holeW, holeH) * 0.22;
+      var count = Math.max(3, Math.min(8, Math.round(w / 90)));
+      var pad = Math.round(holeW * 0.72);
       var step = (fw - pad * 2 - holeW) / (count - 1);
-      g.fillStyle = "#040302";
+      var topHoleY = mt * 0.43 - holeH / 2;
+      var bottomHoleY = fh - mt * 0.43 - holeH / 2;
       for (var k = 0; k < count; k++) {
         var hx = pad + step * k;
-        roundRectPath(g, hx, mt * 0.45 - holeH / 2, holeW, holeH, rr);
-        g.fill();
-        roundRectPath(g, hx, fh - mt * 0.45 - holeH / 2, holeW, holeH, rr);
-        g.fill();
+        [topHoleY, bottomHoleY].forEach(function (hy) {
+          g.fillStyle = "rgba(226, 183, 123, 0.5)";
+          roundRectPath(g, hx, hy, holeW, holeH, rr);
+          g.fill();
+          g.fillStyle = "#070806";
+          roundRectPath(g, hx + 1.5, hy + 1.5, holeW - 3, holeH - 3, Math.max(1, rr - 1));
+          g.fill();
+        });
       }
-      var fsEdge = Math.max(8, Math.round(mt * 0.28));
-      g.font = "600 " + fsEdge + "px 'Courier New', monospace";
-      g.fillStyle = "#d4a574";
-      g.globalAlpha = 0.85;
-      g.textBaseline = "middle";
+      var fsEdge = Math.max(8, Math.round(mt * 0.22));
+      g.font = "500 " + fsEdge + "px 'DM Mono', 'Courier New', monospace";
+      g.fillStyle = "rgba(226, 184, 125, 0.82)";
+      g.textBaseline = "alphabetic";
       g.textAlign = "left";
-      g.fillText((stockLabel + "  " + frameNo + "A").toUpperCase(), mx, fh - mt * 0.42);
+      g.fillText((stockLabel + "   " + String(frameNo).padStart(2, "0") + "A").toUpperCase(), mx, fh - mt * 0.78);
       g.textAlign = "right";
-      g.fillText(frameNo + "A \u25B8", fw - mx, mt * 0.42);
-      g.globalAlpha = 1;
+      g.fillText("COLOR NEGATIVE   /   36 EXP", fw - mx, mt * 0.22);
       g.drawImage(src, mx, mt, w, h);
-      g.strokeStyle = "rgba(255,235,200,0.15)";
-      g.lineWidth = Math.max(1, Math.round(h / 800));
+      g.strokeStyle = "rgba(255, 235, 200, 0.24)";
+      g.lineWidth = Math.max(1, Math.round(h / 1200));
       g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
+      g.strokeStyle = "rgba(0, 0, 0, 0.46)";
+      g.strokeRect(mx - 1.5, mt - 1.5, w + 3, h + 3);
       src.width = fw;
       src.height = fh;
       ctx.drawImage(c, 0, 0);
@@ -1119,11 +1296,28 @@
       g.closePath();
     }
 
-    function frameName(entry) {
-      return currentStock + "-" + (entry ? entry.name : "film") + ".jpg";
+    function getExportSettings() {
+      var mime = document.getElementById("exportFormat").value;
+      return {
+        mime: mime,
+        extension: mime === "image/png" ? "png" : "jpg",
+        quality: parseInt(document.getElementById("exportQuality").value, 10) / 100
+      };
+    }
+
+    function updateExportQualityState() {
+      var isJpeg = document.getElementById("exportFormat").value === "image/jpeg";
+      document.getElementById("exportQuality").disabled = !isJpeg;
+      document.getElementById("exportQualityV").textContent = document.getElementById("exportQuality").value + "%";
+    }
+
+    function frameName(entry, settings, stockKey) {
+      settings = settings || getExportSettings();
+      return (stockKey || currentStock) + "-" + (entry ? entry.name : "film") + "." + settings.extension;
     }
     
     function saveBlob(blob, name) {
+      if (!blob) return;
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = name || frameName(roll[active]);
@@ -1134,22 +1328,27 @@
     document.getElementById("download").addEventListener("click", function () {
       if (!img) return;
       var btn = this;
+      var settings = getExportSettings();
+      var stockKey = currentStock;
+      var entry = roll[active];
       if (!document.getElementById("fullres").checked) {
-        outCanvas.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
+        outCanvas.toBlob(function (b) { saveBlob(b, frameName(entry, settings, stockKey)); }, settings.mime, settings.quality);
         return;
       }
+      var currentImage = img;
+      var p = getParams();
+      var cropChoice = document.getElementById("cropRatio").value;
       btn.disabled = true;
       btn.textContent = "Developing full resolution…";
       setTimeout(function () {
         try {
-          var w = img.naturalWidth, h = img.naturalHeight;
           var fullSrc = document.createElement("canvas");
-          fullSrc.width = w; fullSrc.height = h;
-          fullSrc.getContext("2d").drawImage(img, 0, 0);
+          drawCroppedPhoto(currentImage, fullSrc, 0, cropChoice);
+          var w = fullSrc.width, h = fullSrc.height;
           var fullOut = document.createElement("canvas");
           fullOut.width = w; fullOut.height = h;
-          developTo(fullOut.getContext("2d"), fullSrc.getContext("2d"), w, h, getParams());
-          fullOut.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
+          developTo(fullOut.getContext("2d"), fullSrc.getContext("2d"), w, h, p, stockKey);
+          fullOut.toBlob(function (b) { saveBlob(b, frameName(entry, settings, stockKey)); }, settings.mime, settings.quality);
         } finally {
           outCtx = previewCtx;
           btn.disabled = false;
@@ -1158,30 +1357,19 @@
       }, 30);
     });
 
-    function developOne(entry, p, fullres, done) {
+    function developOne(entry, p, fullres, settings, stockKey, cropChoice, done) {
       var im = entry.img;
       var out2 = document.createElement("canvas");
       photoSeed = entry.seed;
       frameNo = entry.no;
-      if (fullres) {
-        var w = im.naturalWidth, h = im.naturalHeight;
-        var src2 = document.createElement("canvas");
-        src2.width = w; src2.height = h;
-        src2.getContext("2d").drawImage(im, 0, 0);
-        out2.width = w; out2.height = h;
-        developTo(out2.getContext("2d"), src2.getContext("2d"), w, h, p);
-      } else {
-        var scale = Math.min(1, MAX / Math.max(im.naturalWidth, im.naturalHeight));
-        var pw = Math.round(im.naturalWidth * scale), ph = Math.round(im.naturalHeight * scale);
-        var s2 = document.createElement("canvas");
-        s2.width = pw; s2.height = ph;
-        s2.getContext("2d").drawImage(im, 0, 0, pw, ph);
-        out2.width = pw; out2.height = ph;
-        developTo(out2.getContext("2d"), s2.getContext("2d"), pw, ph, p);
-      }
+      var source = document.createElement("canvas");
+      var dimensions = drawCroppedPhoto(im, source, fullres ? 0 : MAX, cropChoice);
+      out2.width = dimensions.width;
+      out2.height = dimensions.height;
+      developTo(out2.getContext("2d"), source.getContext("2d"), dimensions.width, dimensions.height, p, stockKey);
       photoSeed = roll[active] ? roll[active].seed : 1;
       frameNo = roll[active] ? roll[active].no : 1;
-      out2.toBlob(function (b) { saveBlob(b, frameName(entry)); done(); }, "image/jpeg", 0.92);
+      out2.toBlob(function (b) { saveBlob(b, frameName(entry, settings, stockKey)); done(); }, settings.mime, settings.quality);
     }
 
     document.getElementById("downloadAll").addEventListener("click", function () {
@@ -1190,6 +1378,9 @@
       btn.disabled = true;
       var p = getParams();
       var fullres = document.getElementById("fullres").checked;
+      var settings = getExportSettings();
+      var stockKey = currentStock;
+      var cropChoice = document.getElementById("cropRatio").value;
       var i = 0;
       (function next() {
         if (i >= roll.length) {
@@ -1201,7 +1392,7 @@
         i++;
         btn.textContent = "Developing " + i + "/" + roll.length + "…";
         setTimeout(function () {
-          developOne(entry, p, fullres, function () { setTimeout(next, 250); });
+          developOne(entry, p, fullres, settings, stockKey, cropChoice, function () { setTimeout(next, 250); });
         }, 30);
       })();
     });
