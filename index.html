@@ -24,14 +24,7 @@
       background: var(--film-black); 
       color: var(--film-text);
     }
-    body::before { 
-      content: ""; 
-      position: fixed; 
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(ellipse at 50% 0%, rgba(200,165,116,0.08) 0%, transparent 50%);
-      pointer-events: none;
-    }
-    .app { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; position: relative; z-index: 10; }
+    .app { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; }
     header { text-align: center; margin-bottom: 24px; }
     header h1 { 
       font-family: 'Playfair Display', serif; 
@@ -102,7 +95,6 @@
       border-radius: 8px; 
       display: block; 
       background: #000;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 10px rgba(0,0,0,0.5);
     }
     
     .roll { 
@@ -202,7 +194,6 @@
       background: var(--film-gold); 
       border-radius: 50%; 
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(212, 165, 116, 0.4);
     }
     .row .val { 
       width: 36px; 
@@ -292,12 +283,8 @@
     .primary { 
       background: var(--film-gold); 
       color: #000;
-      box-shadow: 0 4px 15px rgba(212, 165, 116, 0.4);
     }
-    .primary:hover {
-      opacity: 0.95;
-      box-shadow: 0 6px 20px rgba(212, 165, 116, 0.6);
-    }
+    .primary:hover { opacity: 0.95; }
     .ghost { 
       background: var(--film-warm); 
       color: var(--film-text); 
@@ -337,7 +324,6 @@
       border: 1px solid var(--film-border); 
       border-radius: 8px;
       font-style: italic;
-      border-left: 3px solid var(--film-gold);
     }
     
     @media (max-width: 600px) { 
@@ -346,7 +332,6 @@
       .btns { gap: 8px; } 
       button { padding: 10px 14px; font-size: 12px; } 
       header h1 { font-size: 28px; letter-spacing: 1px; }
-      header p.sub { font-size: 12px; }
     }
   </style>
 </head>
@@ -354,12 +339,12 @@
   <div class="app">
     <header>
       <h1><span class="gold">Analog Film</span> Studio</h1>
-      <p class="sub">Develop photos on classic emulsions — Gold 200, Portra 400, Ektar 100, CineStill 800T and Superia 400. Everything runs locally in your browser.</p>
+      <p class="sub">Develop photos on classic emulsions. Everything runs locally in your browser.</p>
     </header>
     
     <div class="drop" id="drop">
       <div class="big">Drag photos here, or tap to browse</div>
-      <div class="small">Load a whole roll at once — JPEG / PNG, nothing is uploaded anywhere</div>
+      <div class="small">JPEG / PNG, nothing is uploaded anywhere</div>
       <input type="file" id="file" accept="image/*" multiple hidden />
     </div>
     
@@ -392,73 +377,66 @@
       
       <div class="presets" id="presets">
         <div class="preset" data-p="natural">Natural</div>
-        <div class="preset" data-p="sunny">Sunny Day</div>
-        <div class="preset" data-p="muted">Muted Print</div>
-        <div class="preset" data-p="push">Push +1</div>
+        <div class="preset" data-p="vibrant">Vibrant</div>
+        <div class="preset" data-p="muted">Muted</div>
         <div class="preset" data-p="vintage">Vintage</div>
       </div>
 
       <div class="row">
-        <label class="tip" data-tip="Overall white balance. Positive = warmer (golden), negative = cooler (bluer). Gold 200 naturally has a warm base.">Temperature</label>
-        <input type="range" id="temp" min="-50" max="50" value="0" />
-        <span class="val" id="tempV">0</span>
+        <label class="tip" data-tip="Subtle warmth. Gold 200 has a slight warm cast, but this keeps colors natural.">Warmth</label>
+        <input type="range" id="warmth" min="-20" max="20" value="0" />
+        <span class="val" id="warmthV">0</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Green-magenta tint. Positive = more green, negative = more magenta. Helps correct color casts.">Tint</label>
-        <input type="range" id="tint" min="-50" max="50" value="0" />
-        <span class="val" id="tintV">0</span>
+        <label class="tip" data-tip="Film contrast curve. Higher = more punchy, lower = flatter.">Contrast</label>
+        <input type="range" id="contrast" min="-20" max="20" value="3" />
+        <span class="val" id="contrastV">3</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Steepness of the film's density curve in midtones. High values = punchy contrast, low = flat/muted.">Contrast</label>
-        <input type="range" id="contrast" min="0" max="100" value="50" />
-        <span class="val" id="contrastV">50</span>
+        <label class="tip" data-tip="Lifts shadows like film base + fog. Gives that vintage shadow warmth.">Faded blacks</label>
+        <input type="range" id="fade" min="0" max="20" value="2" />
+        <span class="val" id="fadeV">2</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Lifts the black point like film base + fog. Shadows end warm brown instead of pure black. Higher = more faded/vintage.">Faded blacks</label>
-        <input type="range" id="fade" min="0" max="100" value="30" />
-        <span class="val" id="fadeV">30</span>
+        <label class="tip" data-tip="Overall color intensity. Film is generally less saturated than digital.">Saturation</label>
+        <input type="range" id="sat" min="-20" max="20" value="-2" />
+        <span class="val" id="satV">-2</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Overall color intensity. Consumer films like Gold and Superia are punchy; Portra is naturally lower.">Saturation</label>
-        <input type="range" id="sat" min="0" max="100" value="45" />
-        <span class="val" id="satV">45</span>
+        <label class="tip" data-tip="Soft glow from bright areas. Most visible in CineStill 800T.">Halation</label>
+        <input type="range" id="halation" min="0" max="20" value="1" />
+        <span class="val" id="halationV">1</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Soft glow bleeding from bright highlights. Each stock has its own halation color — CineStill 800T has deep red.">Halation</label>
-        <input type="range" id="halation" min="0" max="100" value="30" />
-        <span class="val" id="halationV">30</span>
+        <label class="tip" data-tip="Film grain texture. Most visible in midtones.">Grain</label>
+        <input type="range" id="grain" min="0" max="20" value="3" />
+        <span class="val" id="grainV">3</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Silver-halide grain texture, strongest in midtones. Each stock has its own grain character.">Grain</label>
-        <input type="range" id="grain" min="0" max="100" value="35" />
-        <span class="val" id="grainV">35</span>
+        <label class="tip" data-tip="Physical wear: dust, scratches, light leaks.">Dust &amp; scratches</label>
+        <input type="range" id="dust" min="0" max="20" value="0" />
+        <span class="val" id="dustV">0</span>
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Physical wear: dust specks, hairline scratches, light leaks, processing banding.">Dust &amp; scratches</label>
-        <input type="range" id="dust" min="0" max="100" value="15" />
-        <span class="val" id="dustV">15</span>
-      </div>
-      
-      <div class="row">
-        <label class="tip" data-tip="Darkens corners like lens falloff on old cameras. Subtle at low values, tunnel-like at high.">Vignette</label>
-        <input type="range" id="vignette" min="0" max="100" value="20" />
-        <span class="val" id="vignetteV">20</span>
+        <label class="tip" data-tip="Darkens corners like old lens falloff.">Vignette</label>
+        <input type="range" id="vignette" min="0" max="20" value="2" />
+        <span class="val" id="vignetteV">2</span>
       </div>
 
       <div class="row">
-        <label class="tip" data-tip="Adds a 35mm film-strip border with sprocket holes and orange edge print.">35mm film frame</label>
+        <label class="tip" data-tip="Adds a 35mm film-strip border with sprocket holes.">35mm film frame</label>
         <input type="checkbox" id="frame" checked />
       </div>
       
       <div class="row">
-        <label class="tip" data-tip="Prints text in corner in classic lab style. Type a date like '98 24 12'. Leave empty for none.">Date stamp</label>
+        <label class="tip" data-tip="Date stamp in corner. Leave empty for none.">Date stamp</label>
         <input type="text" id="datetext" maxlength="24" placeholder="e.g. 98 24 12" />
       </div>
 
@@ -475,7 +453,7 @@
         <button class="ghost" id="newPhoto">Add photos to roll</button>
       </div>
       
-      <p class="note">Tip: for best results, shoot with flat profiles. The Temperature and Tint sliders help correct color casts from your camera.</p>
+      <p class="note">Tip: start with low values and increase gradually. Film looks natural, not extreme.</p>
     </div>
   </div>
 
@@ -492,95 +470,83 @@
     var MAX = 2400;
     var currentStock = "gold";
     
-    // Film stock profiles with more accurate color science
+    // Simplified, conservative film stock profiles
     var stocks = {
       gold: {
         label: "Kodak Gold 200",
-        // Color temperature/tint adjustments (CCM matrix style)
-        temp: 0,    // slightly warm base
-        tint: 5,    // slight magenta to counteract green
-        // Dye layer characteristics
-        rShift: 2, rSat: 0.05,  // reds stay clean
-        gShift: -8, gSat: -0.10, gVal: -0.02,  // greens -> yellow-olive
-        ySat: 0.12, yVal: 0.04,  // yellows glow subtly
-        bShift: -2, bSat: -0.08,  // blues slightly muted
-        oShift: -3, oSat: 0.02,  // skin -> red-orange
-        // Density curves
-        toe: [0.9, 0.9, 0.4], shoulder: [0.90, 0.80, 0.55],
+        // Very subtle color characteristics
+        gShift: -3, gSat: -0.03,  // slight green shift
+        ySat: 0.05,                // very subtle yellow boost
+        bSat: -0.02,               // slight blue desaturation
+        oShift: -1, oSat: 0.01,    // very subtle orange
+        // Conservative density curves
+        toe: [0.95, 0.95, 0.7], shoulder: [0.92, 0.88, 0.75],
         // Film characteristics
-        hal: [1, 0.45, 0.25], halBoost: 0.9,
-        grain: 1.0,
-        base: { temp: 0, tint: 5, contrast: 50, fade: 30, sat: 45, halation: 30, grain: 35, dust: 15, vignette: 20 }
+        hal: [1, 0.5, 0.3], halBoost: 0.6,
+        grain: 0.8,
+        // Very conservative defaults
+        base: { warmth: 0, contrast: 3, fade: 2, sat: -2, halation: 1, grain: 3, dust: 0, vignette: 2 }
       },
       portra: {
         label: "Kodak Portra 400",
-        temp: -5, tint: 0,
-        rShift: 0, rSat: 0.02,
-        gShift: -2, gSat: -0.02, gVal: 0,
-        ySat: 0.02, yVal: 0.01,
-        bShift: 0, bSat: -0.02,
-        oShift: -1, oSat: 0.04,
-        toe: [0.75, 0.75, 0.75], shoulder: [0.96, 0.92, 0.88],
-        hal: [1, 0.75, 0.65], halBoost: 0.5,
-        grain: 0.45,
-        base: { temp: -5, tint: 0, contrast: 30, fade: 40, sat: 25, halation: 15, grain: 20, dust: 8, vignette: 10 }
+        gShift: -1, gSat: -0.01,
+        ySat: 0.02, 
+        bSat: -0.01,
+        oShift: 0, oSat: 0.01,
+        toe: [0.85, 0.85, 0.85], shoulder: [0.96, 0.94, 0.92],
+        hal: [1, 0.6, 0.5], halBoost: 0.4,
+        grain: 0.3,
+        base: { warmth: -1, contrast: 0, fade: 3, sat: -4, halation: 0, grain: 1, dust: 0, vignette: 1 }
       },
       ektar: {
         label: "Kodak Ektar 100",
-        temp: -3, tint: 0,
-        rShift: 0, rSat: 0.10,
-        gShift: 1, gSat: 0.08, gVal: 0.02,
-        ySat: 0.08, yVal: 0.03,
-        bShift: 2, bSat: 0.15,
-        oShift: -1, oSat: 0.08,
-        toe: [0.65, 0.65, 0.65], shoulder: [0.82, 0.85, 0.80],
-        hal: [1, 0.50, 0.40], halBoost: 0.4,
-        grain: 0.25,
-        base: { temp: -3, tint: 0, contrast: 60, fade: 15, sat: 75, halation: 10, grain: 10, dust: 5, vignette: 8 }
+        gShift: 1, gSat: 0.03,
+        ySat: 0.03,
+        bSat: 0.05,
+        oShift: 0, oSat: 0.02,
+        toe: [0.8, 0.8, 0.8], shoulder: [0.85, 0.88, 0.85],
+        hal: [1, 0.4, 0.35], halBoost: 0.3,
+        grain: 0.15,
+        base: { warmth: -1, contrast: 5, fade: 1, sat: 3, halation: 0, grain: 0, dust: 0, vignette: 0 }
       },
       cinestill: {
         label: "CineStill 800T",
-        temp: -10, tint: 5,
-        rShift: 4, rSat: 0.10,
-        gShift: 3, gSat: -0.08, gVal: 0.02,
-        ySat: 0.01, yVal: 0,
-        bShift: 3, bSat: 0.08,
+        gShift: 2, gSat: -0.02,
+        ySat: 0.01,
+        bSat: 0.03,
         oShift: 0, oSat: 0,
-        toe: [0.55, 0.70, 1.2], shoulder: [0.85, 0.82, 0.75],
-        hal: [1, 0.15, 0.08], halBoost: 2.5,
-        grain: 1.5,
-        base: { temp: -10, tint: 5, contrast: 45, fade: 35, sat: 40, halation: 60, grain: 50, dust: 15, vignette: 30 }
+        toe: [0.7, 0.8, 1.1], shoulder: [0.85, 0.83, 0.8],
+        hal: [1, 0.15, 0.1], halBoost: 1.8,
+        grain: 1.2,
+        base: { warmth: 0, contrast: 2, fade: 3, sat: -1, halation: 5, grain: 5, dust: 1, vignette: 3 }
       },
       superia: {
         label: "Fuji Superia 400",
-        temp: -2, tint: -3,
-        rShift: 0, rSat: 0.05,
-        gShift: 5, gSat: 0.12, gVal: 0.03,
-        ySat: 0.05, yVal: 0.02,
-        bShift: 1, bSat: 0.05,
-        oShift: 1, oSat: 0.02,
-        toe: [0.95, 1.05, 1.05], shoulder: [0.88, 0.80, 0.75],
-        hal: [1, 0.45, 0.35], halBoost: 0.7,
-        grain: 0.9,
-        base: { temp: -2, tint: -3, contrast: 50, fade: 30, sat: 60, halation: 25, grain: 35, dust: 10, vignette: 15 }
+        gShift: 3, gSat: 0.05,
+        ySat: 0.02,
+        bSat: 0.02,
+        oShift: 1, oSat: 0.01,
+        toe: [0.95, 1.0, 1.0], shoulder: [0.88, 0.85, 0.82],
+        hal: [1, 0.45, 0.38], halBoost: 0.5,
+        grain: 0.6,
+        base: { warmth: 1, contrast: 3, fade: 2, sat: 1, halation: 1, grain: 2, dust: 0, vignette: 1 }
       }
     };
 
-    // Presets with new temperature/tint controls
+    // Conservative presets
     var presets = {
-      natural: { temp: 0, tint: 0, contrast: 0, fade: 0, sat: 0, halation: 0, grain: 0, dust: 0, vignette: 0 },
-      sunny:   { temp: 8, tint: 2, contrast: 10, fade: -10, sat: 5, halation: 10, grain: -5, dust: -5, vignette: -5 },
-      muted:   { temp: -5, tint: -2, contrast: -15, fade: 20, sat: -20, halation: -10, grain: -10, dust: -10, vignette: -5 },
-      push:    { temp: 3, tint: 0, contrast: 25, fade: -20, sat: 5, halation: 15, grain: 30, dust: 15, vignette: 5 },
-      vintage: { temp: 5, tint: 2, contrast: -5, fade: 30, sat: -10, halation: 5, grain: 20, dust: 30, vignette: 25 }
+      natural: { warmth: 0, contrast: 2, fade: 1, sat: -2, halation: 0, grain: 1, dust: 0, vignette: 1 },
+      vibrant: { warmth: 0, contrast: 4, fade: 0, sat: 3, halation: 2, grain: 2, dust: 0, vignette: 2 },
+      muted: { warmth: 0, contrast: -2, fade: 4, sat: -5, halation: 0, grain: 2, dust: 1, vignette: 2 },
+      vintage: { warmth: 2, contrast: 1, fade: 5, sat: -3, halation: 1, grain: 4, dust: 2, vignette: 3 }
     };
 
-    var sliders = ["temp", "tint", "contrast", "fade", "sat", "halation", "grain", "dust", "vignette"];
+    var sliders = ["warmth", "contrast", "fade", "sat", "halation", "grain", "dust", "vignette"];
 
     function getParams() {
       var p = {};
       sliders.forEach(function (k) {
-        p[k] = (+document.getElementById(k).value);
+        p[k] = parseInt(document.getElementById(k).value);
       });
       p.frame = document.getElementById("frame").checked;
       p.dateText = document.getElementById("datetext").value.trim();
@@ -606,9 +572,7 @@
       var st = stocks[currentStock];
       var out = {};
       sliders.forEach(function (k) {
-        out[k] = Math.max(sliders[k] === 'temp' || sliders[k] === 'tint' ? -50 : 0, 
-                        Math.min(sliders[k] === 'temp' || sliders[k] === 'tint' ? 50 : 100, 
-                                st.base[k] + (presets[key][k] || 0)));
+        out[k] = Math.max(-20, Math.min(20, st.base[k] + (presets[key][k] || 0)));
       });
       setUI(out);
     }
@@ -786,7 +750,7 @@
       developTo(outCtx, srcCtx, srcCanvas.width, srcCanvas.height, getParams());
     }
 
-    // Full development pipeline
+    // Full development pipeline - VERY CONSERVATIVE
     function developTo(destCtx, sourceCtx, w, h, p) {
       outCtx = destCtx;
       if (destCtx.canvas.width !== w) destCtx.canvas.width = w;
@@ -795,90 +759,75 @@
       var px = data.data;
 
       var st = stocks[currentStock] || stocks.gold;
+      
+      // Scale down all parameters to be very subtle (0-20 range -> 0-0.2)
+      var warmth = p.warmth / 100;
       var contrast = p.contrast / 100;
       var fade = p.fade / 100;
       var satAmt = p.sat / 100;
-      var temp = p.temp / 50;   // -1 to 1 range
-      var tint = p.tint / 50;   // -1 to 1 range
+      var halationAmt = p.halation / 100;
+      var grainAmt = p.grain / 100;
+      var dustAmt = p.dust / 100;
+      var vignetteAmt = p.vignette / 100;
 
-      // Per-pixel color grade
-      var f = fade * 20;           // black point lift (film base + fog)
-      var c = 1 + contrast * 0.7;  // midtone contrast
+      // Per-pixel color grade - PRESERVE ORIGINAL COLORS as much as possible
+      var f = fade * 15;  // Very subtle black point lift
+      var c = 1 + contrast * 0.3;  // Very subtle contrast
       
       for (var i = 0; i < px.length; i += 4) {
         var r = px[i], g = px[i + 1], b = px[i + 2];
+        var origR = r, origG = g, origB = b;
 
-        // 1) White balance adjustment (temperature/tint)
-        // Temperature: adjust red-blue balance
-        var tempR = temp * (r / 255);
-        var tempB = -temp * (b / 255);
-        r = clamp(r + tempR * 40);
-        b = clamp(b + tempB * 40);
-        
-        // Tint: adjust green-magenta balance
-        var tintG = tint * (g / 255);
-        var tintM = -tint * 0.5 * ((r + b) / 255);
-        g = clamp(g + tintG * 40);
-        r = clamp(r + tintM * 30);
-        b = clamp(b + tintM * 30);
-
-        // 2) per-channel density curves
+        // 1) per-channel density curves - very subtle
         r = density(r, f * st.toe[0], c, st.shoulder[0]);
         g = density(g, f * st.toe[1], c, st.shoulder[1]);
         b = density(b, f * st.toe[2], c, st.shoulder[2]);
 
-        // 3) Saturation with film-like channel weighting
+        // 2) Very subtle saturation
         var lum = 0.299 * r + 0.587 * g + 0.114 * b;
-        r = lum + (r - lum) * (1 + satAmt * 0.55);
-        g = lum + (g - lum) * (1 + satAmt * 0.45);
-        b = lum + (b - lum) * (1 + satAmt * 0.48);
+        r = lum + (r - lum) * (1 + satAmt * 0.3);
+        g = lum + (g - lum) * (1 + satAmt * 0.3);
+        b = lum + (b - lum) * (1 + satAmt * 0.3);
 
-        // 4) Film stock-specific color shifts
+        // 3) VERY subtle film color characteristics
         if (r !== g || g !== b) {
           var hsv = rgb2hsv(r, g, b);
-          var gw = hmask(hsv[0], 60, 180, 40);  // greens
-          var yw = hmask(hsv[0], 30, 70, 20);    // yellows
-          var ow = hmask(hsv[0], 0, 50, 20);     // oranges/reds/skin
-          var rw = hmask(hsv[0], 330, 360, 15);  // reds
-          var bw = hmask(hsv[0], 180, 280, 30); // blues
-          if (gw + yw + ow + rw + bw > 0.01) {
-            hsv[0] = (hsv[0] + st.gShift * gw + st.oShift * ow + st.rShift * rw + 360) % 360;
-            hsv[1] = hsv[1] * (1 + st.ySat * yw + st.oSat * ow + st.gSat * gw + st.bSat * bw + st.rSat * rw);
-            hsv[2] = hsv[2] * (1 + st.yVal * yw + st.gVal * gw);
+          var gw = hmask(hsv[0], 60, 180, 20);
+          var yw = hmask(hsv[0], 30, 70, 10);
+          var ow = hmask(hsv[0], 0, 50, 10);
+          var bw = hmask(hsv[0], 180, 280, 20);
+          if (gw + yw + ow + bw > 0.01) {
+            hsv[0] = (hsv[0] + st.gShift * 0.2 * gw + st.oShift * 0.2 * ow + 360) % 360;
+            hsv[1] = hsv[1] * (1 + st.gSat * 0.1 * gw + st.oSat * 0.1 * ow + st.bSat * 0.1 * bw);
+            hsv[2] = hsv[2] * (1 + st.yVal * 0.1 * yw);
             var rgb = hsv2rgb(hsv[0], hsv[1], hsv[2]);
             r = rgb[0]; g = rgb[1]; b = rgb[2];
           }
         }
 
-        // 5) Stock-specific warmth bias
+        // 4) Very subtle warmth - only in shadows
         var sw = sh(lum);
-        var stockTemp = st.temp / 50;
-        r += stockTemp * (6 + 8 * sw);
-        g += stockTemp * (2 + 3 * sw);
-        b -= stockTemp * (8 - 3 * sw);
-
-        // 6) Stock-specific tint bias
-        var stockTint = st.tint / 50;
-        g += stockTint * (4 + 5 * sw);
-        r -= stockTint * (2 + 2 * sw);
-        b -= stockTint * (2 + 2 * sw);
+        var warmthEffect = warmth * 0.3 * sw;
+        r += warmthEffect * 5;
+        g += warmthEffect * 2;
+        b -= warmthEffect * 3;
 
         px[i] = clamp(r); px[i + 1] = clamp(g); px[i + 2] = clamp(b);
       }
 
       destCtx.putImageData(data, 0, 0);
 
-      // Halation
-      if (p.halation > 0) halation(p.halation / 100 * st.halBoost, w, h, st.hal);
+      // Very subtle halation
+      if (p.halation > 0) halation(halationAmt * st.halBoost * 0.5, w, h, st.hal);
 
-      // Grain
-      if (p.grain > 0) grain(Math.min(1.3, p.grain / 100 * st.grain), w, h);
+      // Very subtle grain
+      if (p.grain > 0) grain(grainAmt * st.grain * 0.5, w, h);
 
-      // Dust and scratches
-      if (p.dust > 0) imperfections(p.dust / 100, w, h);
+      // Very subtle dust/scratches
+      if (p.dust > 0) imperfections(dustAmt * 0.5, w, h);
 
-      // Vignette
-      if (p.vignette > 0) vignette(p.vignette / 100, w, h);
+      // Very subtle vignette
+      if (p.vignette > 0) vignette(vignetteAmt * 0.5, w, h);
 
       // Date stamp and frame
       if (p.dateText) stampDate(destCtx, w, h, p.dateText);
@@ -887,14 +836,13 @@
       outCtx = previewCtx;
     }
 
-    // Film curve with better shadow handling
     function density(v, f, c, shoulder) {
-      v = v * (1 - f / 255) + f * 0.88;   // toe with film base
-      v = (v - 128) * c + 128;            // midtone contrast
-      var k = 200;                                 // shoulder knee
+      v = v * (1 - f / 255) + f * 0.92;
+      v = (v - 128) * c + 128;
+      var k = 210;
       if (v > k) {
         var t = Math.min(1, (v - k) / (255 - k));
-        v = k + (255 - k) * (1 - Math.pow(1 - t, shoulder * 1.2));
+        v = k + (255 - k) * (1 - Math.pow(1 - t, shoulder));
       }
       return v;
     }
@@ -938,38 +886,33 @@
     function halation(amt, w, h, hal) {
       var tmp = outCtx.getImageData(0, 0, w, h);
       var px = tmp.data;
-      
       for (var i = 0; i < px.length; i += 4) {
         var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-        var e = smooth((lum - 155) / 100);
+        var e = smooth((lum - 170) / 80);
         px[i] = px[i] * e;
         px[i + 1] = px[i + 1] * e * hal[1];
         px[i + 2] = px[i + 2] * e * hal[2];
       }
-      
       var small = document.createElement("canvas");
-      small.width = Math.max(1, Math.round(w / 6));
-      small.height = Math.max(1, Math.round(h / 6));
+      small.width = Math.max(1, Math.round(w / 8));
+      small.height = Math.max(1, Math.round(h / 8));
       var sctx = small.getContext("2d");
-      sctx.putImageData(thumb(tmp, w, h, small.width, small.height), 0, 0);
-      
+      sctx.drawImage(tmpCanvas(tmp, w, h, small.width, small.height), 0, 0);
       outCtx.save();
       outCtx.globalCompositeOperation = "screen";
-      outCtx.globalAlpha = Math.min(0.9, amt * 0.6);
-      outCtx.filter = "blur(0px)";
+      outCtx.globalAlpha = amt * 0.4;
       outCtx.drawImage(small, 0, 0, w, h);
       outCtx.restore();
     }
 
-    function thumb(imgData, w, h, tw, th) {
+    function tmpCanvas(imgData, w, h, tw, th) {
       var t = document.createElement("canvas");
       t.width = w; t.height = h;
       t.getContext("2d").putImageData(imgData, 0, 0);
       var c2 = document.createElement("canvas");
       c2.width = tw; c2.height = th;
-      var ctx = c2.getContext("2d");
-      ctx.drawImage(t, 0, 0, w, h, 0, 0, tw, th);
-      return ctx.getImageData(0, 0, tw, th);
+      c2.getContext("2d").drawImage(t, 0, 0, w, h, 0, 0, tw, th);
+      return c2;
     }
 
     function prng(seed) {
@@ -981,15 +924,14 @@
     }
 
     function grain(amt, w, h) {
-      var strength = amt * 34;
+      if (amt <= 0.01) return;
+      var strength = amt * 25;
       var rand = prng(0x9e3779b9 ^ photoSeed);
       var data = outCtx.getImageData(0, 0, w, h);
       var px = data.data;
-
-      var o1 = noiseLattice(Math.max(3, Math.round(w / 28)), Math.max(3, Math.round(h / 28)), rand);
-      var o2 = noiseLattice(Math.max(4, Math.round(w / 9)), Math.max(4, Math.round(h / 9)), rand);
-      var o3 = noiseLattice(Math.max(6, Math.round(w / 2.5)), Math.max(6, Math.round(h / 2.5)), rand);
-
+      var o1 = noiseLattice(Math.max(3, Math.round(w / 32)), Math.max(3, Math.round(h / 32)), rand);
+      var o2 = noiseLattice(Math.max(4, Math.round(w / 10)), Math.max(4, Math.round(h / 10)), rand);
+      var o3 = noiseLattice(Math.max(6, Math.round(w / 3)), Math.max(6, Math.round(h / 3)), rand);
       for (var y = 0; y < h; y++) {
         var fy = y / h;
         for (var x = 0; x < w; x++) {
@@ -997,13 +939,10 @@
           var lum = (px[idx] + px[idx + 1] + px[idx + 2]) / 765;
           var m = 4 * lum * (1 - lum);
           var fx = x / w;
-          var n = (lattice(o1, fx, fy) * 0.50 +
-                   lattice(o2, fx, fy) * 0.33 +
-                   lattice(o3, fx, fy) * 0.17) * strength * m;
-
+          var n = (lattice(o1, fx, fy) * 0.55 + lattice(o2, fx, fy) * 0.30 + lattice(o3, fx, fy) * 0.15) * strength * m;
           px[idx] = clamp(px[idx] + n);
-          px[idx + 1] = clamp(px[idx + 1] + n * 0.97);
-          px[idx + 2] = clamp(px[idx + 2] + n * 0.97);
+          px[idx + 1] = clamp(px[idx + 1] + n * 0.98);
+          px[idx + 2] = clamp(px[idx + 2] + n * 0.98);
         }
       }
       outCtx.putImageData(data, 0, 0);
@@ -1014,7 +953,6 @@
       for (var i = 0; i < d.length; i++) d[i] = rand() - 0.5;
       return { d: d, w: cw, h: ch };
     }
-    
     function lattice(L, fx, fy) {
       var x = fx * (L.w - 1), y = fy * (L.h - 1);
       var x0 = x | 0, y0 = y | 0;
@@ -1027,81 +965,46 @@
     }
 
     function imperfections(amt, w, h) {
+      if (amt <= 0.01) return;
       var rand = prng(0x1234abcd ^ photoSeed);
-
-      var specks = Math.round(amt * 120);
+      var specks = Math.round(amt * 80);
       for (var s = 0; s < specks; s++) {
         var x = rand() * w, y = rand() * h;
-        var r = (0.3 + rand() * 2.0) * (w / 1200 + 0.3);
+        var r = (0.2 + rand() * 1.5) * (w / 1200 + 0.3);
         var bright = rand() < 0.6;
         outCtx.save();
-        outCtx.globalAlpha = 0.25 + rand() * 0.45;
+        outCtx.globalAlpha = 0.15 + rand() * 0.3;
         outCtx.fillStyle = bright ? "#fff6e0" : "#120a00";
-        if (rand() < 0.8) {
-          outCtx.beginPath();
-          outCtx.arc(x, y, r * (0.7 + rand() * 0.6), 0, Math.PI * 2);
-          outCtx.fill();
-        } else {
-          outCtx.fillRect(x, y, r * 2, r * (0.3 + rand() * 0.8));
-        }
+        outCtx.beginPath();
+        outCtx.arc(x, y, r, 0, Math.PI * 2);
+        outCtx.fill();
         outCtx.restore();
       }
-
-      var scratches = Math.round(amt * 6);
+      var scratches = Math.round(amt * 4);
       for (var k = 0; k < scratches; k++) {
         var sx = rand() * w;
-        var len = h * (0.4 + rand() * 0.6);
+        var len = h * (0.3 + rand() * 0.4);
         var sy = rand() * (h - len);
         outCtx.save();
-        outCtx.globalAlpha = 0.1 + rand() * 0.25 * amt;
+        outCtx.globalAlpha = 0.05 + rand() * 0.15 * amt;
         outCtx.strokeStyle = rand() < 0.7 ? "#fff2d8" : "#0a0600";
-        outCtx.lineWidth = 0.4 + rand() * 1.2;
+        outCtx.lineWidth = 0.3 + rand() * 0.8;
         outCtx.beginPath();
         outCtx.moveTo(sx, sy);
-        outCtx.bezierCurveTo(sx + (rand() - 0.5) * 10, sy + len / 3, sx + (rand() - 0.5) * 10, sy + 2 * len / 3, sx + (rand() - 0.5) * 6, sy + len);
+        outCtx.bezierCurveTo(sx + (rand() - 0.5) * 6, sy + len / 3, sx + (rand() - 0.5) * 6, sy + 2 * len / 3, sx + (rand() - 0.5) * 4, sy + len);
         outCtx.stroke();
-        outCtx.restore();
-      }
-
-      if (rand() < amt * 1.0) {
-        var edge = Math.floor(rand() * 4);
-        var leakAlpha = 0.12 + rand() * 0.25 * amt;
-        outCtx.save();
-        var g;
-        if (edge === 0) { g = outCtx.createLinearGradient(0, 0, w * (0.15 + rand() * 0.3), 0); }
-        else if (edge === 1) { g = outCtx.createLinearGradient(w, 0, w * (1 - (0.15 + rand() * 0.3)), 0); }
-        else if (edge === 2) { g = outCtx.createLinearGradient(0, 0, 0, h * (0.15 + rand() * 0.3)); }
-        else { g = outCtx.createLinearGradient(0, h, 0, h * (1 - (0.15 + rand() * 0.3))); }
-        g.addColorStop(0, "rgba(255,140,70," + leakAlpha + ")");
-        g.addColorStop(1, "rgba(255,140,70,0)");
-        outCtx.globalCompositeOperation = "screen";
-        outCtx.fillStyle = g;
-        outCtx.fillRect(0, 0, w, h);
-        outCtx.restore();
-      }
-
-      if (amt > 0.25) {
-        outCtx.save();
-        outCtx.globalCompositeOperation = "overlay";
-        outCtx.globalAlpha = amt * 0.10;
-        for (var by = 0; by < h; by += Math.round(h / 15)) {
-          var bandA = rand();
-          var bandHeight = Math.round(h / 35);
-          outCtx.fillStyle = bandA < 0.3 ? "#ffe9c0" : "#281e10";
-          outCtx.fillRect(0, by, w, bandHeight);
-        }
         outCtx.restore();
       }
     }
 
     function vignette(amt, w, h) {
+      if (amt <= 0.01) return;
       outCtx.save();
       var centerX = w / 2, centerY = h / 2;
       var maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-      var g = outCtx.createRadialGradient(centerX, centerY, maxDist * 0.4, centerX, centerY, maxDist * 1.0);
+      var g = outCtx.createRadialGradient(centerX, centerY, maxDist * 0.5, centerX, centerY, maxDist * 0.9);
       g.addColorStop(0, "rgba(0,0,0,0)");
-      g.addColorStop(0.7, "rgba(0,0,0,0)");
-      g.addColorStop(1, "rgba(15,5,0," + (amt * 0.6) + ")");
+      g.addColorStop(1, "rgba(10,5,0," + (amt * 0.3) + ")");
       outCtx.fillStyle = g;
       outCtx.fillRect(0, 0, w, h);
       outCtx.restore();
@@ -1131,16 +1034,13 @@
       var c = document.createElement("canvas");
       c.width = fw; c.height = fh;
       var g = c.getContext("2d");
-
       g.fillStyle = "#0f0c08";
       g.fillRect(0, 0, fw, fh);
-
       var frand = prng(0x51a3b7 ^ photoSeed);
-      for (var i = 0; i < fw / 5; i++) {
-        g.fillStyle = "rgba(255,240,210," + (frand() * 0.03).toFixed(3) + ")";
+      for (var i = 0; i < fw / 6; i++) {
+        g.fillStyle = "rgba(255,240,210," + (frand() * 0.02).toFixed(3) + ")";
         g.fillRect(frand() * fw, 0, 1, fh);
       }
-
       var holeW = Math.max(5, Math.round(fw * 0.022));
       var holeH = Math.max(4, Math.round(mt * 0.35));
       var rr = Math.min(holeW, holeH) * 0.35;
@@ -1148,7 +1048,6 @@
       if (count < 4) count = 4;
       var pad = Math.round(holeW * 0.8);
       var step = (fw - pad * 2 - holeW) / (count - 1);
-      
       g.fillStyle = "#040302";
       for (var k = 0; k < count; k++) {
         var hx = pad + step * k;
@@ -1157,7 +1056,6 @@
         roundRectPath(g, hx, fh - mt * 0.45 - holeH / 2, holeW, holeH, rr);
         g.fill();
       }
-
       var fsEdge = Math.max(8, Math.round(mt * 0.28));
       g.font = "600 " + fsEdge + "px 'Courier New', monospace";
       g.fillStyle = "#d4a574";
@@ -1168,13 +1066,10 @@
       g.textAlign = "right";
       g.fillText(frameNo + "A \u25B8", fw - mx, mt * 0.42);
       g.globalAlpha = 1;
-
       g.drawImage(src, mx, mt, w, h);
-      
       g.strokeStyle = "rgba(255,235,200,0.15)";
       g.lineWidth = Math.max(1, Math.round(h / 800));
       g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
-
       src.width = fw;
       src.height = fh;
       ctx.drawImage(c, 0, 0);
@@ -1234,7 +1129,6 @@
       var out2 = document.createElement("canvas");
       photoSeed = entry.seed;
       frameNo = entry.no;
-      
       if (fullres) {
         var w = im.naturalWidth, h = im.naturalHeight;
         var src2 = document.createElement("canvas");
@@ -1251,7 +1145,6 @@
         out2.width = pw; out2.height = ph;
         developTo(out2.getContext("2d"), s2.getContext("2d"), pw, ph, p);
       }
-      
       photoSeed = roll[active] ? roll[active].seed : 1;
       frameNo = roll[active] ? roll[active].no : 1;
       out2.toBlob(function (b) { saveBlob(b, frameName(entry)); done(); }, "image/jpeg", 0.92);
