@@ -86,6 +86,10 @@
       line-height: 1.8;
     }
     .header-stamp::before { width: 8px; height: 8px; border-radius: 50%; content: ""; background: #9aa778; box-shadow: 0 0 12px rgba(154, 167, 120, 0.5); }
+    .process-rail { display: flex; align-items: center; gap: 15px; margin: 0 3px 14px; color: #7f8372; font-size: 9px; letter-spacing: 0.13em; text-transform: uppercase; }
+    .process-rail span { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .process-rail b { color: var(--film-gold); font-size: 10px; font-weight: 500; }
+    .process-rail i { width: 38px; height: 1px; border-top: 1px dashed rgba(217, 168, 110, 0.35); }
     .drop {
       position: relative;
       display: grid;
@@ -130,6 +134,8 @@
     .drop:hover, .drop.over { border-color: var(--film-gold); background-color: #1a2018; transform: translateY(-2px); }
     .drop .big { grid-column: 2; color: var(--film-text); font-family: 'Playfair Display', serif; font-size: 23px; }
     .drop .small { grid-column: 2; margin-top: 6px; color: var(--film-text-muted); font-size: 11px; }
+    .drop-meta { display: flex; grid-column: 2; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
+    .drop-meta span { padding: 5px 8px; border: 1px solid rgba(225, 195, 145, 0.12); border-radius: 3px; color: #999684; background: rgba(8, 11, 8, 0.32); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
     .drop:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--film-gold); outline-offset: 4px; }
     .work {
       margin-top: 24px;
@@ -139,7 +145,7 @@
       background: linear-gradient(145deg, rgba(255, 245, 220, 0.025), transparent 50%), #10140f;
       box-shadow: 0 22px 70px rgba(0, 0, 0, 0.22);
     }
-    .pane { min-width: 0; padding: 17px; border: 1px solid var(--film-border); border-radius: 13px; background: var(--film-base); }
+    .pane { min-width: 0; padding: 17px; border: 1px solid var(--film-border); border-radius: 13px; background: linear-gradient(145deg, rgba(255, 245, 220, 0.025), transparent 45%), var(--film-base); box-shadow: inset 0 1px rgba(255, 245, 220, 0.025); }
     .pane h2 { display: flex; align-items: center; justify-content: space-between; min-height: 25px; margin: 0 2px 13px; color: var(--film-gold-light); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; }
     .pane h2::after { color: var(--film-text-muted); content: "DRAG IMAGE TO COMPARE"; font-size: 9px; letter-spacing: 0.11em; opacity: 0.7; }
     .compare-stage { --compare-split: 50%; position: relative; width: 100%; overflow: hidden; aspect-ratio: 3 / 2; border: 1px solid rgba(240, 221, 186, 0.1); border-radius: 6px; background: #050605; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.26); cursor: col-resize; touch-action: pan-y; user-select: none; }
@@ -167,7 +173,8 @@
     .controls > h2 { margin: 0 0 5px; color: var(--film-text); font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 400; }
     .controls > .section-kicker { margin-bottom: 19px; color: var(--film-gold); }
     .control-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
-    .control-group { min-width: 0; padding: 16px 17px; border: 1px solid var(--film-border); border-radius: 12px; background: rgba(8, 11, 8, 0.28); }
+    .control-group { position: relative; min-width: 0; padding: 16px 17px; overflow: hidden; border: 1px solid var(--film-border); border-radius: 12px; background: linear-gradient(135deg, rgba(217, 168, 110, 0.025), transparent 55%), rgba(8, 11, 8, 0.28); transition: border-color 180ms ease, background-color 180ms ease; }
+    .control-group:hover { border-color: rgba(217, 168, 110, 0.32); }
     .control-group h3 { margin-bottom: 13px; padding-bottom: 10px; border-bottom: 1px solid var(--film-soft-border); color: var(--film-gold); }
     .row { display: flex; align-items: center; gap: 12px; min-height: 33px; margin: 10px 0; }
     .row label { flex: 0 0 118px; color: var(--film-text-muted); font-size: 11px; }
@@ -183,6 +190,8 @@
     .row input[type="checkbox"] { width: 17px; height: 17px; flex: none; accent-color: var(--film-gold); }
     .export-hint { flex: 1; color: var(--film-text-muted); font-size: 9px; line-height: 1.5; }
     .presets { display: flex; gap: 7px; flex-wrap: wrap; }
+    .stock-caption { display: flex; align-items: center; gap: 10px; margin: 2px 0 14px; padding: 11px 12px; border-left: 2px solid var(--film-gold); color: var(--film-text-muted); background: linear-gradient(90deg, rgba(217, 168, 110, 0.08), transparent); font-family: 'Playfair Display', serif; font-size: 13px; font-style: italic; line-height: 1.45; }
+    .stock-caption::before { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; content: ""; background: var(--film-gold); box-shadow: 0 0 12px rgba(217, 168, 110, 0.3); }
     .saved-look-tools { display: grid; grid-template-columns: minmax(120px, 1fr) auto; gap: 8px; margin-top: 12px; }
     .saved-look-tools input, .saved-look-tools select { min-width: 0; padding: 9px 10px; border: 1px solid var(--film-border); border-radius: 5px; color: var(--film-text); background: #20251e; font: inherit; font-size: 10px; }
     .saved-look-tools select { grid-column: 1 / -1; }
@@ -207,6 +216,8 @@
       .masthead { align-items: start; }
       .header-stamp { display: none; }
       .control-layout { grid-template-columns: 1fr; }
+      .process-rail { gap: 9px; font-size: 8px; }
+      .process-rail i { width: 20px; }
     }
     @media (max-width: 480px) {
       .app { width: calc(100% - 22px); padding-top: 13px; }
@@ -217,6 +228,11 @@
       .drop::before { width: 42px; height: 42px; font-size: 26px; }
       .drop .big { font-size: 18px; }
       .drop .small { font-size: 9px; line-height: 1.6; }
+      .drop-meta { gap: 5px; margin-top: 10px; }
+      .drop-meta span { padding: 4px 6px; font-size: 7px; }
+      .process-rail { justify-content: space-between; gap: 5px; margin-bottom: 10px; font-size: 7px; letter-spacing: 0.07em; }
+      .process-rail span { gap: 4px; }
+      .process-rail i { width: 9px; }
       .work { padding: 9px; border-radius: 14px; }
       .pane { padding: 11px; }
       .pane h2 { font-size: 9px; }
@@ -247,10 +263,17 @@
         <div class="header-stamp">LOCAL DEVELOPMENT<br />35 MM COLOR LAB</div>
       </div>
     </header>
+
+    <div class="process-rail" aria-label="Studio workflow">
+      <span><b>01</b> Load a frame</span><i></i>
+      <span><b>02</b> Choose an emulsion</span><i></i>
+      <span><b>03</b> Make a print</span>
+    </div>
     
     <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose photos to develop">
       <div class="big">Drag photos here, or tap to browse</div>
-      <div class="small">Choose or drop image files. Everything is developed locally in your browser.</div>
+      <div class="small">Choose a photograph to begin developing. Your original stays on this device.</div>
+      <div class="drop-meta"><span>Common image formats</span><span>Up to 40 frames</span><span>Local darkroom</span></div>
       <input type="file" id="file" accept="image/*" multiple hidden />
     </div>
     
@@ -293,6 +316,7 @@
               <option value="superia">Fuji Superia 400</option>
             </select>
           </div>
+          <div class="stock-caption" id="stockCaption">Warm daylight color with golden highlights.</div>
           <div class="presets" id="presets">
             <div class="preset" data-p="natural">Natural</div>
             <div class="preset" data-p="vibrant">Vibrant</div>
@@ -455,6 +479,7 @@
     var stocks = {
       gold: {
         label: "Kodak Gold 200",
+        description: "Warm daylight color with golden highlights.",
         gShift: -2, gSat: -0.02,
         ySat: 0.03, yVal: 0.01,
         bSat: -0.01,
@@ -466,6 +491,7 @@
       },
       portra: {
         label: "Kodak Portra 400",
+        description: "Soft skin tones, gentle contrast, and open shadows.",
         gShift: -1, gSat: -0.01,
         ySat: 0.01, yVal: 0.01,
         bSat: -0.01,
@@ -477,6 +503,7 @@
       },
       ektar: {
         label: "Kodak Ektar 100",
+        description: "Crisp detail with vivid color and a clean finish.",
         gShift: 1, gSat: 0.02,
         ySat: 0.02, yVal: 0.01,
         bSat: 0.03,
@@ -488,6 +515,7 @@
       },
       cinestill: {
         label: "CineStill 800T",
+        description: "Cool tungsten tones with a cinematic red glow.",
         gShift: 1, gSat: -0.01,
         ySat: 0.01, yVal: 0,
         bSat: 0.02,
@@ -499,6 +527,7 @@
       },
       superia: {
         label: "Fuji Superia 400",
+        description: "Lively color with a cool, slightly green cast.",
         gShift: 2, gSat: 0.03,
         ySat: 0.01, yVal: 0.01,
         bSat: 0.01,
@@ -563,6 +592,7 @@
       setUI(stocks[currentStock].base);
       clearPresets();
       document.getElementById("stockLabel").textContent = stocks[currentStock].label;
+      document.getElementById("stockCaption").textContent = stocks[currentStock].description;
       render();
     });
 
@@ -655,6 +685,7 @@
       currentStock = stocks[look.stock] ? look.stock : "gold";
       document.getElementById("stock").value = currentStock;
       document.getElementById("stockLabel").textContent = stocks[currentStock].label;
+      document.getElementById("stockCaption").textContent = stocks[currentStock].description;
       setUI(look.params);
       document.getElementById("frame").checked = !!look.params.frame;
       document.getElementById("datetext").value = look.params.dateText || "";
@@ -1000,8 +1031,8 @@
       if (!srcCanvas.width || !outCanvas.width) return;
       var stage = document.getElementById("compareStage");
       var framed = outCanvas.width !== srcCanvas.width || outCanvas.height !== srcCanvas.height;
-      var mx = framed ? Math.round(srcCanvas.width * 0.035) : 0;
-      var mt = framed ? Math.round(srcCanvas.height * 0.12) : 0;
+      var mx = framed ? Math.round((outCanvas.width - srcCanvas.width) / 2) : 0;
+      var mt = framed ? Math.round((outCanvas.height - srcCanvas.height) / 2) : 0;
       stage.style.aspectRatio = outCanvas.width + " / " + outCanvas.height;
       srcCanvas.style.left = (mx / outCanvas.width * 100) + "%";
       srcCanvas.style.top = (mt / outCanvas.height * 100) + "%";
@@ -1374,57 +1405,165 @@
     function applyFrame(ctx, stockLabel) {
       var src = ctx.canvas;
       var w = src.width, h = src.height;
-      var mx = Math.max(6, Math.round(w * 0.025));
-      var mt = Math.max(8, Math.round(h * 0.115));
+      var portrait = h >= w;
+      // Portrait film has its rails at the sides; landscape film is the same
+      // strip turned 90 degrees, with rails above and below the image.
+      var mx = Math.max(12, Math.round(w * (portrait ? 0.19 : 0.025)));
+      var mt = Math.max(12, Math.round(h * (portrait ? 0.025 : 0.19)));
       var fw = w + mx * 2, fh = h + mt * 2;
       var c = document.createElement("canvas");
       c.width = fw; c.height = fh;
       var g = c.getContext("2d");
-      g.fillStyle = "#17150f";
-      g.fillRect(0, 0, fw, fh);
-      var frand = prng(0x51a3b7 ^ photoSeed);
-      for (var i = 0; i < fw / 6; i++) {
-        g.fillStyle = "rgba(239,205,151," + (frand() * 0.026).toFixed(3) + ")";
-        g.fillRect(frand() * fw, 0, 1, fh);
-      }
-      g.fillStyle = "rgba(216, 168, 105, 0.07)";
-      g.fillRect(0, 0, fw, mt);
-      g.fillRect(0, fh - mt, fw, mt);
+      var frand = prng(0x51a3b7 ^ photoSeed ^ (frameNo * 7919));
 
-      // Eight rounded perforations per frame, with a thin warm film edge.
-      var holeW = Math.max(7, Math.round(fw * 0.055));
-      var holeH = Math.max(5, Math.round(mt * 0.4));
+      // Dense green-black film base with a worn amber emulsion edge.
+      g.fillStyle = "#10170f";
+      g.fillRect(0, 0, fw, fh);
+      var base = g.createLinearGradient(0, 0, fw, fh);
+      base.addColorStop(0, "rgba(190, 119, 47, 0.18)");
+      base.addColorStop(0.2, "rgba(20, 31, 21, 0.08)");
+      base.addColorStop(0.78, "rgba(4, 9, 6, 0.12)");
+      base.addColorStop(1, "rgba(217, 139, 53, 0.13)");
+      g.fillStyle = base;
+      g.fillRect(0, 0, fw, fh);
+
+      var railWidth = portrait ? mx : mt;
+      var railGlow = g.createLinearGradient(0, 0, portrait ? fw : 0, portrait ? 0 : fh);
+      railGlow.addColorStop(0, "rgba(206, 127, 48, 0.18)");
+      railGlow.addColorStop(0.5, "rgba(7, 13, 9, 0)");
+      railGlow.addColorStop(1, "rgba(231, 153, 66, 0.13)");
+      g.fillStyle = railGlow;
+      g.fillRect(0, 0, fw, fh);
+
+      // Sparse grain and tiny scratches keep the frame from reading as a flat UI.
+      var textureCount = Math.min(2400, Math.round(fw * fh / 4000));
+      for (var i = 0; i < textureCount; i++) {
+        var tx = frand() * fw, ty = frand() * fh;
+        var onRail = portrait ? (tx < mx || tx > fw - mx) : (ty < mt || ty > fh - mt);
+        if (!onRail) continue;
+        var alpha = 0.018 + frand() * 0.065;
+        g.fillStyle = (frand() > 0.54 ? "rgba(247,185,97," : "rgba(0,3,2,") + alpha.toFixed(3) + ")";
+        g.fillRect(tx, ty, frand() * 2 + 0.5, frand() * 2 + 0.5);
+      }
+      for (var s = 0; s < 16; s++) {
+        var sx = frand() * fw, sy = frand() * fh;
+        if (portrait && sx > mx && sx < fw - mx) continue;
+        if (!portrait && sy > mt && sy < fh - mt) continue;
+        g.strokeStyle = "rgba(255, 194, 112," + (0.035 + frand() * 0.08).toFixed(3) + ")";
+        g.lineWidth = frand() * 1.5 + 0.5;
+        g.beginPath();
+        g.moveTo(sx, sy);
+        g.lineTo(sx + (portrait ? (frand() - 0.5) * 5 : (frand() - 0.5) * 22), sy + (portrait ? (frand() - 0.5) * 22 : (frand() - 0.5) * 5));
+        g.stroke();
+      }
+
+      // Rounded sprocket windows run down both rails, like the supplied scan.
+      var run = portrait ? h : w;
+      var holeW = portrait ? Math.round(mx * 0.62) : Math.round(w * 0.055);
+      var holeH = portrait ? Math.round(h * 0.057) : Math.round(mt * 0.62);
       var rr = Math.min(holeW, holeH) * 0.22;
-      var count = Math.max(3, Math.min(8, Math.round(w / 90)));
-      var pad = Math.round(holeW * 0.72);
-      var step = (fw - pad * 2 - holeW) / (count - 1);
-      var topHoleY = mt * 0.43 - holeH / 2;
-      var bottomHoleY = fh - mt * 0.43 - holeH / 2;
+      var count = Math.max(6, Math.min(10, Math.round(run / 145)));
+      var start = run * 0.065;
+      var step = (run - start * 2 - (portrait ? holeH : holeW)) / (count - 1);
       for (var k = 0; k < count; k++) {
-        var hx = pad + step * k;
-        [topHoleY, bottomHoleY].forEach(function (hy) {
-          g.fillStyle = "rgba(226, 183, 123, 0.5)";
-          roundRectPath(g, hx, hy, holeW, holeH, rr);
+        var pos = start + step * k + (frand() - 0.5) * 3;
+        var pos2 = pos + (frand() - 0.5) * 3;
+        var holes = portrait ? [
+          [mx * 0.33, pos, holeW, holeH],
+          [fw - mx * 0.1 - holeW, pos2, holeW, holeH]
+        ] : [
+          [pos, mt * 0.19, holeW, holeH],
+          [pos2, fh - mt * 0.19 - holeH, holeW, holeH]
+        ];
+        holes.forEach(function (hole) {
+          var hx = hole[0], hy = hole[1], hw = hole[2], hh = hole[3];
+          g.fillStyle = "rgba(229, 151, 68, 0.62)";
+          roundRectPath(g, hx - 2, hy - 2, hw + 4, hh + 4, rr + 2);
           g.fill();
-          g.fillStyle = "#070806";
-          roundRectPath(g, hx + 1.5, hy + 1.5, holeW - 3, holeH - 3, Math.max(1, rr - 1));
+          g.fillStyle = "#030403";
+          roundRectPath(g, hx, hy, hw, hh, rr);
           g.fill();
+          g.strokeStyle = "rgba(0, 0, 0, 0.82)";
+          g.lineWidth = Math.max(1, Math.round(hw * 0.012));
+          g.stroke();
         });
       }
-      var fsEdge = Math.max(8, Math.round(mt * 0.22));
-      g.font = "500 " + fsEdge + "px 'DM Mono', 'Courier New', monospace";
-      g.fillStyle = "rgba(226, 184, 125, 0.82)";
-      g.textBaseline = "alphabetic";
-      g.textAlign = "left";
-      g.fillText((stockLabel + "   " + String(frameNo).padStart(2, "0") + "A").toUpperCase(), mx, fh - mt * 0.78);
-      g.textAlign = "right";
-      g.fillText("COLOR NEGATIVE   /   36 EXP", fw - mx, mt * 0.22);
+
+      // Orange factory markings, plus short timing bars on the opposite rail.
+      var fsEdge = Math.max(10, Math.round((portrait ? mx : mt) * 0.2));
+      var orange = "#eda444";
+      g.fillStyle = orange;
+      g.strokeStyle = orange;
+      g.textBaseline = "middle";
+      g.textAlign = "center";
+      var code = stockLabel.toUpperCase().replace(/\s+/g, " ");
+      var frameCode = String(frameNo).padStart(2, "0");
+      if (portrait) {
+        g.font = "600 " + fsEdge + "px 'DM Mono', 'Courier New', monospace";
+        g.save();
+        g.translate(fw - mx / 2, fh / 2);
+        g.rotate(Math.PI / 2);
+        g.fillText(code, 0, 0, h * 0.66);
+        g.restore();
+        g.font = "600 " + Math.round(fsEdge * 0.85) + "px 'DM Mono', 'Courier New', monospace";
+        g.save();
+        g.translate(mx / 2, h * 0.47);
+        g.rotate(-Math.PI / 2);
+        g.fillText(frameCode, 0, 0);
+        g.restore();
+        g.save();
+        g.translate(mx / 2, fh - mt - h * 0.07);
+        g.rotate(-Math.PI / 2);
+        g.fillText(frameCode + "A", 0, 0);
+        g.restore();
+        for (var b = 0; b < 34; b++) {
+          var by = Math.round(mt + b * (h * 0.026));
+          var bw = (b % 5 === 0 || b % 5 === 1) ? mx * 0.28 : mx * (0.1 + frand() * 0.16);
+          g.fillRect(0, by, bw, Math.max(2, Math.round(fsEdge * (b % 5 === 0 ? 0.16 : 0.09))));
+        }
+      } else {
+        // Keep edge printing small and place it in the gaps between sprockets.
+        // Real stock names are edge codes, not large captions across the frame.
+        var edgeType = Math.max(9, Math.round(mt * 0.082));
+        g.font = "500 " + edgeType + "px 'DM Mono', 'Courier New', monospace";
+        g.fillStyle = "rgba(239, 169, 81, 0.76)";
+        var firstGap = start + holeW + (step - holeW) * 0.5;
+        var lastGap = start + step * (count - 3) + holeW + (step - holeW) * 0.5;
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.save();
+        g.translate(firstGap, mt / 2);
+        g.rotate(Math.PI / 2);
+        g.fillText(code, 0, 0, mt * 0.82);
+        g.restore();
+        g.save();
+        g.translate(lastGap, fh - mt / 2);
+        g.rotate(-Math.PI / 2);
+        g.fillText(frameCode + "  /  36", 0, 0, mt * 0.82);
+        g.restore();
+
+        /*
+         * The tiny vertical marks are registration ticks. Keep them at the
+         * extreme ends of the rail so they never run through the sprockets.
+         */
+        g.fillStyle = "rgba(237, 164, 68, 0.7)";
+        for (var bt = 0; bt < 5; bt++) {
+          var bx = Math.round(mx + bt * (start * 0.17));
+          var bh = mt * (bt % 2 === 0 ? 0.12 : 0.065);
+          g.fillRect(bx, 0, Math.max(1, Math.round(fsEdge * 0.06)), bh);
+        }
+        for (var bb = 0; bb < 5; bb++) {
+          var bxb = Math.round(fw - mx - bb * (start * 0.17));
+          var bhb = mt * (bb % 2 === 0 ? 0.12 : 0.065);
+          g.fillRect(bxb, fh - bhb, Math.max(1, Math.round(fsEdge * 0.06)), bhb);
+        }
+      }
+
+      // The image sits inside a narrow, slightly warm gate line.
       g.drawImage(src, mx, mt, w, h);
-      g.strokeStyle = "rgba(255, 235, 200, 0.24)";
-      g.lineWidth = Math.max(1, Math.round(h / 1200));
+      g.strokeStyle = "rgba(233, 159, 77, 0.42)";
+      g.lineWidth = Math.max(1, Math.round(Math.min(w, h) / 1100));
       g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
-      g.strokeStyle = "rgba(0, 0, 0, 0.46)";
-      g.strokeRect(mx - 1.5, mt - 1.5, w + 3, h + 3);
       src.width = fw;
       src.height = fh;
       ctx.drawImage(c, 0, 0);
