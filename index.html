@@ -3,181 +3,504 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kodak Gold 200 Studio</title>
+    <title>Analog Film Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <style>
       :root {
-        font-family: Inter, system-ui, -apple-system, sans-serif;
-        background: #14100c;
-        color: #f3ead9;
+        --film-black: #0a0806;
+        --film-base: #14100c;
+        --film-brown: #1b1712;
+        --film-warm: #2a2118;
+        --film-gold: #e8a54b;
+        --film-gold-light: #ffca6b;
+        --film-gold-dark: #c98a38;
+        --film-text: #f3ead9;
+        --film-text-muted: #a89a83;
+        --film-text-subtle: #7d7059;
+        --film-border: #33291b;
+        --film-border-light: #4a3b25;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        min-height: 100vh;
+        font-family: 'IBM Plex Mono', 'Courier New', monospace;
+        background: var(--film-black);
+        color: var(--film-text);
+        line-height: 1.5;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image:
+          radial-gradient(ellipse at 10% 20%, rgba(255,240,210,0.03) 0%, transparent 20%),
+          radial-gradient(ellipse at 90% 80%, rgba(255,240,210,0.03) 0%, transparent 20%),
+          radial-gradient(ellipse at 50% 50%, rgba(255,240,210,0.02) 0%, transparent 30%);
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 0.7;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background:
+          linear-gradient(90deg, rgba(255,180,70,0.08) 0%, transparent 5%),
+          linear-gradient(270deg, rgba(255,180,70,0.08) 0%, transparent 5%),
+          linear-gradient(0deg, rgba(255,180,70,0.05) 0%, transparent 10%),
+          linear-gradient(180deg, rgba(255,180,70,0.05) 0%, transparent 10%);
+        pointer-events: none;
+        z-index: 1001;
+      }
+
       .app {
         max-width: 1000px;
         margin: 0 auto;
         padding: 24px 16px 48px;
+        position: relative;
       }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border: 2px solid var(--film-gold);
+        border-radius: 4px;
+        pointer-events: none;
+        opacity: 0.15;
+        z-index: -1;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 24px;
+        position: relative;
+      }
+
       header h1 {
-        font-size: 26px;
-        margin: 0 0 4px;
-        letter-spacing: 0.5px;
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 32px;
+        margin: 0 0 8px;
+        letter-spacing: 2px;
+        font-weight: 500;
+        text-shadow: 0 0 10px rgba(232, 165, 75, 0.3);
       }
+
       header h1 .gold {
-        background: linear-gradient(90deg, #ffca6b, #e8a54b, #ffdf9a);
+        background: linear-gradient(135deg, #ffdf9a, #e8a54b, #c98a38, #ffca6b);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
+        background-size: 200% 200%;
+        animation: goldShimmer 8s ease-in-out infinite;
       }
+
+      @keyframes goldShimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+
       header p.sub {
         margin: 0 0 20px;
-        color: #a89a83;
+        color: var(--film-text-muted);
         font-size: 13px;
+        font-family: 'IBM Plex Mono', monospace;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
       }
+
       .drop {
-        border: 2px dashed #5c4c33;
-        border-radius: 16px;
+        border: 3px dashed var(--film-border);
+        border-radius: 20px;
         padding: 40px 20px;
         text-align: center;
         cursor: pointer;
-        transition: border-color 0.2s, background 0.2s;
-        background: #1b1712;
+        transition: all 0.3s ease;
+        background: var(--film-base);
+        position: relative;
+        overflow: hidden;
       }
-      .drop:hover, .drop.over { border-color: #e8a54b; background: #211b13; }
-      .drop .big { font-size: 17px; font-weight: 600; }
-      .drop .small { font-size: 13px; color: #a89a83; margin-top: 6px; }
+
+      .drop::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at center, rgba(255,240,210,0.05) 0%, transparent 70%);
+        pointer-events: none;
+      }
+
+      .drop:hover, .drop.over {
+        border-color: var(--film-gold);
+        background: var(--film-brown);
+        box-shadow:
+          0 0 20px rgba(232, 165, 75, 0.2),
+          inset 0 0 30px rgba(232, 165, 75, 0.05);
+      }
+
+      .drop .big {
+        font-size: 18px;
+        font-weight: 600;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: var(--film-gold-light);
+        text-shadow: 0 0 5px rgba(232, 165, 75, 0.3);
+      }
+
+      .drop .small {
+        font-size: 13px;
+        color: var(--film-text-muted);
+        margin-top: 8px;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
       .work {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
-        margin-top: 16px;
-      }
-      @media (max-width: 700px) { .work { grid-template-columns: 1fr; } }
-      .pane {
-        background: #1b1712;
-        border: 1px solid #33291b;
-        border-radius: 16px;
-        padding: 12px;
-      }
-      .pane h2 {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        margin: 4px 4px 10px;
-        color: #a89a83;
-      }
-      .pane canvas { width: 100%; height: auto; border-radius: 10px; display: block; background: #000; }
-      .controls {
-        margin-top: 16px;
-        background: #1b1712;
-        border: 1px solid #33291b;
-        border-radius: 16px;
-        padding: 16px 18px;
-      }
-      .controls h2 {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        margin: 0 0 14px;
-        color: #a89a83;
-      }
-      .row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 10px 0;
-        font-size: 13px;
-      }
-      .row label { width: 120px; color: #cfc2ab; }
-      .row input[type="range"] { flex: 1; accent-color: #e8a54b; }
-      .row .val { width: 34px; text-align: right; color: #a89a83; font-variant-numeric: tabular-nums; }
-      .tip {
+        margin-top: 24px;
         position: relative;
-        cursor: help;
-        text-decoration: underline dotted rgba(207, 194, 171, 0.45);
-        text-underline-offset: 3px;
       }
-      .tip:hover::after,
-      .tip:active::after {
-        content: attr(data-tip);
+
+      @media (max-width: 700px) { .work { grid-template-columns: 1fr; } }
+
+      .pane {
+        background: var(--film-base);
+        border: 1px solid var(--film-border);
+        border-radius: 16px;
+        padding: 16px 16px 12px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .pane::before {
+        content: "";
         position: absolute;
-        left: 0;
-        top: 100%;
-        margin-top: 6px;
-        width: 250px;
-        background: #2a2118;
-        border: 1px solid #4a3b25;
-        color: #f3ead9;
-        padding: 8px 10px;
-        border-radius: 8px;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--film-gold-dark), var(--film-gold), var(--film-gold-light));
+        opacity: 0.3;
+      }
+
+      .pane h2 {
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 12px;
-        font-weight: 400;
-        line-height: 1.5;
-        z-index: 20;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 8px 8px 12px;
+        color: var(--film-gold);
+        font-weight: 500;
       }
-      .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-      button {
-        font: inherit;
-        border: none;
+
+      .pane canvas {
+        width: 100%;
+        height: auto;
         border-radius: 10px;
-        padding: 10px 18px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
+        display: block;
+        background: #000;
+        box-shadow:
+          0 0 15px rgba(0, 0, 0, 0.5),
+          inset 0 0 10px rgba(232, 165, 75, 0.05);
       }
-      .primary { background: linear-gradient(90deg, #e8a54b, #ffca6b); color: #241703; }
-      .ghost { background: #2a2118; color: #f3ead9; border: 1px solid #4a3b25 !important; }
-      button:disabled { opacity: 0.4; cursor: not-allowed; }
-      .roll { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+      .roll {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding: 12px;
+        background: var(--film-base);
+        border: 1px solid var(--film-border);
+        border-radius: 12px;
+      }
+
       .roll .thumb {
         position: relative;
         width: 64px;
         height: 64px;
         padding: 0;
-        border: 2px solid #33291b;
+        border: 2px solid var(--film-border);
         border-radius: 8px;
         background: #000;
         overflow: hidden;
         cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
-      .roll .thumb.active { border-color: #e8a54b; }
+
+      .roll .thumb:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(232, 165, 75, 0.2); }
+      .roll .thumb.active { border-color: var(--film-gold); box-shadow: 0 0 0 2px var(--film-gold); }
       .roll .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
       .roll .thumb .rm {
         position: absolute;
-        top: 2px;
-        right: 2px;
-        width: 18px;
-        height: 18px;
+        top: 2px; right: 2px;
+        width: 18px; height: 18px;
         padding: 0;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.7);
-        color: #fff;
+        background: rgba(0, 0, 0, 0.8);
+        color: var(--film-gold-light);
         font-size: 12px;
         line-height: 18px;
         text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
       }
-      .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+      .roll .thumb .rm:hover { background: var(--film-gold); color: var(--film-black); }
+
+      .controls {
+        margin-top: 20px;
+        background: var(--film-base);
+        border: 1px solid var(--film-border);
+        border-radius: 16px;
+        padding: 20px;
+        position: relative;
+      }
+
+      .controls::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--film-gold), transparent);
+        opacity: 0.4;
+      }
+
+      .controls h2 {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 0 0 20px;
+        color: var(--film-gold);
+        font-weight: 500;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--film-border);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 12px 0;
+        font-size: 13px;
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
+      .row label {
+        width: 140px;
+        color: var(--film-text-muted);
+        font-size: 12px;
+      }
+
+      .row input[type="range"] {
+        flex: 1;
+        -webkit-appearance: none;
+        height: 6px;
+        background: var(--film-warm);
+        border-radius: 3px;
+        outline: none;
+        accent-color: var(--film-gold);
+      }
+
+      .row input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: var(--film-gold);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(232, 165, 75, 0.4), 0 0 0 2px var(--film-gold-dark);
+        transition: all 0.2s ease;
+      }
+
+      .row input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(232, 165, 75, 0.6), 0 0 0 3px var(--film-gold);
+      }
+
+      .row input[type="range"]::-moz-range-thumb {
+        width: 20px; height: 20px;
+        background: var(--film-gold);
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid var(--film-gold-dark);
+        box-shadow: 0 2px 6px rgba(232, 165, 75, 0.4);
+      }
+
+      .row .val {
+        width: 36px;
+        text-align: right;
+        color: var(--film-gold-light);
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        background: var(--film-warm);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
+      .tip {
+        position: relative;
+        cursor: help;
+        text-decoration: underline dotted rgba(207, 194, 171, 0.5);
+        text-underline-offset: 3px;
+        color: var(--film-text-muted);
+      }
+
+      .tip:hover::after, .tip:active::after {
+        content: attr(data-tip);
+        position: absolute;
+        left: 0;
+        top: 100%;
+        margin-top: 8px;
+        width: 280px;
+        background: var(--film-warm);
+        border: 1px solid var(--film-gold);
+        color: var(--film-text);
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.5;
+        z-index: 100;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(232, 165, 75, 0.2);
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
+      .presets {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: var(--film-brown);
+        border: 1px solid var(--film-border);
+        border-radius: 12px;
+      }
+
       .preset {
-        background: #2a2118;
-        color: #e9dcc3;
-        border: 1px solid #4a3b25;
-        border-radius: 999px;
-        padding: 6px 14px;
+        background: var(--film-warm);
+        color: var(--film-text-muted);
+        border: 1px solid var(--film-border);
+        border-radius: 20px;
+        padding: 8px 16px;
         font-size: 12px;
         cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'IBM Plex Mono', monospace;
+        font-weight: 500;
       }
-      .preset.active { background: #e8a54b; color: #241703; border-color: #e8a54b; }
+
+      .preset:hover { border-color: var(--film-gold); color: var(--film-gold-light); background: rgba(232, 165, 75, 0.1); }
+      .preset.active { background: var(--film-gold); color: var(--film-black); border-color: var(--film-gold); box-shadow: 0 0 10px rgba(232, 165, 75, 0.4); }
+
+      .btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+
+      button {
+        font: inherit;
+        font-family: 'IBM Plex Mono', monospace;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 20px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .primary {
+        background: linear-gradient(135deg, var(--film-gold-dark), var(--film-gold), var(--film-gold-light));
+        color: var(--film-black);
+        box-shadow: 0 4px 12px rgba(232, 165, 75, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+      }
+
+      .primary:hover:not(:disabled) {
+        box-shadow: 0 6px 16px rgba(232, 165, 75, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+
+      .primary:active:not(:disabled) { transform: translateY(0); }
+
+      .ghost {
+        background: var(--film-warm);
+        color: var(--film-text);
+        border: 1px solid var(--film-border) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .ghost:hover:not(:disabled) {
+        border-color: var(--film-gold) !important;
+        background: rgba(232, 165, 75, 0.1);
+        color: var(--film-gold-light);
+      }
+
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+
       .row select {
         flex: 1;
-        background: #2a2118;
-        color: #f3ead9;
-        border: 1px solid #4a3b25;
+        background: var(--film-warm);
+        color: var(--film-text);
+        border: 1px solid var(--film-border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font: inherit;
+        font-family: 'IBM Plex Mono', monospace;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .row select:hover { border-color: var(--film-gold); }
+
+      .row input[type="text"], .row input[type="checkbox"] {
+        background: var(--film-warm);
+        color: var(--film-text);
+        border: 1px solid var(--film-border);
         border-radius: 8px;
         padding: 8px 10px;
         font: inherit;
+        font-family: 'IBM Plex Mono', monospace;
       }
-      .note { font-size: 12px; color: #7d7059; margin-top: 14px; line-height: 1.5; }
+
+      .row input[type="checkbox"] {
+        width: 18px; height: 18px;
+        flex: none;
+        accent-color: var(--film-gold);
+        cursor: pointer;
+      }
+
+      .note {
+        font-size: 12px;
+        color: var(--film-text-subtle);
+        margin-top: 16px;
+        line-height: 1.6;
+        padding: 12px;
+        background: var(--film-brown);
+        border: 1px solid var(--film-border);
+        border-radius: 8px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-style: italic;
+      }
+
+      @media (max-width: 600px) {
+        .row label { width: 100px; }
+        .row .val { width: 32px; }
+        .btns { gap: 8px; }
+        button { padding: 10px 14px; font-size: 12px; }
+      }
+
       #grainPreview { display: none; }
+
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: var(--film-base); }
+      ::-webkit-scrollbar-thumb { background: var(--film-border); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--film-gold); }
     </style>
   </head>
   <body>
@@ -237,7 +560,7 @@
         <div class="row"><label class="tip" data-tip="Adds a 35mm film-strip border around the photo: sprocket holes, faint film-base texture, and the orange edge print with the stock name and frame number — like a scanned negative. Untick for a clean, borderless photo.">35mm film frame</label><input type="checkbox" id="frame" checked style="width:18px;height:18px;accent-color:#e8a54b;flex:none;" /></div>
         <div class="row"><label class="tip" data-tip="Prints text in the photo's corner in classic orange one-hour-lab style — type a date like '98 24 12 or anything else. Leave empty for no stamp.">Date stamp</label><input type="text" id="datetext" maxlength="24" placeholder="e.g. '98 24 12" style="flex:1;background:#2a2118;color:#f3ead9;border:1px solid #4a3b25;border-radius:8px;padding:8px 10px;font:inherit;" /></div>
 
-        <div class="row" style="margin-top:16px">
+        <div class="row" style="margin-top:18px">
           <label style="width:auto">Full-resolution export</label>
           <input type="checkbox" id="fullres" style="width:18px;height:18px;accent-color:#e8a54b;" />
           <span style="font-size:12px;color:#7d7059;">Develops the original file (e.g. 6000&times;4000 from the a6300) &mdash; takes a few extra seconds</span>
@@ -254,804 +577,18 @@
 
     <script>
       "use strict";
-      var srcCanvas = document.getElementById("src");
-      var outCanvas = document.getElementById("out");
-      var srcCtx = srcCanvas.getContext("2d");
-      var outCtx = outCanvas.getContext("2d");
-      var previewCtx = outCtx; // the on-screen preview target
-      var img = null;
-      var photoSeed = 1; // content-derived, so each photo gets its own imperfection pattern
-      var MAX = 2400; // work at up to 2400px long edge
-
-      var currentStock = "gold";
-
-      // Per-stock emulation profiles: hue rendering, dye-layer density
-      // curves (toe + shoulder per channel), warmth bias, halation colour,
-      // grain character, and each stock's recommended baseline settings.
-      var stocks = {
-        gold: {
-          label: "Kodak Gold 200",
-          gShift: -11, gSat: -0.13, gVal: -0.04, // greens -> yellow-olive
-          ySat: 0.16, yVal: 0.05,                // yellows glow
-          oShift: -4, oSat: 0.04,                // skin -> red-orange
-          bSat: -0.12,                           // blues recede, stay clean
-          toe: [1, 1, 0.5], shoulder: [0.92, 0.82, 0.62],
-          warmBias: 0, goldBias: 1.0,
-          hal: [1, 0.42, 0.20], halBoost: 1.0,   // red-orange halation
-          grain: 1.0,                            // visible, clumpy (PGI 44)
-          base: { warmth: 55, gold: 60, contrast: 45, fade: 40, sat: 50, halation: 35, grain: 40, dust: 25, vignette: 25 }
-        },
-        portra: {
-          label: "Kodak Portra 400",
-          gShift: -3, gSat: -0.05, gVal: 0,      // gentle, neutral
-          ySat: 0.04, yVal: 0.02,
-          oShift: -2, oSat: 0.02,                // creamy skin
-          bSat: -0.04,
-          toe: [0.8, 0.8, 0.8], shoulder: [0.95, 0.9, 0.85], // long latitude
-          warmBias: -0.02, goldBias: 0.25,
-          hal: [1, 0.8, 0.72], halBoost: 0.6,
-          grain: 0.55,                           // fine grain
-          base: { warmth: 25, gold: 20, contrast: 30, fade: 45, sat: 30, halation: 20, grain: 30, dust: 15, vignette: 15 }
-        },
-        ektar: {
-          label: "Kodak Ektar 100",
-          gShift: 2, gSat: 0.08, gVal: 0.02,     // vivid greens stay green
-          ySat: 0.10, yVal: 0.05,
-          oShift: -2, oSat: 0.10,
-          bSat: 0.15,                            // punchy, saturated blues
-          toe: [0.7, 0.7, 0.7], shoulder: [0.85, 0.85, 0.8],
-          warmBias: -0.08, goldBias: 0.1,
-          hal: [1, 0.55, 0.45], halBoost: 0.5,
-          grain: 0.35,                           // world's finest-grain colour neg
-          base: { warmth: 15, gold: 10, contrast: 55, fade: 20, sat: 75, halation: 15, grain: 20, dust: 10, vignette: 15 }
-        },
-        cinestill: {
-          label: "CineStill 800T",
-          gShift: 6, gSat: -0.05, gVal: 0,       // cool, cinematic
-          ySat: 0.02, yVal: 0,
-          oShift: 0, oSat: 0,
-          bSat: 0.05,
-          toe: [0.6, 0.8, 1.3], shoulder: [0.88, 0.85, 0.8], // cyan-blu lifted shadows
-          warmBias: -0.18, goldBias: 0.05,
-          hal: [1, 0.18, 0.12], halBoost: 2.2,   // the famous deep-red halation
-          grain: 1.5,                            // pushed high-speed look
-          base: { warmth: 5, gold: 5, contrast: 45, fade: 35, sat: 40, halation: 60, grain: 55, dust: 20, vignette: 30 }
-        },
-        superia: {
-          label: "Fuji Superia 400",
-          gShift: 8, gSat: 0.10, gVal: 0.03,     // vivid Fuji greens
-          ySat: 0.05, yVal: 0.02,
-          oShift: 2, oSat: 0.02,
-          bSat: 0.05,
-          toe: [0.9, 1.05, 1.0], shoulder: [0.9, 0.82, 0.78], // green-tilted shadows
-          warmBias: -0.05, goldBias: 0.15,
-          hal: [1, 0.5, 0.4], halBoost: 0.7,
-          grain: 1.0,
-          base: { warmth: 10, gold: 15, contrast: 50, fade: 35, sat: 60, halation: 25, grain: 45, dust: 20, vignette: 20 }
-        }
-      };
-
-      // Presets are relative recipes applied on top of the current stock's
-      // baseline, so they work sensibly on every emulsion.
-      var presets = {
-        sunny:   { warmth: 15, gold: 15, contrast: 10, fade: -10, sat: 10, halation: 10, grain: -5,  dust: -5,  vignette: -5 },
-        muted:   { warmth: -15, gold: -25, contrast: -15, fade: 20, sat: -20, halation: -15, grain: -10, dust: -10, vignette: -10 },
-        push:    { warmth: 5, gold: -5, contrast: 25, fade: -20, sat: 5, halation: 15, grain: 30, dust: 15, vignette: 5 },
-        wellworn:{ fade: 5, halation: 5, grain: 15, dust: 45, vignette: 5 }
-      };
-
-      var sliders = ["warmth", "gold", "contrast", "fade", "sat", "halation", "grain", "dust", "vignette"];
-
-      function getParams() {
-        var p = {};
-        sliders.forEach(function (k) {
-          p[k] = (+document.getElementById(k).value) / 100;
-        });
-        p.frame = document.getElementById("frame").checked;
-        p.dateText = document.getElementById("datetext").value.trim();
-        return p;
-      }
-
-      function setUI(p) {
-        sliders.forEach(function (k) {
-          document.getElementById(k).value = p[k];
-          document.getElementById(k + "V").textContent = p[k];
-        });
-      }
-
-      sliders.forEach(function (k) {
-        document.getElementById(k).addEventListener("input", function () {
-          document.getElementById(k + "V").textContent = this.value;
-          clearPresets();
-          scheduleRender();
-        });
-      });
-
-      function applyPreset(key) {
-        var st = stocks[currentStock];
-        var out = {};
-        sliders.forEach(function (k) {
-          out[k] = Math.max(0, Math.min(100, st.base[k] + (presets[key][k] || 0)));
-        });
-        setUI(out);
-      }
-
-      document.getElementById("stock").addEventListener("change", function () {
-        currentStock = this.value;
-        var st = stocks[currentStock];
-        setUI(st.base);
-        clearPresets();
-        document.getElementById("stockLabel").textContent = st.label;
-        render();
-      });
-
-      document.getElementById("presets").addEventListener("click", function (e) {
-        var el = e.target.closest(".preset");
-        if (!el) return;
-        clearPresets();
-        el.classList.add("active");
-        applyPreset(el.dataset.p);
-        render();
-      });
-      function clearPresets() {
-        document.querySelectorAll(".preset").forEach(function (p) { p.classList.remove("active"); });
-      }
-
-      document.getElementById("frame").addEventListener("change", scheduleRender);
-      document.getElementById("datetext").addEventListener("input", scheduleRender);
-
-      // --- loading ---
-      var drop = document.getElementById("drop");
-      var fileInput = document.getElementById("file");
-      drop.addEventListener("click", function () { fileInput.click(); });
-      fileInput.addEventListener("change", function () {
-        if (fileInput.files.length) loadFiles(fileInput.files);
-        fileInput.value = "";
-      });
-      ["dragover", "dragenter"].forEach(function (ev) {
-        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); });
-      });
-      ["dragleave", "drop"].forEach(function (ev) {
-        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); });
-      });
-      drop.addEventListener("drop", function (e) {
-        if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
-      });
-      document.getElementById("newPhoto").addEventListener("click", function () { fileInput.click(); });
-      document.getElementById("reset").addEventListener("click", function () {
-        setUI(stocks[currentStock].base);
-        clearPresets();
-        render();
-      });
-
-      // --- the roll: load many photos, develop them all with one setting ---
-      var roll = [];   // loaded photos: one entry per frame
-      var active = -1; // index of the frame currently on the lightbox
-      var frameNo = 1;     // number shown in the 35mm edge print
-      var nextFrameNo = 1; // sequential counter, wraps at 36 like a real roll
-
-      function cleanName(n) {
-        return n.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "-").slice(0, 40) || "frame";
-      }
-
-      // seed derived from the photo's own pixels: every frame gets its own
-      // (but stable) dust, scratches and grain pattern
-      function computeSeed(im) {
-        var c = document.createElement("canvas");
-        var scale = Math.min(1, 300 / Math.max(im.width, im.height));
-        c.width = Math.max(1, Math.round(im.width * scale));
-        c.height = Math.max(1, Math.round(im.height * scale));
-        var cctx = c.getContext("2d");
-        cctx.drawImage(im, 0, 0, c.width, c.height);
-        var s = cctx.getImageData(0, 0, c.width, c.height).data;
-        var acc = 0x811c9dc5;
-        for (var si = 0; si < s.length; si += 4096) {
-          acc = ((acc ^ s[si]) * 16777619) >>> 0;
-        }
-        return acc || 1;
-      }
-
-      function makeThumb(im) {
-        var t = document.createElement("canvas");
-        t.width = t.height = 128;
-        var tctx = t.getContext("2d");
-        var s = Math.max(im.width, im.height);
-        var dw = im.width / s * 128, dh = im.height / s * 128;
-        tctx.drawImage(im, (128 - dw) / 2, (128 - dh) / 2, dw, dh);
-        return t.toDataURL("image/jpeg", 0.7);
-      }
-
-      function loadFiles(files) {
-        var list = Array.prototype.slice.call(files).filter(function (f) {
-          return f.type && f.type.indexOf("image/") === 0;
-        });
-        list.forEach(function (f) {
-          if (roll.length >= 40) return; // one roll of 36, plus slack
-          var url = URL.createObjectURL(f);
-          var im = new Image();
-          im.onload = function () {
-            roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1 });
-            URL.revokeObjectURL(url);
-            showPhoto(roll.length - 1);
-          };
-          im.src = url;
-        });
-      }
-
-      function showPhoto(i) {
-        if (i < 0 || i >= roll.length) return;
-        active = i;
-        img = roll[i].img;
-        photoSeed = roll[i].seed;
-        var scale = Math.min(1, MAX / Math.max(img.width, img.height));
-        var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-        srcCanvas.width = outCanvas.width = w;
-        srcCanvas.height = outCanvas.height = h;
-        srcCtx.drawImage(img, 0, 0, w, h);
-        document.getElementById("work").style.display = "grid";
-        document.getElementById("controls").style.display = "block";
-        buildThumbs();
-        render();
-      }
-
-      function rollEmpty() {
-        img = null;
-        active = -1;
-        document.getElementById("work").style.display = "none";
-        document.getElementById("controls").style.display = "none";
-        buildThumbs();
-      }
-
-      function buildThumbs() {
-        var strip = document.getElementById("rollStrip");
-        strip.innerHTML = "";
-        strip.style.display = roll.length ? "flex" : "none";
-        roll.forEach(function (entry, i) {
-          var b = document.createElement("button");
-          b.className = "thumb" + (i === active ? " active" : "");
-          b.title = "Show this frame";
-          var t = document.createElement("img");
-          t.src = entry.thumb;
-          b.appendChild(t);
-          var rm = document.createElement("span");
-          rm.className = "rm";
-          rm.textContent = "\u00d7";
-          rm.title = "Remove from roll";
-          rm.addEventListener("click", function (e) {
-            e.stopPropagation();
-            roll.splice(i, 1);
-            if (!roll.length) { rollEmpty(); return; }
-            if (i < active) active--;
-            if (i === active) showPhoto(Math.min(active, roll.length - 1));
-            else buildThumbs();
-          });
-          b.appendChild(rm);
-          b.addEventListener("click", function () { showPhoto(i); });
-          strip.appendChild(b);
-        });
-        var all = document.getElementById("downloadAll");
-        all.textContent = roll.length > 1
-          ? "Develop & download all (" + roll.length + ")"
-          : "Develop & download all";
-        all.disabled = !roll.length;
-      }
-
-      // --- the Kodak Gold 200 look ---
-      var renderPending = false;
-      function scheduleRender() {
-        if (renderPending) return;
-        renderPending = true;
-        setTimeout(function () { renderPending = false; render(); }, 90);
-      }
-
-      function render() {
-        if (!img) return;
-        frameNo = roll[active] ? roll[active].no : 1;
-        // always size from the source canvas: the output may carry a frame
-        developTo(outCtx, srcCtx, srcCanvas.width, srcCanvas.height, getParams());
-      }
-
-      // Full development pipeline: colour grade + halation + grain + dust +
-      // vignette. Works at any resolution — the on-screen preview runs at
-      // ~2400px, and the full-resolution export runs this exact same pipeline
-      // on the original file, so exports match the preview 1:1.
-      function developTo(destCtx, sourceCtx, w, h, p) {
-        outCtx = destCtx; // spatial effects (halation/grain/dust) draw here
-        // reset the target size: the previous render may have added a frame
-        if (destCtx.canvas.width !== w) destCtx.canvas.width = w;
-        if (destCtx.canvas.height !== h) destCtx.canvas.height = h;
-        var data = sourceCtx.getImageData(0, 0, w, h);
-        var px = data.data;
-
-        var st = stocks[currentStock] || stocks.gold;
-        var contrast = p.contrast, fade = p.fade, satAmt = p.sat;
-        var warmth = Math.min(1.15, p.warmth + st.warmBias);
-        var goldAmt = Math.max(0, p.gold * st.goldBias);
-
-        // per-pixel colour grade, modelled on the stock's dye-layer behaviour
-        var f = fade * 22;           // black point lift (film base + fog)
-        var c = 1 + contrast * 0.6;  // midtone contrast
-        for (var i = 0; i < px.length; i += 4) {
-          var r = px[i], g = px[i + 1], b = px[i + 2];
-
-          // 1) per-channel density curves. Each stock's dye layers behave
-          //    differently: e.g. Gold's red layer holds detail deep into
-          //    the highlights while its blue saturates early (golden
-          //    highlights); CineStill lifts its blue toe (cyan shadows).
-          r = density(r, f * st.toe[0], c, st.shoulder[0]);
-          g = density(g, f * st.toe[1], c, st.shoulder[1]);
-          b = density(b, f * st.toe[2], c, st.shoulder[2]);
-
-          // 2) punchy consumer-grade saturation
-          var lum = 0.299 * r + 0.587 * g + 0.114 * b;
-          r = lum + (r - lum) * (1 + satAmt * 0.50);
-          g = lum + (g - lum) * (1 + satAmt * 0.42);
-          b = lum + (b - lum) * (1 + satAmt * 0.46);
-
-          // 3) Gold's signature hue rendering (skipped for near-neutral
-          //    pixels): greens go yellow-olive, yellows glow, skin shifts
-          //    red-orange rather than yellow, blues recede but stay clean.
-          if (r !== g || g !== b) {
-            var hsv = rgb2hsv(r, g, b);
-            var gw = hmask(hsv[0], 70, 170, 30);  // greens
-            var yw = hmask(hsv[0], 42, 70, 14);    // yellows
-            var ow = hmask(hsv[0], 14, 42, 10);    // oranges / skin
-            var bw = hmask(hsv[0], 190, 265, 30); // blues
-            if (gw + yw + ow + bw > 0.01) {
-              hsv[0] = (hsv[0] + st.gShift * gw + st.oShift * ow + 360) % 360;
-              hsv[1] = hsv[1] * (1 + st.ySat * yw + st.oSat * ow + st.gSat * gw + st.bSat * bw);
-              hsv[2] = hsv[2] * (1 + st.yVal * yw + st.gVal * gw);
-              var rgb = hsv2rgb(hsv[0], hsv[1], hsv[2]);
-              r = rgb[0]; g = rgb[1]; b = rgb[2];
-            }
-          }
-
-          // 4) amber warmth, strongest in shadows (Gold lifts warm/brown)
-          var sw = sh(lum);
-          r += warmth * (8 + 10 * sw);
-          g += warmth * (3 + 5 * sw);
-          b -= warmth * (10 - 5 * sw);
-
-          // 5) golden highlights
-          var hlw = smooth((lum - 150) / 105);
-          r += goldAmt * hlw * 14;
-          g += goldAmt * hlw * 18;
-          b -= goldAmt * hlw * 10;
-
-          px[i] = clamp(r); px[i + 1] = clamp(g); px[i + 2] = clamp(b);
-        }
-
-        destCtx.putImageData(data, 0, 0);
-
-        // halation: each stock glows its own colour (CineStill = deep red)
-        if (p.halation > 0) halation(p.halation * st.halBoost, w, h, st.hal);
-
-        // grain: clumped, like real silver-halide crystals
-        if (p.grain > 0) grain(Math.min(1.3, p.grain * st.grain), w, h);
-
-        // dust, scratches, light leaks, channel misregistration
-        if (p.dust > 0) imperfections(p.dust, w, h);
-
-        // vignette
-        if (p.vignette > 0) vignette(p.vignette, w, h);
-
-        // finishing: lab-style date stamp, then the 35mm film-strip frame
-        if (p.dateText) stampDate(destCtx, w, h, p.dateText);
-        if (p.frame) applyFrame(destCtx, st.label);
-        outCtx = previewCtx; // restore the on-screen preview target
-      }
-
-      // Film characteristic ("D-log E") curve: soft toe, midtone contrast,
-      // and a filmic highlight shoulder that rolls off gently instead of
-      // clipping to white — negative film never blows out the way digital does.
-      // shoulder: 0–1, lower = earlier/softer highlight rolloff.
-      function density(v, f, c, shoulder) {
-        v = v * (1 - f / 255) + f * 0.9;   // toe (film base + fog)
-        v = (v - 128) * c + 128;            // midtone contrast
-        var k = 205;                        // shoulder knee
-        if (v > k) {
-          var t = Math.min(1, (v - k) / (255 - k));
-          v = k + (255 - k) * (1 - Math.pow(1 - t, shoulder));
-        }
-        return v;
-      }
-      function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
-      function sh(v) { return 1 - v / 255; } // shadow weight
-      function smooth(t) { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
-
-      function rgb2hsv(r, g, b) {
-        r /= 255; g /= 255; b /= 255;
-        var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
-        var h = 0;
-        if (d > 0.0005) {
-          if (mx === r) h = 60 * (((g - b) / d) % 6);
-          else if (mx === g) h = 60 * ((b - r) / d + 2);
-          else h = 60 * ((r - g) / d + 4);
-          if (h < 0) h += 360;
-        }
-        return [h, mx === 0 ? 0 : d / mx, mx];
-      }
-      function hsv2rgb(h, s, v) {
-        var c = v * s, hp = h / 60, x = c * (1 - Math.abs(hp % 2 - 1));
-        var r = 0, g = 0, b = 0;
-        if (hp < 1) { r = c; g = x; }
-        else if (hp < 2) { r = x; g = c; }
-        else if (hp < 3) { g = c; b = x; }
-        else if (hp < 4) { g = x; b = c; }
-        else if (hp < 5) { r = x; b = c; }
-        else { r = c; b = x; }
-        var m = v - c;
-        return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
-      }
-      // 1 inside [lo,hi] hue band, smoothstep falloff outside
-      function hmask(h, lo, hi, soft) {
-        if (h >= lo && h <= hi) return 1;
-        var d = h < lo ? lo - h : h - hi;
-        return d < soft ? smooth(1 - d / soft) : 0;
-      }
-
-      function halation(amt, w, h, hal) {
-        // extract highlights, blur them, screen-add warm glow
-        var tmp = outCtx.getImageData(0, 0, w, h);
-        var px = tmp.data;
-        var outPx = outCtx.getImageData(0, 0, w, h).data;
-        for (var i = 0; i < px.length; i += 4) {
-          var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-          var e = smooth((lum - 165) / 90);
-          // halation colour is stock-specific: red light penetrates past
-          // the anti-halation backing and scatters off the film base
-          px[i] = px[i] * e; px[i + 1] = px[i + 1] * e * hal[1]; px[i + 2] = px[i + 2] * e * hal[2];
-        }
-        // downscale-blur via drawing small then back
-        var small = document.createElement("canvas");
-        small.width = Math.max(1, Math.round(w / 8)); small.height = Math.max(1, Math.round(h / 8));
-        var sctx = small.getContext("2d");
-        sctx.putImageData(thumb(tmp, w, h, small.width, small.height), 0, 0);
-        outCtx.save();
-        outCtx.globalCompositeOperation = "screen";
-        outCtx.globalAlpha = Math.min(0.85, amt * 0.55);
-        outCtx.filter = "blur(0px)";
-        outCtx.drawImage(small, 0, 0, w, h);
-        outCtx.restore();
-      }
-
-      function thumb(imgData, w, h, tw, th) {
-        var t = document.createElement("canvas");
-        t.width = w; t.height = h;
-        t.getContext("2d").putImageData(imgData, 0, 0);
-        var c2 = document.createElement("canvas");
-        c2.width = tw; c2.height = th;
-        var ctx = c2.getContext("2d");
-        ctx.drawImage(t, 0, 0, w, h, 0, 0, tw, th);
-        return ctx.getImageData(0, 0, tw, th);
-      }
-
-      // Seeded PRNG so a photo always develops the same way
-      function prng(seed) {
-        var s = seed >>> 0;
-        return function () {
-          s = (s * 1664525 + 1013904223) >>> 0;
-          return s / 4294967296;
-        };
-      }
-
-      // Film grain via multi-octave value noise sampled with bilinear
-      // interpolation. Hard per-pixel noise reads as digital sensor noise;
-      // smooth, overlapping octaves read as silver-halide crystal clusters.
-      function grain(amt, w, h) {
-        var strength = amt * 34;
-        var rand = prng(0x9e3779b9 ^ photoSeed);
-        var data = outCtx.getImageData(0, 0, w, h);
-        var px = data.data;
-
-        // three octaves: coarse clumps, medium clusters, fine sparkle —
-        // each a small random lattice, smoothly interpolated, never blocky
-        var o1 = noiseLattice(Math.max(3, Math.round(w / 28)),  Math.max(3, Math.round(h / 28)),  rand);
-        var o2 = noiseLattice(Math.max(4, Math.round(w / 9)),   Math.max(4, Math.round(h / 9)),   rand);
-        var o3 = noiseLattice(Math.max(6, Math.round(w / 2.5)), Math.max(6, Math.round(h / 2.5)), rand);
-
-        for (var y = 0; y < h; y++) {
-          var fy = y / h;
-          for (var x = 0; x < w; x++) {
-            var idx = (y * w + x) * 4;
-            var lum = (px[idx] + px[idx + 1] + px[idx + 2]) / 765;
-            // grain lives mostly in midtones, fades near black & white
-            var m = 4 * lum * (1 - lum);
-            var fx = x / w;
-            var n = (lattice(o1, fx, fy) * 0.50 +
-                     lattice(o2, fx, fy) * 0.33 +
-                     lattice(o3, fx, fy) * 0.17) * strength * m;
-
-            // neutral (luminance-only) grain: same value across all channels
-            px[idx]     = clamp(px[idx] + n);
-            px[idx + 1] = clamp(px[idx + 1] + n * 0.97);
-            px[idx + 2] = clamp(px[idx + 2] + n * 0.97);
-          }
-        }
-        outCtx.putImageData(data, 0, 0);
-      }
-
-      // random value lattice, sampled with bilinear interpolation so the
-      // grain blobs have soft, organic edges instead of hard pixel steps
-      function noiseLattice(cw, ch, rand) {
-        var d = new Float32Array(cw * ch);
-        for (var i = 0; i < d.length; i++) d[i] = rand() - 0.5;
-        return { d: d, w: cw, h: ch };
-      }
-      function lattice(L, fx, fy) {
-        var x = fx * (L.w - 1), y = fy * (L.h - 1);
-        var x0 = x | 0, y0 = y | 0;
-        var x1 = x0 + 1 < L.w ? x0 + 1 : x0;
-        var y1 = y0 + 1 < L.h ? y0 + 1 : y0;
-        var tx = x - x0, ty = y - y0;
-        var r0 = y0 * L.w, r1 = y1 * L.w;
-        var a = L.d[r0 + x0], b = L.d[r0 + x1], c = L.d[r1 + x0], e = L.d[r1 + x1];
-        return (a + (b - a) * tx) * (1 - ty) + (c + (e - c) * tx) * ty;
-      }
-
-      function imperfections(amt, w, h) {
-        var rand = prng(0x1234abcd ^ photoSeed);
-
-        // 1) dust specks: bright (on negative = dark on print) and dark specks
-        var specks = Math.round(amt * 140);
-        for (var s = 0; s < specks; s++) {
-          var x = rand() * w, y = rand() * h;
-          var r = (0.4 + rand() * 2.2) * (w / 1200 + 0.4);
-          var bright = rand() < 0.55;
-          outCtx.save();
-          outCtx.globalAlpha = 0.25 + rand() * 0.5;
-          outCtx.fillStyle = bright ? "#fff6e0" : "#1a0e00";
-          if (rand() < 0.7) {
-            outCtx.beginPath();
-            outCtx.arc(x, y, r, 0, Math.PI * 2);
-            outCtx.fill();
-          } else {
-            outCtx.fillRect(x, y, r * 2, r * (0.4 + rand()));
-          }
-          outCtx.restore();
-        }
-
-        // 3) hairline scratches: thin vertical abrasion lines
-        var scratches = Math.round(amt * 5);
-        for (var k = 0; k < scratches; k++) {
-          var sx = rand() * w;
-          var len = h * (0.5 + rand() * 0.5);
-          var sy = rand() * (h - len);
-          outCtx.save();
-          outCtx.globalAlpha = 0.1 + rand() * 0.25 * amt;
-          outCtx.strokeStyle = rand() < 0.6 ? "#fff2d8" : "#0e0800";
-          outCtx.lineWidth = 0.6 + rand() * 1.2;
-          outCtx.beginPath();
-          outCtx.moveTo(sx, sy);
-          // slightly wavy, not perfectly straight
-          outCtx.bezierCurveTo(sx + (rand() - 0.5) * 8, sy + len / 3, sx + (rand() - 0.5) * 8, sy + 2 * len / 3, sx + (rand() - 0.5) * 6, sy + len);
-          outCtx.stroke();
-          outCtx.restore();
-        }
-
-        // 4) light leak: warm streak bleeding in from one edge (only sometimes)
-        if (rand() < amt * 0.9) {
-          var edge = Math.floor(rand() * 4);
-          outCtx.save();
-          var g;
-          var leakAlpha = 0.12 + rand() * 0.22 * amt;
-          if (edge === 0) { g = outCtx.createLinearGradient(0, 0, w * (0.2 + rand() * 0.3), 0); }
-          else if (edge === 1) { g = outCtx.createLinearGradient(w, 0, w * (1 - (0.2 + rand() * 0.3)), 0); }
-          else if (edge === 2) { g = outCtx.createLinearGradient(0, 0, 0, h * (0.2 + rand() * 0.3)); }
-          else { g = outCtx.createLinearGradient(0, h, 0, h * (1 - (0.2 + rand() * 0.3))); }
-          g.addColorStop(0, "rgba(255,150,60," + leakAlpha + ")");
-          g.addColorStop(1, "rgba(255,150,60,0)");
-          outCtx.globalCompositeOperation = "screen";
-          outCtx.fillStyle = g;
-          outCtx.fillRect(0, 0, w, h);
-          outCtx.restore();
-        }
-
-        // 5) subtle horizontal density fluctuation (roller/processing banding)
-        if (amt > 0.3) {
-          outCtx.save();
-          outCtx.globalCompositeOperation = "overlay";
-          outCtx.globalAlpha = amt * 0.12;
-          for (var by = 0; by < h; by += Math.round(h / 18)) {
-            var bandA = rand() * 0.5;
-            outCtx.fillStyle = bandA < 0.25 ? "#ffe9c4" : "#241a10";
-            outCtx.fillRect(0, by, w, Math.round(h / 40));
-          }
-          outCtx.restore();
-        }
-      }
-
-      function vignette(amt, w, h) {
-        outCtx.save();
-        var g = outCtx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.45, w / 2, h / 2, Math.max(w, h) * 0.75);
-        g.addColorStop(0, "rgba(0,0,0,0)");
-        g.addColorStop(1, "rgba(20,8,0," + (amt * 0.5) + ")");
-        outCtx.fillStyle = g;
-        outCtx.fillRect(0, 0, w, h);
-        outCtx.restore();
-      }
-
-      // classic one-hour-lab date print: hard dark shadow, glowing orange digits
-      function stampDate(ctx, w, h, text) {
-        var fs = Math.max(12, Math.round(h * 0.034));
-        ctx.save();
-        ctx.font = "700 " + fs + "px 'Courier New', monospace";
-        ctx.textAlign = "right";
-        var x = w - Math.round(w * 0.03);
-        var y = h - Math.round(h * 0.035);
-        ctx.fillStyle = "rgba(0,0,0,0.55)";
-        ctx.fillText(text, x + fs * 0.05 + 2, y + fs * 0.05 + 2);
-        ctx.fillStyle = "#ffb648";
-        ctx.fillText(text, x, y);
-        ctx.restore();
-      }
-
-      // Composite the developed photo onto a 35mm film strip: warm near-black
-      // film base, sprocket holes top & bottom, and the orange edge print
-      // with the stock name and this frame's number — like a lab scan.
-      function applyFrame(ctx, stockLabel) {
-        var src = ctx.canvas;
-        var w = src.width, h = src.height;
-        var mx = Math.round(w * 0.035);          // side margin
-        var mt = Math.round(h * 0.13);           // top/bottom strip
-        var fw = w + mx * 2, fh = h + mt * 2;
-        var c = document.createElement("canvas");
-        c.width = fw; c.height = fh;
-        var g = c.getContext("2d");
-
-        // film base
-        g.fillStyle = "#14100b";
-        g.fillRect(0, 0, fw, fh);
-        // faint streaks of film-base texture, stable per photo
-        var frand = prng(0x51a3b7 ^ photoSeed);
-        for (var i = 0; i < fw / 6; i++) {
-          g.fillStyle = "rgba(255,240,210," + (frand() * 0.03).toFixed(3) + ")";
-          g.fillRect(frand() * fw, 0, 1, fh);
-        }
-
-        // sprocket holes
-        var holeW = Math.max(5, Math.round(fw * 0.024));
-        var holeH = Math.max(4, Math.round(mt * 0.38));
-        var rr = Math.min(holeW, holeH) * 0.3;
-        var count = 8;
-        var pad = Math.round(holeW * 0.8);
-        var step = (fw - pad * 2 - holeW) / (count - 1);
-        g.fillStyle = "#060504";
-        for (var k = 0; k < count; k++) {
-          var hx = pad + step * k;
-          roundRectPath(g, hx, mt * 0.45 - holeH / 2, holeW, holeH, rr);
-          g.fill();
-          roundRectPath(g, hx, fh - mt * 0.45 - holeH / 2, holeW, holeH, rr);
-          g.fill();
-        }
-
-        // orange edge print: stock name + frame number (real films print
-        // the emulsion name and exposure numbers along the strip)
-        var fs = Math.max(10, Math.round(mt * 0.3));
-        g.font = "600 " + fs + "px 'Courier New', monospace";
-        g.fillStyle = "#e8a54b";
-        g.globalAlpha = 0.85;
-        g.textBaseline = "middle";
-        g.textAlign = "left";
-        g.fillText((stockLabel + "  " + frameNo + "A").toUpperCase(), mx, fh - mt * 0.42);
-        g.textAlign = "right";
-        g.fillText(frameNo + "A \u25B8", fw - mx, mt * 0.42);
-        g.globalAlpha = 1;
-
-        // the photograph
-        g.drawImage(src, mx, mt, w, h);
-        // faint frame edge highlight
-        g.strokeStyle = "rgba(255,235,200,0.15)";
-        g.lineWidth = Math.max(1, Math.round(h / 1000));
-        g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
-
-        // copy the framed result back onto the target canvas
-        src.width = fw;
-        src.height = fh;
-        ctx.drawImage(c, 0, 0);
-      }
-
-      function roundRectPath(g, x, y, rw, rh, r) {
-        g.beginPath();
-        g.moveTo(x + r, y);
-        g.arcTo(x + rw, y, x + rw, y + rh, r);
-        g.arcTo(x + rw, y + rh, x, y + rh, r);
-        g.arcTo(x, y + rh, x, y, r);
-        g.arcTo(x, y, x + rw, y, r);
-        g.closePath();
-      }
-
-      // --- download ---
-      // --- download ---
-      function frameName(entry) {
-        return currentStock + "-" + (entry ? entry.name : "film") + ".jpg";
-      }
-      function saveBlob(blob, name) {
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = name || frameName(roll[active]);
-        a.click();
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-      }
-
-      document.getElementById("download").addEventListener("click", function () {
-        if (!img) return;
-        var btn = this;
-        if (!document.getElementById("fullres").checked) {
-          outCanvas.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
-          return;
-        }
-        // re-run the whole pipeline on the original file at native resolution
-        btn.disabled = true;
-        btn.textContent = "Developing full resolution\u2026";
-        setTimeout(function () {
-          try {
-            var w = img.naturalWidth, h = img.naturalHeight;
-            var fullSrc = document.createElement("canvas");
-            fullSrc.width = w; fullSrc.height = h;
-            fullSrc.getContext("2d").drawImage(img, 0, 0);
-            var fullOut = document.createElement("canvas");
-            fullOut.width = w; fullOut.height = h;
-            developTo(fullOut.getContext("2d"), fullSrc.getContext("2d"), w, h, getParams());
-            fullOut.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
-          } finally {
-            outCtx = previewCtx;
-            btn.disabled = false;
-            btn.textContent = "Download this frame";
-          }
-        }, 30);
-      });
-
-      // batch: develop the whole roll with the current settings, one by one
-      function developOne(entry, p, fullres, done) {
-        var im = entry.img;
-        var out2 = document.createElement("canvas");
-        // this frame's own imperfection seed and edge-print number
-        photoSeed = entry.seed;
-        frameNo = entry.no;
-        if (fullres) {
-          var w = im.naturalWidth, h = im.naturalHeight;
-          var src2 = document.createElement("canvas");
-          src2.width = w; src2.height = h;
-          src2.getContext("2d").drawImage(im, 0, 0);
-          out2.width = w; out2.height = h;
-          developTo(out2.getContext("2d"), src2.getContext("2d"), w, h, p);
-        } else {
-          var scale = Math.min(1, MAX / Math.max(im.naturalWidth, im.naturalHeight));
-          var pw = Math.round(im.naturalWidth * scale), ph = Math.round(im.naturalHeight * scale);
-          var s2 = document.createElement("canvas");
-          s2.width = pw; s2.height = ph;
-          s2.getContext("2d").drawImage(im, 0, 0, pw, ph);
-          out2.width = pw; out2.height = ph;
-          developTo(out2.getContext("2d"), s2.getContext("2d"), pw, ph, p);
-        }
-        // restore the lightbox frame's seed/number for on-screen previews
-        photoSeed = roll[active] ? roll[active].seed : 1;
-        frameNo = roll[active] ? roll[active].no : 1;
-        out2.toBlob(function (b) { saveBlob(b, frameName(entry)); done(); }, "image/jpeg", 0.92);
-      }
-
-      document.getElementById("downloadAll").addEventListener("click", function () {
-        if (!roll.length) return;
-        var btn = this;
-        btn.disabled = true;
-        var p = getParams();
-        var fullres = document.getElementById("fullres").checked;
-        var i = 0;
-        (function next() {
-          if (i >= roll.length) {
-            btn.disabled = false;
-            buildThumbs();
-            return;
-          }
-          var entry = roll[i];
-          i++;
-          btn.textContent = "Developing " + i + "/" + roll.length + "\u2026";
-          setTimeout(function () {
-            developOne(entry, p, fullres, function () { setTimeout(next, 250); });
-          }, 30);
-        })();
-      });
-    </script>
-  </body>
-</html>
+var srcCanvas = document.getElementById("src");
+var outCanvas = document.getElementById("out");
+var srcCtx = srcCanvas.getContext("2d");
+var outCtx = outCanvas.getContext("2d");
+var previewCtx = outCtx;
+var img = null;
+var photoSeed = 1;
+var MAX = 2400;
+
+var currentStock = "gold";
+
+var stocks = {
+  gold: {
+    label: "Kodak Gold 200",
+    gShift: -11, gSat: -
