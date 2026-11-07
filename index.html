@@ -480,6 +480,7 @@
       gold: {
         label: "Kodak Gold 200",
         description: "Warm daylight color with golden highlights.",
+        frame: { base: "#13170f", tint: "rgba(190, 119, 47, 0.18)", glow: "rgba(229, 156, 65, 0.16)", accent: "#eaa143", grain: "rgba(247,185,97,", gate: "rgba(233, 159, 77, 0.42)" },
         gShift: -2, gSat: -0.02,
         ySat: 0.03, yVal: 0.01,
         bSat: -0.01,
@@ -492,6 +493,7 @@
       portra: {
         label: "Kodak Portra 400",
         description: "Soft skin tones, gentle contrast, and open shadows.",
+        frame: { base: "#17150f", tint: "rgba(177, 117, 70, 0.15)", glow: "rgba(221, 163, 112, 0.12)", accent: "#dcae78", grain: "rgba(239,195,144,", gate: "rgba(221, 177, 131, 0.38)" },
         gShift: -1, gSat: -0.01,
         ySat: 0.01, yVal: 0.01,
         bSat: -0.01,
@@ -504,6 +506,7 @@
       ektar: {
         label: "Kodak Ektar 100",
         description: "Crisp detail with vivid color and a clean finish.",
+        frame: { base: "#17130f", tint: "rgba(159, 65, 36, 0.18)", glow: "rgba(230, 91, 44, 0.15)", accent: "#ef673c", grain: "rgba(255,151,91,", gate: "rgba(239, 103, 60, 0.46)" },
         gShift: 1, gSat: 0.02,
         ySat: 0.02, yVal: 0.01,
         bSat: 0.03,
@@ -516,6 +519,7 @@
       cinestill: {
         label: "CineStill 800T",
         description: "Cool tungsten tones with a cinematic red glow.",
+        frame: { base: "#160f10", tint: "rgba(131, 39, 40, 0.2)", glow: "rgba(235, 61, 57, 0.2)", accent: "#f45b50", grain: "rgba(255,139,121,", gate: "rgba(244, 91, 80, 0.48)" },
         gShift: 1, gSat: -0.01,
         ySat: 0.01, yVal: 0,
         bSat: 0.02,
@@ -528,6 +532,7 @@
       superia: {
         label: "Fuji Superia 400",
         description: "Lively color with a cool, slightly green cast.",
+        frame: { base: "#101812", tint: "rgba(93, 133, 67, 0.19)", glow: "rgba(147, 178, 89, 0.17)", accent: "#b0be69", grain: "rgba(208,220,133,", gate: "rgba(176, 190, 105, 0.42)" },
         gShift: 2, gSat: 0.03,
         ySat: 0.01, yVal: 0.01,
         bSat: 0.01,
@@ -1170,7 +1175,7 @@
       if (p.dust > 0) imperfections(dustAmt * 0.4, w, h);
       if (p.vignette > 0) vignette(vignetteAmt * 0.4, w, h);
       if (p.dateText) stampDate(destCtx, w, h, p.dateText, p.dateFormat);
-      if (p.frame) applyFrame(destCtx, st.label);
+      if (p.frame) applyFrame(destCtx, st);
       
       outCtx = previewCtx;
     }
@@ -1402,7 +1407,9 @@
       ctx.restore();
     }
 
-    function applyFrame(ctx, stockLabel) {
+    function applyFrame(ctx, stock) {
+      var stockLabel = stock.label;
+      var film = stock.frame;
       var src = ctx.canvas;
       var w = src.width, h = src.height;
       var portrait = h >= w;
@@ -1417,21 +1424,20 @@
       var frand = prng(0x51a3b7 ^ photoSeed ^ (frameNo * 7919));
 
       // Dense green-black film base with a worn amber emulsion edge.
-      g.fillStyle = "#10170f";
+      g.fillStyle = film.base;
       g.fillRect(0, 0, fw, fh);
       var base = g.createLinearGradient(0, 0, fw, fh);
-      base.addColorStop(0, "rgba(190, 119, 47, 0.18)");
+      base.addColorStop(0, film.tint);
       base.addColorStop(0.2, "rgba(20, 31, 21, 0.08)");
       base.addColorStop(0.78, "rgba(4, 9, 6, 0.12)");
-      base.addColorStop(1, "rgba(217, 139, 53, 0.13)");
+      base.addColorStop(1, film.glow);
       g.fillStyle = base;
       g.fillRect(0, 0, fw, fh);
 
-      var railWidth = portrait ? mx : mt;
       var railGlow = g.createLinearGradient(0, 0, portrait ? fw : 0, portrait ? 0 : fh);
-      railGlow.addColorStop(0, "rgba(206, 127, 48, 0.18)");
+      railGlow.addColorStop(0, film.tint);
       railGlow.addColorStop(0.5, "rgba(7, 13, 9, 0)");
-      railGlow.addColorStop(1, "rgba(231, 153, 66, 0.13)");
+      railGlow.addColorStop(1, film.glow);
       g.fillStyle = railGlow;
       g.fillRect(0, 0, fw, fh);
 
@@ -1442,14 +1448,14 @@
         var onRail = portrait ? (tx < mx || tx > fw - mx) : (ty < mt || ty > fh - mt);
         if (!onRail) continue;
         var alpha = 0.018 + frand() * 0.065;
-        g.fillStyle = (frand() > 0.54 ? "rgba(247,185,97," : "rgba(0,3,2,") + alpha.toFixed(3) + ")";
+        g.fillStyle = (frand() > 0.54 ? film.grain : "rgba(0,3,2,") + alpha.toFixed(3) + ")";
         g.fillRect(tx, ty, frand() * 2 + 0.5, frand() * 2 + 0.5);
       }
       for (var s = 0; s < 16; s++) {
         var sx = frand() * fw, sy = frand() * fh;
         if (portrait && sx > mx && sx < fw - mx) continue;
         if (!portrait && sy > mt && sy < fh - mt) continue;
-        g.strokeStyle = "rgba(255, 194, 112," + (0.035 + frand() * 0.08).toFixed(3) + ")";
+        g.strokeStyle = film.grain + (0.035 + frand() * 0.08).toFixed(3) + ")";
         g.lineWidth = frand() * 1.5 + 0.5;
         g.beginPath();
         g.moveTo(sx, sy);
@@ -1477,7 +1483,7 @@
         ];
         holes.forEach(function (hole) {
           var hx = hole[0], hy = hole[1], hw = hole[2], hh = hole[3];
-          g.fillStyle = "rgba(229, 151, 68, 0.62)";
+          g.fillStyle = film.glow;
           roundRectPath(g, hx - 2, hy - 2, hw + 4, hh + 4, rr + 2);
           g.fill();
           g.fillStyle = "#030403";
@@ -1489,9 +1495,9 @@
         });
       }
 
-      // Orange factory markings, plus short timing bars on the opposite rail.
+      // Stock-colored factory markings, plus short timing bars on the opposite rail.
       var fsEdge = Math.max(10, Math.round((portrait ? mx : mt) * 0.2));
-      var orange = "#eda444";
+      var orange = film.accent;
       g.fillStyle = orange;
       g.strokeStyle = orange;
       g.textBaseline = "middle";
@@ -1526,7 +1532,7 @@
         // Real stock names are edge codes, not large captions across the frame.
         var edgeType = Math.max(9, Math.round(mt * 0.082));
         g.font = "500 " + edgeType + "px 'DM Mono', 'Courier New', monospace";
-        g.fillStyle = "rgba(239, 169, 81, 0.76)";
+        g.fillStyle = film.accent;
         var firstGap = start + holeW + (step - holeW) * 0.5;
         var lastGap = start + step * (count - 3) + holeW + (step - holeW) * 0.5;
         g.textAlign = "center";
@@ -1546,7 +1552,7 @@
          * The tiny vertical marks are registration ticks. Keep them at the
          * extreme ends of the rail so they never run through the sprockets.
          */
-        g.fillStyle = "rgba(237, 164, 68, 0.7)";
+        g.fillStyle = film.accent;
         for (var bt = 0; bt < 5; bt++) {
           var bx = Math.round(mx + bt * (start * 0.17));
           var bh = mt * (bt % 2 === 0 ? 0.12 : 0.065);
@@ -1561,7 +1567,7 @@
 
       // The image sits inside a narrow, slightly warm gate line.
       g.drawImage(src, mx, mt, w, h);
-      g.strokeStyle = "rgba(233, 159, 77, 0.42)";
+      g.strokeStyle = film.gate;
       g.lineWidth = Math.max(1, Math.round(Math.min(w, h) / 1100));
       g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
       src.width = fw;
