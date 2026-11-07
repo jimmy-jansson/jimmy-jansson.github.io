@@ -393,7 +393,7 @@
             <input type="checkbox" id="frame" checked />
           </div>
           <div class="row">
-            <label class="tip" for="datetext" data-tip="Choose a date for a small orange-red camera imprint. Leave empty for no stamp.">Camera date</label>
+            <label class="tip" for="datetext" data-tip="Filled from the photo's EXIF capture date when available. Change or clear it to edit the camera imprint.">Camera date</label>
             <input type="date" id="datetext" />
           </div>
           <div class="row">
@@ -660,6 +660,7 @@
       document.getElementById("datetext").value = look.params.dateText || "";
       document.getElementById("dateFormat").value = look.params.dateFormat || "yy.mm.dd";
       document.getElementById("cropRatio").value = look.cropRatio || "original";
+      if (active >= 0 && roll[active]) roll[active].dateText = look.params.dateText || "";
       document.getElementById("savedLookStatus").textContent = "Look applied.";
       clearPresets();
       if (img) showPhoto(active);
@@ -684,7 +685,10 @@
     refreshSavedLooks();
 
     document.getElementById("frame").addEventListener("change", scheduleRender);
-    document.getElementById("datetext").addEventListener("input", scheduleRender);
+    document.getElementById("datetext").addEventListener("input", function () {
+      if (active >= 0 && roll[active]) roll[active].dateText = this.value;
+      scheduleRender();
+    });
     document.getElementById("dateFormat").addEventListener("change", scheduleRender);
     document.getElementById("compareSlider").addEventListener("input", updateCompareSplit);
     var compareStage = document.getElementById("compareStage");
@@ -751,6 +755,140 @@
       return n.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "-").slice(0, 40) || "frame";
     }
 
+    function readPhotoDate(file) {
+      var metadataSlice = file.slice(0, Math.min(file.size, 1024 * 1024));
+      if (metadataSlice.arrayBuffer) {
+        return metadataSlice.arrayBuffer().then(extractCaptureDate).catch(function () { return ""; });
+      }
+      return new Promise(function (resolve) {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(extractCaptureDate(reader.result)); };
+        reader.onerror = function () { resolve(""); };
+        reader.readAsArrayBuffer(metadataSlice);
+      });
+    }
+
+    function extractCaptureDate(buffer) {
+      if (!buffer) return "";
+      try {
+        var bytes = new Uint8Array(buffer);
+        var view = new DataView(buffer);
+
+        // JPEG EXIF data is normally in an APP1 segment near the start.
+        if (bytes.length > 4 && bytes[0] === 0xff && bytes[1] === 0xd8) {
+          var offset = 2;
+          while (offset + 4 < bytes.length) {
+            if (bytes[offset] !== 0xff) { offset++; continue; }
+            while (bytes[offset] === 0xff) offset++;
+            var marker = bytes[offset++];
+            if (marker === 0xd9 || marker === 0xda) break;
+            if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+            if (offset + 2 > bytes.length) break;
+            var segmentLength = view.getUint16(offset, false);
+            var dataStart = offset + 2;
+            var dataEnd = Math.min(bytes.length, offset + segmentLength);
+            if (marker === 0xe1 && dataStart + 14 <= dataEnd &&
+                bytes[dataStart] === 0x45 && bytes[dataStart + 1] === 0x78 &&
+                bytes[dataStart + 2] === 0x69 && bytes[dataStart + 3] === 0x66) {
+              var date = readTiffCaptureDate(view, dataStart + 6, dataEnd);
+              if (date) return date;
+            }
+            if (segmentLength < 2) break;
+            offset += segmentLength;
+          }
+        }
+
+        // PNG stores EXIF in an eXIf chunk; WebP uses an EXIF RIFF chunk.
+        if (bytes.length > 12 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+          var pngOffset = 8;
+          while (pngOffset + 12 <= bytes.length) {
+            var pngLength = view.getUint32(pngOffset, false);
+            var pngType = String.fromCharCode(bytes[pngOffset + 4], bytes[pngOffset + 5], bytes[pngOffset + 6], bytes[pngOffset + 7]);
+            var pngData = pngOffset + 8;
+            if (pngData + pngLength > bytes.length) break;
+            if (pngType === "eXIf") {
+              var pngDate = readTiffCaptureDate(view, pngData, pngData + pngLength);
+              if (pngDate) return pngDate;
+            }
+            pngOffset = pngData + pngLength + 4;
+          }
+        }
+
+        if (bytes.length > 16 && String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) === "RIFF" &&
+            String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]) === "WEBP") {
+          var webpOffset = 12;
+          while (webpOffset + 8 <= bytes.length) {
+            var chunkName = String.fromCharCode(bytes[webpOffset], bytes[webpOffset + 1], bytes[webpOffset + 2], bytes[webpOffset + 3]);
+            var chunkLength = view.getUint32(webpOffset + 4, true);
+            var chunkData = webpOffset + 8;
+            if (chunkData + chunkLength > bytes.length) break;
+            if (chunkName === "EXIF") {
+              var tiffStart = chunkData;
+              if (chunkLength >= 6 && bytes[chunkData] === 0x45 && bytes[chunkData + 1] === 0x78) tiffStart += 6;
+              var webpDate = readTiffCaptureDate(view, tiffStart, chunkData + chunkLength);
+              if (webpDate) return webpDate;
+            }
+            webpOffset = chunkData + chunkLength + (chunkLength % 2);
+          }
+        }
+      } catch (e) {
+        return "";
+      }
+      return "";
+    }
+
+    function readTiffCaptureDate(view, start, end) {
+      function inBounds(position, count) { return position >= start && position + count <= end; }
+      if (!inBounds(start, 8)) return "";
+      var byteOrder = String.fromCharCode(view.getUint8(start), view.getUint8(start + 1));
+      if (byteOrder !== "II" && byteOrder !== "MM") return "";
+      var little = byteOrder === "II";
+      function u16(position) { return inBounds(position, 2) ? view.getUint16(position, little) : 0; }
+      function u32(position) { return inBounds(position, 4) ? view.getUint32(position, little) : 0; }
+      if (u16(start + 2) !== 42) return "";
+
+      function readIfd(relativeOffset) {
+        var ifd = start + relativeOffset;
+        var entries = u16(ifd);
+        if (!entries || !inBounds(ifd + 2, entries * 12)) return { date: "", exifOffset: 0 };
+        var result = { date: "", exifOffset: 0 };
+        for (var i = 0; i < entries; i++) {
+          var entry = ifd + 2 + i * 12;
+          var tag = u16(entry), type = u16(entry + 2), count = u32(entry + 4);
+          if (tag === 0x8769 && type === 4 && count >= 1) result.exifOffset = u32(entry + 8);
+          if ((tag === 0x9003 || tag === 0x9004 || tag === 0x0132) && type === 2 && count > 0) {
+            var byteCount = Math.min(count, 64);
+            var textPosition = byteCount <= 4 ? entry + 8 : start + u32(entry + 8);
+            if (!inBounds(textPosition, byteCount)) continue;
+            var value = "";
+            for (var j = 0; j < byteCount; j++) {
+              var code = view.getUint8(textPosition + j);
+              if (!code) break;
+              value += String.fromCharCode(code);
+            }
+            if (tag === 0x9003 || (tag === 0x9004 && !result.date) || (tag === 0x0132 && !result.date)) result.date = value;
+          }
+        }
+        return result;
+      }
+
+      var ifd0 = readIfd(u32(start + 4));
+      if (ifd0.exifOffset) {
+        var exif = readIfd(ifd0.exifOffset);
+        if (exif.date) return normalizeExifDate(exif.date);
+      }
+      return normalizeExifDate(ifd0.date);
+    }
+
+    function normalizeExifDate(value) {
+      var match = value && value.match(/^(\d{4})[:\-](\d{2})[:\-](\d{2})/);
+      if (!match) return "";
+      var year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+      var check = new Date(Date.UTC(year, month - 1, day));
+      if (check.getUTCFullYear() !== year || check.getUTCMonth() + 1 !== month || check.getUTCDate() !== day) return "";
+      return match[1] + "-" + match[2] + "-" + match[3];
+    }
+
     function computeSeed(im) {
       var c = document.createElement("canvas");
       var scale = Math.min(1, 300 / Math.max(im.width, im.height));
@@ -786,10 +924,12 @@
         var url = URL.createObjectURL(f);
         var im = new Image();
         im.onload = function () {
-          pendingLoads--;
-          roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1 });
           URL.revokeObjectURL(url);
-          showPhoto(roll.length - 1);
+          readPhotoDate(f).then(function (captureDate) {
+            pendingLoads--;
+            roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1, captureDate: captureDate, dateText: captureDate });
+            showPhoto(roll.length - 1);
+          });
         };
         im.onerror = function () {
           pendingLoads--;
@@ -801,9 +941,13 @@
 
     function showPhoto(i) {
       if (i < 0 || i >= roll.length) return;
+      if (active >= 0 && active !== i && roll[active]) {
+        roll[active].dateText = document.getElementById("datetext").value;
+      }
       active = i;
       img = roll[i].img;
       photoSeed = roll[i].seed;
+      document.getElementById("datetext").value = roll[i].dateText || roll[i].captureDate || "";
       drawCroppedPhoto(img, srcCanvas, MAX);
       outCanvas.width = srcCanvas.width;
       outCanvas.height = srcCanvas.height;
@@ -1360,13 +1504,15 @@
     function developOne(entry, p, fullres, settings, stockKey, cropChoice, done) {
       var im = entry.img;
       var out2 = document.createElement("canvas");
+      var entryParams = Object.assign({}, p);
+      entryParams.dateText = entry.dateText === undefined ? (entry.captureDate || "") : entry.dateText;
       photoSeed = entry.seed;
       frameNo = entry.no;
       var source = document.createElement("canvas");
       var dimensions = drawCroppedPhoto(im, source, fullres ? 0 : MAX, cropChoice);
       out2.width = dimensions.width;
       out2.height = dimensions.height;
-      developTo(out2.getContext("2d"), source.getContext("2d"), dimensions.width, dimensions.height, p, stockKey);
+      developTo(out2.getContext("2d"), source.getContext("2d"), dimensions.width, dimensions.height, entryParams, stockKey);
       photoSeed = roll[active] ? roll[active].seed : 1;
       frameNo = roll[active] ? roll[active].no : 1;
       out2.toBlob(function (b) { saveBlob(b, frameName(entry, settings, stockKey)); done(); }, settings.mime, settings.quality);
@@ -1381,6 +1527,7 @@
       var settings = getExportSettings();
       var stockKey = currentStock;
       var cropChoice = document.getElementById("cropRatio").value;
+      if (active >= 0 && roll[active]) roll[active].dateText = document.getElementById("datetext").value;
       var i = 0;
       (function next() {
         if (i >= roll.length) {

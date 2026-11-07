@@ -12,7 +12,7 @@ Photos are processed in the browser and are not uploaded. Saved looks are kept i
 - A draggable before-and-after comparison slider and a separate grain-size control
 - Center crops for square, portrait, classic 3:2, and widescreen prints
 - Save, apply, and delete custom looks in browser storage
-- Optional 35mm frame and date stamp
+- Optional 35mm frame and camera date stamp, prefilled from EXIF capture metadata when available
 - Drag and drop or browse for multiple images, then switch between them in a contact sheet
 - Export the current photo or whole roll as JPEG or lossless PNG; adjust JPEG quality and optionally develop at full resolution
 - Responsive layout for desktop and mobile
