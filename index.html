@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Analog Film Studio</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
@@ -16,83 +16,1509 @@
       --film-text: #f3ead9;
       --film-text-muted: #a89a83;
       --film-border: #33291b;
+      --grain-paper: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/></filter><rect width="200" height="200" filter="url(%23n)"/></svg>');
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { min-height: 100vh; font-family: 'IBM Plex Mono', monospace; background: var(--film-black); color: var(--film-text); }
-    body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(ellipse at 10% 20%, rgba(255,240,210,0.03) 0%, transparent 20%), radial-gradient(ellipse at 90% 80%, rgba(255,240,210,0.03) 0%, transparent 20%); pointer-events: none; z-index: 1000; opacity: 0.7; }
-    body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(255,180,70,0.08) 0%, transparent 5%), linear-gradient(270deg, rgba(255,180,70,0.08) 0%, transparent 5%); pointer-events: none; z-index: 1001; }
-    .app { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; }
+    html, body { 
+      min-height: 100vh; 
+      font-family: 'IBM Plex Mono', monospace; 
+      background: var(--film-black); 
+      color: var(--film-text);
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(150,100,50,0.15) 0%, transparent 100%),
+        linear-gradient(to bottom, rgba(20,10,0,0.8) 0%, var(--film-black) 100%);
+    }
+    body::before { 
+      content: ""; 
+      position: fixed; 
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: 
+        radial-gradient(ellipse at 10% 20%, rgba(255,240,210,0.04) 0%, transparent 25%),
+        radial-gradient(ellipse at 90% 80%, rgba(255,240,210,0.04) 0%, transparent 25%),
+        linear-gradient(90deg, rgba(255,180,70,0.06) 0%, transparent 8%),
+        linear-gradient(270deg, rgba(255,180,70,0.06) 0%, transparent 8%);
+      pointer-events: none; 
+      z-index: 1000;
+    }
+    .app { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; position: relative; z-index: 10; }
     header { text-align: center; margin-bottom: 24px; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin: 0 0 8px; letter-spacing: 2px; }
-    header h1 .gold { background: linear-gradient(135deg, #ffdf9a, #e8a54b, #c98a38); -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 8s infinite; }
-    @keyframes shimmer { 0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-    header p.sub { margin: 0 0 20px; color: var(--film-text-muted); font-size: 13px; max-width: 600px; margin: 0 auto 20px; }
-    .drop { border: 3px dashed var(--film-border); border-radius: 20px; padding: 40px 20px; text-align: center; cursor: pointer; background: var(--film-base); transition: all 0.3s; }
-    .drop:hover, .drop.over { border-color: var(--film-gold); background: var(--film-brown); box-shadow: 0 0 20px rgba(232,165,75,0.2); }
-    .drop .big { font-size: 18px; font-weight: 600; color: var(--film-gold-light); }
-    .drop .small { font-size: 13px; color: var(--film-text-muted); margin-top: 8px; }
-    .work { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-    @media (max-width: 700px) { .work { grid-template-columns: 1fr; } }
-    .pane { background: var(--film-base); border: 1px solid var(--film-border); border-radius: 16px; padding: 16px; }
-    .pane h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 8px 8px 12px; color: var(--film-gold); }
-    .pane canvas { width: 100%; height: auto; border-radius: 10px; display: block; background: #000; }
-    .roll { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; padding: 12px; background: var(--film-base); border: 1px solid var(--film-border); border-radius: 12px; }
-    .roll .thumb { position: relative; width: 64px; height: 64px; padding: 0; border: 2px solid var(--film-border); border-radius: 8px; background: #000; overflow: hidden; cursor: pointer; transition: all 0.2s; }
-    .roll .thumb:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(232,165,75,0.2); }
-    .roll .thumb.active { border-color: var(--film-gold); box-shadow: 0 0 0 2px var(--film-gold); }
+    header h1 { 
+      font-family: 'Playfair Display', serif; 
+      font-size: 36px; 
+      margin: 0 0 8px; 
+      letter-spacing: 3px;
+      text-shadow: 0 0 30px rgba(232,165,75,0.3);
+    }
+    header h1 .gold { 
+      background: linear-gradient(135deg, #ffdf9a, #e8a54b, #c98a38, #ffca6b); 
+      -webkit-background-clip: text; 
+      background-clip: text; 
+      color: transparent;
+      animation: shimmer 12s infinite;
+      background-size: 200% 100%;
+    }
+    @keyframes shimmer {
+      0%,100%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+    }
+    header p.sub { 
+      margin: 0 auto 20px; 
+      color: var(--film-text-muted); 
+      font-size: 14px; 
+      max-width: 650px; 
+      line-height: 1.6;
+    }
+    .drop { 
+      border: 3px dashed var(--film-border); 
+      border-radius: 20px; 
+      padding: 40px 20px; 
+      text-align: center; 
+      cursor: pointer; 
+      background: var(--film-base);
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .drop::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(232,165,75,0.05) 0%, transparent 50%, rgba(232,165,75,0.03) 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .drop:hover::before, .drop.over::before { opacity: 1; }
+    .drop:hover, .drop.over { 
+      border-color: var(--film-gold); 
+      background: var(--film-brown); 
+      box-shadow: 
+        0 0 20px rgba(232,165,75,0.2),
+        inset 0 0 30px rgba(232,165,75,0.05);
+    }
+    .drop .big { font-size: 18px; font-weight: 600; color: var(--film-gold-light); position: relative; z-index: 1; }
+    .drop .small { font-size: 13px; color: var(--film-text-muted); margin-top: 8px; position: relative; z-index: 1; }
+    
+    .work { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 16px; 
+      margin-top: 24px;
+      background: var(--film-base);
+      border: 1px solid var(--film-border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+    }
+    @media (max-width: 700px) { 
+      .work { grid-template-columns: 1fr; }
+    }
+    .pane { 
+      background: var(--film-brown); 
+      border: 1px solid var(--film-border); 
+      border-radius: 12px; 
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pane::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, transparent 0%, rgba(232,165,75,0.03) 50%, transparent 100%);
+      pointer-events: none;
+    }
+    .pane h2 { 
+      font-size: 12px; 
+      text-transform: uppercase; 
+      letter-spacing: 1.5px; 
+      margin: 8px 8px 12px;
+      color: var(--film-gold);
+      font-weight: 600;
+      position: relative;
+      z-index: 1;
+    }
+    .pane canvas { 
+      width: 100%; 
+      height: auto; 
+      border-radius: 8px; 
+      display: block; 
+      background: #000;
+      box-shadow: 
+        0 0 0 1px rgba(255,255,255,0.05) inset,
+        0 0 15px rgba(0,0,0,0.5);
+    }
+    
+    .roll { 
+      display: flex; 
+      gap: 8px; 
+      flex-wrap: wrap; 
+      margin-top: 20px; 
+      padding: 16px;
+      background: var(--film-base); 
+      border: 1px solid var(--film-border); 
+      border-radius: 12px;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+    }
+    .roll .thumb { 
+      position: relative; 
+      width: 70px; 
+      height: 70px; 
+      padding: 0; 
+      border: 2px solid var(--film-border); 
+      border-radius: 8px; 
+      background: #000;
+      overflow: hidden; 
+      cursor: pointer; 
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .roll .thumb:hover { 
+      transform: scale(1.05); 
+      box-shadow: 0 4px 16px rgba(232,165,75,0.3);
+      border-color: var(--film-gold);
+    }
+    .roll .thumb.active { 
+      border-color: var(--film-gold); 
+      box-shadow: 0 0 0 2px var(--film-gold), 0 4px 12px rgba(232,165,75,0.4);
+    }
     .roll .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .roll .thumb .rm { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; padding: 0; border-radius: 50%; background: rgba(0,0,0,0.8); color: var(--film-gold-light); font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; }
-    .roll .thumb .rm:hover { background: var(--film-gold); color: #000; }
-    .controls { margin-top: 20px; background: var(--film-base); border: 1px solid var(--film-border); border-radius: 16px; padding: 20px; }
-    .controls h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 20px; color: var(--film-gold); padding-bottom: 8px; border-bottom: 1px solid var(--film-border); }
-    .row { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
-    .row label { width: 140px; color: var(--film-text-muted); font-size: 12px; }
-    .row input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; background: var(--film-warm); border-radius: 3px; accent-color: var(--film-gold); }
-    .row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--film-gold); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(232,165,75,0.4); }
-    .row .val { width: 36px; text-align: right; color: var(--film-gold-light); font-variant-numeric: tabular-nums; background: var(--film-warm); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
-    .tip { position: relative; cursor: help; text-decoration: underline dotted rgba(207,194,171,0.5); text-underline-offset: 3px; }
-    .tip:hover::after { content: attr(data-tip); position: absolute; left: 0; top: 100%; margin-top: 8px; width: 280px; background: var(--film-warm); border: 1px solid var(--film-gold); color: var(--film-text); padding: 10px 12px; border-radius: 8px; font-size: 12px; z-index: 100; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
-    .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: var(--film-brown); border: 1px solid var(--film-border); border-radius: 12px; }
-    .preset { background: var(--film-warm); color: var(--film-text-muted); border: 1px solid var(--film-border); border-radius: 20px; padding: 8px 16px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .preset:hover { border-color: var(--film-gold); color: var(--film-gold-light); }
-    .preset.active { background: var(--film-gold); color: #000; border-color: var(--film-gold); }
-    .btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-    button { font: inherit; border: none; border-radius: 10px; padding: 12px 20px; cursor: pointer; font-weight: 600; transition: all 0.2s; text-transform: uppercase; }
-    .primary { background: linear-gradient(135deg, #c98a38, #e8a54b, #ffca6b); color: #000; }
-    .ghost { background: var(--film-warm); color: var(--film-text); border: 1px solid var(--film-border); }
-    .ghost:hover { border-color: var(--film-gold); color: var(--film-gold-light); }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
-    .row select, .row input[type="text"] { flex: 1; background: var(--film-warm); color: var(--film-text); border: 1px solid var(--film-border); border-radius: 8px; padding: 8px 10px; }
-    .row input[type="checkbox"] { width: 18px; height: 18px; flex: none; accent-color: var(--film-gold); }
-    .note { font-size: 12px; color: #7d7059; margin-top: 16px; line-height: 1.6; padding: 12px; background: var(--film-brown); border: 1px solid var(--film-border); border-radius: 8px; font-style: italic; }
-    @media (max-width: 600px) { .row label { width: 100px; } .row .val { width: 32px; } .btns { gap: 8px; } button { padding: 10px 14px; font-size: 12px; } }
+    .roll .thumb .rm { 
+      position: absolute; 
+      top: 4px; 
+      right: 4px; 
+      width: 20px; 
+      height: 20px; 
+      padding: 0; 
+      border-radius: 50%; 
+      background: rgba(0,0,0,0.9); 
+      color: var(--film-gold-light); 
+      font-size: 14px; 
+      line-height: 20px; 
+      text-align: center; 
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid rgba(232,165,75,0.3);
+    }
+    .roll .thumb .rm:hover { 
+      background: var(--film-gold); 
+      color: #000;
+      transform: scale(1.1);
+    }
+    
+    .controls { 
+      margin-top: 20px; 
+      background: var(--film-base); 
+      border: 1px solid var(--film-border); 
+      border-radius: 16px; 
+      padding: 20px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    }
+    .controls h2 { 
+      font-size: 12px; 
+      text-transform: uppercase; 
+      letter-spacing: 1.5px; 
+      margin: 0 0 20px;
+      color: var(--film-gold); 
+      padding-bottom: 12px; 
+      border-bottom: 1px solid var(--film-border);
+      font-weight: 600;
+    }
+    
+    .row { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      margin: 12px 0;
+    }
+    .row label { 
+      width: 160px; 
+      color: var(--film-text-muted); 
+      font-size: 12px;
+    }
+    .row input[type="range"] { 
+      flex: 1; 
+      -webkit-appearance: none; 
+      height: 6px; 
+      background: var(--film-warm); 
+      border-radius: 3px; 
+      accent-color: var(--film-gold);
+      outline: none;
+    }
+    .row input[type="range"]::-webkit-slider-thumb { 
+      -webkit-appearance: none; 
+      width: 20px; 
+      height: 20px; 
+      background: var(--film-gold); 
+      border-radius: 50%; 
+      cursor: pointer; 
+      box-shadow: 
+        0 2px 6px rgba(232,165,75,0.5),
+        0 0 0 2px rgba(232,165,75,0.2);
+      transition: all 0.2s;
+    }
+    .row input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 
+        0 2px 10px rgba(232,165,75,0.7),
+        0 0 0 3px rgba(232,165,75,0.3);
+    }
+    .row .val { 
+      width: 40px; 
+      text-align: right; 
+      color: var(--film-gold-light); 
+      font-variant-numeric: tabular-nums; 
+      background: var(--film-warm); 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      font-size: 12px;
+      border: 1px solid var(--film-border);
+    }
+    
+    .tip { 
+      position: relative; 
+      cursor: help; 
+      text-decoration: underline dotted rgba(207,194,171,0.5); 
+      text-underline-offset: 3px;
+    }
+    .tip:hover::after { 
+      content: attr(data-tip); 
+      position: absolute; 
+      left: 0; 
+      top: 100%; 
+      margin-top: 8px; 
+      width: 300px; 
+      background: var(--film-warm); 
+      border: 1px solid var(--film-gold); 
+      color: var(--film-text); 
+      padding: 12px 14px; 
+      border-radius: 8px; 
+      font-size: 12px; 
+      z-index: 100;
+      box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(232,165,75,0.1);
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .tip:hover::before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 100%;
+      margin-top: 7px;
+      border: 8px solid transparent;
+      border-top-color: var(--film-gold);
+    }
+    
+    .presets { 
+      display: flex; 
+      gap: 8px; 
+      flex-wrap: wrap; 
+      margin-bottom: 16px; 
+      padding: 14px;
+      background: var(--film-brown); 
+      border: 1px solid var(--film-border); 
+      border-radius: 12px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    }
+    .preset { 
+      background: var(--film-warm); 
+      color: var(--film-text-muted); 
+      border: 1px solid var(--film-border); 
+      border-radius: 25px; 
+      padding: 10px 18px; 
+      font-size: 12px; 
+      cursor: pointer; 
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .preset:hover { 
+      border-color: var(--film-gold); 
+      color: var(--film-gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(232,165,75,0.2);
+    }
+    .preset.active { 
+      background: linear-gradient(135deg, #c98a38, #e8a54b); 
+      color: #000; 
+      border-color: var(--film-gold);
+      box-shadow: 0 0 0 2px rgba(232,165,75,0.3);
+    }
+    
+    .btns { 
+      display: flex; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+      margin-top: 20px;
+    }
+    button { 
+      font: inherit; 
+      border: none; 
+      border-radius: 10px; 
+      padding: 12px 24px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 13px;
+    }
+    .primary { 
+      background: linear-gradient(135deg, #c98a38, #e8a54b, #ffca6b); 
+      color: #000;
+      box-shadow: 0 4px 15px rgba(201,138,56,0.4);
+    }
+    .primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(201,138,56,0.6);
+    }
+    .primary:active {
+      transform: translateY(0);
+    }
+    .ghost { 
+      background: var(--film-warm); 
+      color: var(--film-text); 
+      border: 1px solid var(--film-border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .ghost:hover { 
+      border-color: var(--film-gold); 
+      color: var(--film-gold-light);
+      box-shadow: 0 4px 12px rgba(232,165,75,0.2);
+    }
+    button:disabled { 
+      opacity: 0.4; 
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .row select, .row input[type="text"] { 
+      flex: 1; 
+      background: var(--film-warm); 
+      color: var(--film-text); 
+      border: 1px solid var(--film-border); 
+      border-radius: 8px; 
+      padding: 8px 12px; 
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .row select:focus, .row input[type="text"]:focus {
+      outline: none;
+      border-color: var(--film-gold);
+      box-shadow: 0 0 0 2px rgba(232,165,75,0.2);
+    }
+    .row input[type="checkbox"] { 
+      width: 20px; 
+      height: 20px; 
+      flex: none; 
+      accent-color: var(--film-gold);
+      cursor: pointer;
+    }
+    .row input[type="checkbox"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(232,165,75,0.3);
+    }
+    
+    .note { 
+      font-size: 12px; 
+      color: #8d7d65; 
+      margin-top: 16px; 
+      line-height: 1.6; 
+      padding: 14px;
+      background: var(--film-brown); 
+      border: 1px solid var(--film-border); 
+      border-radius: 8px;
+      font-style: italic;
+      border-left: 3px solid var(--film-gold);
+    }
+    
+    .note::before {
+      content: "\263A";
+      margin-right: 8px;
+      color: var(--film-gold);
+    }
+    
+    @media (max-width: 600px) { 
+      .row label { width: 110px; } 
+      .row .val { width: 36px; } 
+      .btns { gap: 8px; } 
+      button { padding: 10px 16px; font-size: 12px; } 
+      header h1 { font-size: 28px; letter-spacing: 1px; }
+      header p.sub { font-size: 12px; }
+    }
+    
+    /* Film texture overlay for the entire app */
+    .film-texture-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.03;
+      background-image: 
+        linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 50%, transparent 100%),
+        linear-gradient(0deg, transparent 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+      background-size: 4px 4px;
+    }
   </style>
 </head>
 <body>
+  <div class="film-texture-overlay"></div>
+  
   <div class="app">
     <header>
       <h1><span class="gold">Analog Film</span> Studio</h1>
-      <p class="sub">Develop photos from your Sony a6300 on five classic emulsions — Gold 200, Portra 400, Ektar 100, CineStill 800T and Superia 400. Everything runs locally in your browser.</p>
+      <p class="sub">Develop photos from your Sony a6300 on five classic emulsions — Gold 200, Portra 400, Ektar 100, CineStill 800T and Superia 400. Everything runs locally in your browser. No uploads, no servers, just pure analog emulation.</p>
     </header>
     
     <div class="drop" id="drop">
       <div class="big">Drag photos here, or tap to browse</div>
       <div class="small">Load a whole roll at once — JPEG / PNG from your a6300, nothing is uploaded anywhere</div>
-      <input type="file" id="file" accept="image/*" multiple hidden>
+      <input type="file" id="file" accept="image/*" multiple hidden />
     </div>
     
     <div class="work" id="work" style="display:none">
-      <div class="pane"><h2>Original</h2><canvas id="src"></canvas></div>
-      <div class="pane"><h2 id="stockLabel">Kodak Gold 200</h2><canvas id="out"></canvas></div>
+      <div class="pane">
+        <h2>Original</h2>
+        <canvas id="src"></canvas>
+      </div>
+      <div class="pane">
+        <h2 id="stockLabel">Kodak Gold 200</h2>
+        <canvas id="out"></canvas>
+      </div>
     </div>
     
     <div class="roll" id="rollStrip" style="display:none"></div>
     
     <div class="controls" id="controls" style="display:none">
       <h2>Film development controls</h2>
-      <div class="row"><label>Film stock</label>
+      
+      <div class="row">
+        <label>Film stock</label>
         <select id="stock">
           <option value="gold" selected>Kodak Gold 200</option>
           <option value="portra">Kodak Portra 400</option>
           <option value="ektar">Kodak Ektar 100</option>
-          <option value="cinestill">CineStill 800T
+          <option value="cinestill">CineStill 800T</option>
+          <option value="superia">Fuji Superia 400</option>
+        </select>
+      </div>
+      
+      <div class="presets" id="presets">
+        <div class="preset" data-p="sunny">Sunny Day</div>
+        <div class="preset" data-p="muted">Muted Print</div>
+        <div class="preset" data-p="push">Push +1</div>
+        <div class="preset" data-p="wellworn">Well-Worn Roll</div>
+        <div class="preset" data-p="vintage">Vintage 80s</div>
+        <div class="preset" data-p="cinematic">Cinematic</div>
+      </div>
+
+      <div class="row">
+        <label class="tip" data-tip="Amber-red warmth across the image, strongest in shadows. High values give that golden-hour Gold 200 feel; low values stay cooler. Gold 200 naturally has strong warm tones.">Warmth</label>
+        <input type="range" id="warmth" min="0" max="100" value="55" />
+        <span class="val" id="warmthV">55</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Tints bright tones yellow-gold, mimicking how Gold's red layer keeps highlight detail while its blue layer saturates early. High values make sunlit skin and skies glow golden.">Golden highlights</label>
+        <input type="range" id="gold" min="0" max="100" value="60" />
+        <span class="val" id="goldV">60</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Steepness of the film's density curve in the midtones. High values = punchy, snapshotty contrast; low values = flat, muted tones with more latitude. Portra has naturally lower contrast.">Contrast</label>
+        <input type="range" id="contrast" min="0" max="100" value="45" />
+        <span class="val" id="contrastV">45</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Lifts the black point like film base + chemical fog, so shadows end warm brown instead of pure black. Higher = more faded, vintage look. CineStill 800T has naturally lifted blacks.">Faded blacks</label>
+        <input type="range" id="fade" min="0" max="100" value="40" />
+        <span class="val" id="fadeV">40</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Overall color intensity. Consumer films like Gold and Superia are punchy; Portra is naturally lower. Above ~60 colors get vivid, below ~30 muted and pastel-like.">Saturation</label>
+        <input type="range" id="sat" min="0" max="100" value="50" />
+        <span class="val" id="satV">50</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Soft glow bleeding from bright highlights into surroundings — red light scattering off the film base. Each stock glows its own color; CineStill 800T's deep-red halation is the famous example.">Halation glow</label>
+        <input type="range" id="halation" min="0" max="100" value="35" />
+        <span class="val" id="halationV">35</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Amount of silver-halide grain texture: soft crystal clusters, strongest in midtones and invisible in deep blacks and clean highlights. Each stock has its own grain character — Ektar is fine, CineStill is coarse.">Grain</label>
+        <input type="range" id="grain" min="0" max="100" value="50" />
+        <span class="val" id="grainV">50</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Physical wear and age: dust specks, hairline scratches, occasional light leaks and faint processing banding. High values make the photo look like an old, well-handled negative.">Dust &amp; scratches</label>
+        <input type="range" id="dust" min="0" max="100" value="30" />
+        <span class="val" id="dustV">30</span>
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Darkens the corners like lens falloff on an old compact camera. Subtle at low values; high values give a heavy, tunnel-like vintage look. Real film cameras often had pronounced vignetting.">Vignette</label>
+        <input type="range" id="vignette" min="0" max="100" value="30" />
+        <span class="val" id="vignetteV">30</span>
+      </div>
+
+      <div class="row">
+        <label class="tip" data-tip="Adds subtle color fringing at edges, mimicking chromatic aberration from old lenses. More pronounced at the edges of the frame. Adds to the vintage lens character.">Chromatic aberration</label>
+        <input type="range" id="ca" min="0" max="100" value="20" />
+        <span class="val" id="caV">20</span>
+      </div>
+
+      <div class="row">
+        <label class="tip" data-tip="Adds a subtle paper/grain texture overlay for a scanned print feel. This simulates the texture of photographic paper, separate from film grain.">Paper texture</label>
+        <input type="range" id="paper" min="0" max="100" value="15" />
+        <span class="val" id="paperV">15</span>
+      </div>
+
+      <div class="row">
+        <label class="tip" data-tip="Adds a 35mm film-strip border around the photo: sprocket holes, faint film-base texture, and the orange edge print with the stock name and frame number — like a scanned negative.">35mm film frame</label>
+        <input type="checkbox" id="frame" checked />
+      </div>
+      
+      <div class="row">
+        <label class="tip" data-tip="Prints text in the photo's corner in classic orange one-hour-lab style — type a date like '98 24 12 or anything else. Leave empty for no stamp.">Date stamp</label>
+        <input type="text" id="datetext" maxlength="24" placeholder="e.g. '98 24 12" />
+      </div>
+
+      <div class="row" style="margin-top:18px">
+        <label style="width:auto">Full-resolution export</label>
+        <input type="checkbox" id="fullres" />
+        <span style="font-size:12px;color:#8d7d65;">Develops the original file (e.g. 6000&times;4000 from the a6300) — takes a few extra seconds</span>
+      </div>
+      
+      <div class="btns">
+        <button class="primary" id="download">Download this frame</button>
+        <button class="ghost" id="downloadAll" disabled>Develop &amp; download all</button>
+        <button class="ghost" id="reset">Reset sliders</button>
+        <button class="ghost" id="newPhoto">Add photos to roll</button>
+      </div>
+      
+      <p class="note">Tip: for the most film-like results, shoot with slightly overexposed, flat profiles on the a6300 (e.g. Creative Style Neutral, -1 contrast, -1 sharpness) so this app has maximum latitude to work with. For batch downloads, your browser may ask once for permission to save multiple files. The film frame border automatically adjusts to your photo's aspect ratio.</p>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    
+    // Canvas elements
+    var srcCanvas = document.getElementById("src");
+    var outCanvas = document.getElementById("out");
+    var srcCtx = srcCanvas.getContext("2d");
+    var outCtx = outCanvas.getContext("2d");
+    var previewCtx = outCtx;
+    var img = null;
+    var photoSeed = 1;
+    var MAX = 2400;
+    var currentStock = "gold";
+    
+    // Enhanced per-stock emulation profiles
+    var stocks = {
+      gold: {
+        label: "Kodak Gold 200",
+        // Color shifts (HSV adjustments)
+        gShift: -12, gSat: -0.15, gVal: -0.05, // greens -> yellow-olive
+        ySat: 0.20, yVal: 0.08,                // yellows glow strongly
+        oShift: -5, oSat: 0.08,                // skin -> red-orange
+        bSat: -0.15,                           // blues recede
+        rSat: 0.05,                            // reds slightly boosted
+        // Density curves (toe + shoulder per channel)
+        toe: [1.0, 1.0, 0.4], shoulder: [0.90, 0.78, 0.58],
+        warmBias: 0.05, goldBias: 1.2,
+        hal: [1, 0.40, 0.18], halBoost: 1.2,   // red-orange halation
+        grain: 1.2,                            // visible, clumpy
+        base: { warmth: 60, gold: 65, contrast: 50, fade: 45, sat: 55, halation: 40, grain: 50, dust: 30, vignette: 30, ca: 20, paper: 15 }
+      },
+      portra: {
+        label: "Kodak Portra 400",
+        gShift: -2, gSat: -0.03, gVal: 0.02,    // gentle, neutral
+        ySat: 0.05, yVal: 0.03,
+        oShift: -1, oSat: 0.05,                // creamy skin
+        bSat: -0.02,
+        rSat: 0.02,
+        toe: [0.75, 0.80, 0.85], shoulder: [0.96, 0.92, 0.88], // long latitude
+        warmBias: -0.05, goldBias: 0.20,
+        hal: [1, 0.82, 0.75], halBoost: 0.5,
+        grain: 0.45,                           // fine grain
+        base: { warmth: 20, gold: 15, contrast: 25, fade: 50, sat: 25, halation: 15, grain: 25, dust: 10, vignette: 10, ca: 10, paper: 10 }
+      },
+      ektar: {
+        label: "Kodak Ektar 100",
+        gShift: 3, gSat: 0.12, gVal: 0.03,     // vivid greens stay green
+        ySat: 0.15, yVal: 0.06,
+        oShift: -1, oSat: 0.12,
+        bSat: 0.20,                            // punchy, saturated blues
+        rSat: 0.10,
+        toe: [0.65, 0.70, 0.75], shoulder: [0.82, 0.85, 0.80],
+        warmBias: -0.10, goldBias: 0.08,
+        hal: [1, 0.50, 0.40], halBoost: 0.4,
+        grain: 0.25,                           // world's finest-grain colour neg
+        base: { warmth: 10, gold: 8, contrast: 60, fade: 15, sat: 80, halation: 10, grain: 15, dust: 5, vignette: 8, ca: 5, paper: 8 }
+      },
+      cinestill: {
+        label: "CineStill 800T",
+        gShift: 8, gSat: -0.08, gVal: 0.02,     // cool, cinematic
+        ySat: 0.03, yVal: 0.01,
+        oShift: 2, oSat: -0.02,
+        bSat: 0.08,
+        rSat: 0.12,
+        toe: [0.55, 0.75, 1.4], shoulder: [0.85, 0.82, 0.75], // cyan-blue lifted shadows
+        warmBias: -0.20, goldBias: 0.03,
+        hal: [1, 0.15, 0.08], halBoost: 2.5,   // the famous deep-red halation
+        grain: 1.8,                            // pushed high-speed look
+        base: { warmth: 2, gold: 3, contrast: 50, fade: 40, sat: 45, halation: 70, grain: 65, dust: 25, vignette: 35, ca: 25, paper: 10 }
+      },
+      superia: {
+        label: "Fuji Superia 400",
+        gShift: 10, gSat: 0.15, gVal: 0.05,    // vivid Fuji greens
+        ySat: 0.08, yVal: 0.03,
+        oShift: 3, oSat: 0.05,
+        bSat: 0.08,
+        rSat: 0.08,
+        toe: [0.95, 1.10, 1.15], shoulder: [0.88, 0.80, 0.75], // green-tilted shadows
+        warmBias: -0.03, goldBias: 0.18,
+        hal: [1, 0.45, 0.35], halBoost: 0.8,
+        grain: 1.1,
+        base: { warmth: 15, gold: 20, contrast: 55, fade: 40, sat: 65, halation: 30, grain: 50, dust: 20, vignette: 20, ca: 15, paper: 12 }
+      }
+    };
+
+    // Enhanced presets with new parameters
+    var presets = {
+      sunny:   { warmth: 20, gold: 20, contrast: 15, fade: -15, sat: 15, halation: 15, grain: -10, dust: -10, vignette: -10, ca: 5, paper: 5 },
+      muted:   { warmth: -20, gold: -30, contrast: -20, fade: 25, sat: -25, halation: -20, grain: -15, dust: -15, vignette: -15, ca: -10, paper: -5 },
+      push:    { warmth: 10, gold: -5, contrast: 30, fade: -25, sat: 10, halation: 20, grain: 40, dust: 20, vignette: 10, ca: 15, paper: 10 },
+      wellworn:{ fade: 10, halation: 5, grain: 20, dust: 50, vignette: 15, ca: 20, paper: 20 },
+      vintage: { warmth: 15, gold: 10, contrast: 5, fade: 30, sat: -10, halation: 10, grain: 25, dust: 35, vignette: 25, ca: 20, paper: 25 },
+      cinematic:{ warmth: -10, gold: -10, contrast: 25, fade: 20, sat: -5, halation: 15, grain: 20, dust: 15, vignette: 35, ca: 10, paper: 5 }
+    };
+
+    var sliders = ["warmth", "gold", "contrast", "fade", "sat", "halation", "grain", "dust", "vignette", "ca", "paper"];
+
+    function getParams() {
+      var p = {};
+      sliders.forEach(function (k) {
+        p[k] = (+document.getElementById(k).value) / 100;
+      });
+      p.frame = document.getElementById("frame").checked;
+      p.dateText = document.getElementById("datetext").value.trim();
+      return p;
+    }
+
+    function setUI(p) {
+      sliders.forEach(function (k) {
+        document.getElementById(k).value = p[k];
+        document.getElementById(k + "V").textContent = p[k];
+      });
+    }
+
+    sliders.forEach(function (k) {
+      document.getElementById(k).addEventListener("input", function () {
+        document.getElementById(k + "V").textContent = this.value;
+        clearPresets();
+        scheduleRender();
+      });
+    });
+
+    function applyPreset(key) {
+      var st = stocks[currentStock];
+      var out = {};
+      sliders.forEach(function (k) {
+        out[k] = Math.max(0, Math.min(100, st.base[k] + (presets[key][k] || 0)));
+      });
+      setUI(out);
+    }
+
+    document.getElementById("stock").addEventListener("change", function () {
+      currentStock = this.value;
+      var st = stocks[currentStock];
+      setUI(st.base);
+      clearPresets();
+      document.getElementById("stockLabel").textContent = st.label;
+      render();
+    });
+
+    document.getElementById("presets").addEventListener("click", function (e) {
+      var el = e.target.closest(".preset");
+      if (!el) return;
+      clearPresets();
+      el.classList.add("active");
+      applyPreset(el.dataset.p);
+      render();
+    });
+    
+    function clearPresets() {
+      document.querySelectorAll(".preset").forEach(function (p) { p.classList.remove("active"); });
+    }
+
+    document.getElementById("frame").addEventListener("change", scheduleRender);
+    document.getElementById("datetext").addEventListener("input", scheduleRender);
+
+    // Loading
+    var drop = document.getElementById("drop");
+    var fileInput = document.getElementById("file");
+    drop.addEventListener("click", function () { fileInput.click(); });
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files.length) loadFiles(fileInput.files);
+      fileInput.value = "";
+    });
+    ["dragover", "dragenter"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); });
+    });
+    drop.addEventListener("drop", function (e) {
+      if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
+    });
+    document.getElementById("newPhoto").addEventListener("click", function () { fileInput.click(); });
+    document.getElementById("reset").addEventListener("click", function () {
+      setUI(stocks[currentStock].base);
+      clearPresets();
+      render();
+    });
+
+    // The roll
+    var roll = [];
+    var active = -1;
+    var frameNo = 1;
+    var nextFrameNo = 1;
+
+    function cleanName(n) {
+      return n.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "-").slice(0, 40) || "frame";
+    }
+
+    function computeSeed(im) {
+      var c = document.createElement("canvas");
+      var scale = Math.min(1, 300 / Math.max(im.width, im.height));
+      c.width = Math.max(1, Math.round(im.width * scale));
+      c.height = Math.max(1, Math.round(im.height * scale));
+      var cctx = c.getContext("2d");
+      cctx.drawImage(im, 0, 0, c.width, c.height);
+      var s = cctx.getImageData(0, 0, c.width, c.height).data;
+      var acc = 0x811c9dc5;
+      for (var si = 0; si < s.length; si += 4096) {
+        acc = ((acc ^ s[si]) * 16777619) >>> 0;
+      }
+      return acc || 1;
+    }
+
+    function makeThumb(im) {
+      var t = document.createElement("canvas");
+      t.width = t.height = 128;
+      var tctx = t.getContext("2d");
+      var s = Math.max(im.width, im.height);
+      var dw = im.width / s * 128, dh = im.height / s * 128;
+      tctx.drawImage(im, (128 - dw) / 2, (128 - dh) / 2, dw, dh);
+      return t.toDataURL("image/jpeg", 0.7);
+    }
+
+    function loadFiles(files) {
+      var list = Array.prototype.slice.call(files).filter(function (f) {
+        return f.type && f.type.indexOf("image/") === 0;
+      });
+      list.forEach(function (f) {
+        if (roll.length >= 40) return;
+        var url = URL.createObjectURL(f);
+        var im = new Image();
+        im.onload = function () {
+          roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1 });
+          URL.revokeObjectURL(url);
+          showPhoto(roll.length - 1);
+        };
+        im.src = url;
+      });
+    }
+
+    function showPhoto(i) {
+      if (i < 0 || i >= roll.length) return;
+      active = i;
+      img = roll[i].img;
+      photoSeed = roll[i].seed;
+      var scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      srcCanvas.width = outCanvas.width = w;
+      srcCanvas.height = outCanvas.height = h;
+      srcCtx.drawImage(img, 0, 0, w, h);
+      document.getElementById("work").style.display = "grid";
+      document.getElementById("controls").style.display = "block";
+      buildThumbs();
+      render();
+    }
+
+    function rollEmpty() {
+      img = null;
+      active = -1;
+      document.getElementById("work").style.display = "none";
+      document.getElementById("controls").style.display = "none";
+      buildThumbs();
+    }
+
+    function buildThumbs() {
+      var strip = document.getElementById("rollStrip");
+      strip.innerHTML = "";
+      strip.style.display = roll.length ? "flex" : "none";
+      roll.forEach(function (entry, i) {
+        var b = document.createElement("button");
+        b.className = "thumb" + (i === active ? " active" : "");
+        b.title = "Show this frame";
+        var t = document.createElement("img");
+        t.src = entry.thumb;
+        b.appendChild(t);
+        var rm = document.createElement("span");
+        rm.className = "rm";
+        rm.textContent = "\u00d7";
+        rm.title = "Remove from roll";
+        rm.addEventListener("click", function (e) {
+          e.stopPropagation();
+          roll.splice(i, 1);
+          if (!roll.length) { rollEmpty(); return; }
+          if (i < active) active--;
+          if (i === active) showPhoto(Math.min(active, roll.length - 1));
+          else buildThumbs();
+        });
+        b.appendChild(rm);
+        b.addEventListener("click", function () { showPhoto(i); });
+        strip.appendChild(b);
+      });
+      var all = document.getElementById("downloadAll");
+      all.textContent = roll.length > 1
+        ? "Develop & download all (" + roll.length + ")"
+        : "Develop & download all";
+      all.disabled = !roll.length;
+    }
+
+    // Rendering
+    var renderPending = false;
+    function scheduleRender() {
+      if (renderPending) return;
+      renderPending = true;
+      setTimeout(function () { renderPending = false; render(); }, 90);
+    }
+
+    function render() {
+      if (!img) return;
+      frameNo = roll[active] ? roll[active].no : 1;
+      developTo(outCtx, srcCtx, srcCanvas.width, srcCanvas.height, getParams());
+    }
+
+    // Full development pipeline
+    function developTo(destCtx, sourceCtx, w, h, p) {
+      outCtx = destCtx;
+      if (destCtx.canvas.width !== w) destCtx.canvas.width = w;
+      if (destCtx.canvas.height !== h) destCtx.canvas.height = h;
+      var data = sourceCtx.getImageData(0, 0, w, h);
+      var px = data.data;
+
+      var st = stocks[currentStock] || stocks.gold;
+      var contrast = p.contrast, fade = p.fade, satAmt = p.sat;
+      var warmth = Math.min(1.25, p.warmth + st.warmBias);
+      var goldAmt = Math.max(0, p.gold * st.goldBias);
+
+      // Per-pixel colour grade
+      var f = fade * 25;           // black point lift
+      var c = 1 + contrast * 0.7;  // midtone contrast
+      
+      for (var i = 0; i < px.length; i += 4) {
+        var r = px[i], g = px[i + 1], b = px[i + 2];
+
+        // Density curves per channel
+        r = density(r, f * st.toe[0], c, st.shoulder[0]);
+        g = density(g, f * st.toe[1], c, st.shoulder[1]);
+        b = density(b, f * st.toe[2], c, st.shoulder[2]);
+
+        // Saturation with film-like channel weighting
+        var lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = lum + (r - lum) * (1 + satAmt * 0.55);
+        g = lum + (g - lum) * (1 + satAmt * 0.45);
+        b = lum + (b - lum) * (1 + satAmt * 0.48);
+
+        // Color shifts based on film stock
+        if (r !== g || g !== b) {
+          var hsv = rgb2hsv(r, g, b);
+          var gw = hmask(hsv[0], 60, 180, 40);  // greens
+          var yw = hmask(hsv[0], 30, 70, 20);    // yellows
+          var ow = hmask(hsv[0], 0, 50, 20);     // oranges/reds/skin
+          var rw = hmask(hsv[0], 330, 360, 15);  // reds
+          var bw = hmask(hsv[0], 180, 280, 30); // blues
+          if (gw + yw + ow + rw + bw > 0.01) {
+            hsv[0] = (hsv[0] + st.gShift * gw + st.oShift * ow + st.rShift * rw + 360) % 360;
+            hsv[1] = hsv[1] * (1 + st.ySat * yw + st.oSat * ow + st.gSat * gw + st.bSat * bw + st.rSat * rw);
+            hsv[2] = hsv[2] * (1 + st.yVal * yw + st.gVal * gw);
+            var rgb = hsv2rgb(hsv[0], hsv[1], hsv[2]);
+            r = rgb[0]; g = rgb[1]; b = rgb[2];
+          }
+        }
+
+        // Warmth, strongest in shadows
+        var sw = sh(lum);
+        r += warmth * (10 + 12 * sw);
+        g += warmth * (4 + 6 * sw);
+        b -= warmth * (12 - 6 * sw);
+
+        // Golden highlights
+        var hlw = smooth((lum - 140) / 115);
+        r += goldAmt * hlw * 18;
+        g += goldAmt * hlw * 22;
+        b -= goldAmt * hlw * 12;
+
+        px[i] = clamp(r); px[i + 1] = clamp(g); px[i + 2] = clamp(b);
+      }
+
+      destCtx.putImageData(data, 0, 0);
+
+      // Halation
+      if (p.halation > 0) halation(p.halation * st.halBoost, w, h, st.hal);
+
+      // Chromatic aberration
+      if (p.ca > 0) chromaticAberration(p.ca, w, h);
+
+      // Grain
+      if (p.grain > 0) grain(Math.min(1.5, p.grain * st.grain), w, h);
+
+      // Dust and scratches
+      if (p.dust > 0) imperfections(p.dust, w, h);
+
+      // Paper texture overlay
+      if (p.paper > 0) paperTexture(p.paper, w, h);
+
+      // Vignette
+      if (p.vignette > 0) vignette(p.vignette, w, h);
+
+      // Date stamp and frame
+      if (p.dateText) stampDate(destCtx, w, h, p.dateText);
+      if (p.frame) applyFrame(destCtx, st.label);
+      
+      outCtx = previewCtx;
+    }
+
+    // Enhanced film curve
+    function density(v, f, c, shoulder) {
+      v = v * (1 - f / 255) + f * 0.88;   // toe with film base
+      v = (v - 128) * c + 128;            // midtone contrast
+      var k = 200;                                 // shoulder knee
+      if (v > k) {
+        var t = Math.min(1, (v - k) / (255 - k));
+        v = k + (255 - k) * (1 - Math.pow(1 - t, shoulder * 1.2));
+      }
+      return v;
+    }
+    
+    function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+    function sh(v) { return 1 - v / 255; }
+    function smooth(t) { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
+
+    function rgb2hsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+      var h = 0;
+      if (d > 0.0005) {
+        if (mx === r) h = 60 * (((g - b) / d) % 6);
+        else if (mx === g) h = 60 * ((b - r) / d + 2);
+        else h = 60 * ((r - g) / d + 4);
+        if (h < 0) h += 360;
+      }
+      return [h, mx === 0 ? 0 : d / mx, mx];
+    }
+    
+    function hsv2rgb(h, s, v) {
+      var c = v * s, hp = h / 60, x = c * (1 - Math.abs(hp % 2 - 1));
+      var r = 0, g = 0, bl = 0;
+      if (hp < 1) { r = c; g = x; }
+      else if (hp < 2) { r = x; g = c; }
+      else if (hp < 3) { g = c; bl = x; }
+      else if (hp < 4) { g = x; bl = c; }
+      else if (hp < 5) { r = x; bl = c; }
+      else { r = c; bl = x; }
+      var m = v - c;
+      return [(r + m) * 255, (g + m) * 255, (bl + m) * 255];
+    }
+    
+    function hmask(h, lo, hi, soft) {
+      if (h >= lo && h <= hi) return 1;
+      var d = h < lo ? lo - h : h - hi;
+      return d < soft ? smooth(1 - d / soft) : 0;
+    }
+
+    // Enhanced halation with better color bleeding
+    function halation(amt, w, h, hal) {
+      var tmp = outCtx.getImageData(0, 0, w, h);
+      var px = tmp.data;
+      
+      for (var i = 0; i < px.length; i += 4) {
+        var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        var e = smooth((lum - 155) / 100);
+        px[i] = px[i] * e;
+        px[i + 1] = px[i + 1] * e * hal[1];
+        px[i + 2] = px[i + 2] * e * hal[2];
+      }
+      
+      var small = document.createElement("canvas");
+      small.width = Math.max(1, Math.round(w / 6));
+      small.height = Math.max(1, Math.round(h / 6));
+      var sctx = small.getContext("2d");
+      sctx.putImageData(thumb(tmp, w, h, small.width, small.height), 0, 0);
+      
+      outCtx.save();
+      outCtx.globalCompositeOperation = "screen";
+      outCtx.globalAlpha = Math.min(0.95, amt * 0.65);
+      outCtx.filter = "blur(0px)";
+      outCtx.drawImage(small, 0, 0, w, h);
+      outCtx.restore();
+    }
+
+    function thumb(imgData, w, h, tw, th) {
+      var t = document.createElement("canvas");
+      t.width = w; t.height = h;
+      t.getContext("2d").putImageData(imgData, 0, 0);
+      var c2 = document.createElement("canvas");
+      c2.width = tw; c2.height = th;
+      var ctx = c2.getContext("2d");
+      ctx.drawImage(t, 0, 0, w, h, 0, 0, tw, th);
+      return ctx.getImageData(0, 0, tw, th);
+    }
+
+    // Chromatic aberration effect
+    function chromaticAberration(amt, w, h) {
+      var data = outCtx.getImageData(0, 0, w, h);
+      var px = data.data;
+      var strength = amt * 3;
+      
+      for (var y = 0; y < h; y++) {
+        var fy = y / h;
+        var offset = strength * (1 - Math.abs(fy - 0.5) * 2);
+        
+        for (var x = 0; x < w; x++) {
+          var idx = (y * w + x) * 4;
+          var fx = x / w;
+          var edgeFactor = Math.max(0, Math.min(1, (1 - Math.abs(fx - 0.5) * 2) * 1.5));
+          var caOffset = offset * edgeFactor;
+          
+          var rIdx = ((y * w + Math.min(w - 1, Math.max(0, Math.round(x + caOffset)))) * 4);
+          var bIdx = ((y * w + Math.min(w - 1, Math.max(0, Math.round(x - caOffset)))) * 4);
+          
+          var r = px[rIdx];
+          var g = px[idx + 1];
+          var b = px[bIdx + 2];
+          
+          px[idx] = r;
+          px[idx + 2] = b;
+        }
+      }
+      
+      outCtx.putImageData(data, 0, 0);
+    }
+
+    // Enhanced grain with multiple octaves and better distribution
+    function grain(amt, w, h) {
+      var strength = amt * 38;
+      var rand = prng(0x9e3779b9 ^ photoSeed);
+      var data = outCtx.getImageData(0, 0, w, h);
+      var px = data.data;
+
+      var o1 = noiseLattice(Math.max(3, Math.round(w / 32)), Math.max(3, Math.round(h / 32)), rand);
+      var o2 = noiseLattice(Math.max(4, Math.round(w / 10)), Math.max(4, Math.round(h / 10)), rand);
+      var o3 = noiseLattice(Math.max(6, Math.round(w / 3)), Math.max(6, Math.round(h / 3)), rand);
+      var o4 = noiseLattice(Math.max(8, Math.round(w / 1.5)), Math.max(8, Math.round(h / 1.5)), rand);
+
+      for (var y = 0; y < h; y++) {
+        var fy = y / h;
+        for (var x = 0; x < w; x++) {
+          var idx = (y * w + x) * 4;
+          var lum = (px[idx] + px[idx + 1] + px[idx + 2]) / 765;
+          var m = 4 * lum * (1 - lum);
+          var fx = x / w;
+          
+          var n = (lattice(o1, fx, fy) * 0.45 +
+                   lattice(o2, fx, fy) * 0.30 +
+                   lattice(o3, fx, fy) * 0.18 +
+                   lattice(o4, fx, fy) * 0.07) * strength * m;
+
+          px[idx] = clamp(px[idx] + n * (0.95 + rand() * 0.1));
+          px[idx + 1] = clamp(px[idx + 1] + n * (0.92 + rand() * 0.1));
+          px[idx + 2] = clamp(px[idx + 2] + n * (0.90 + rand() * 0.1));
+        }
+      }
+      outCtx.putImageData(data, 0, 0);
+    }
+
+    function noiseLattice(cw, ch, rand) {
+      var d = new Float32Array(cw * ch);
+      for (var i = 0; i < d.length; i++) d[i] = (rand() - 0.5) * 1.8;
+      return { d: d, w: cw, h: ch };
+    }
+    
+    function lattice(L, fx, fy) {
+      var x = fx * (L.w - 1), y = fy * (L.h - 1);
+      var x0 = x | 0, y0 = y | 0;
+      var x1 = x0 + 1 < L.w ? x0 + 1 : x0;
+      var y1 = y0 + 1 < L.h ? y0 + 1 : y0;
+      var tx = x - x0, ty = y - y0;
+      var r0 = y0 * L.w, r1 = y1 * L.w;
+      var a = L.d[r0 + x0], b = L.d[r0 + x1], c = L.d[r1 + x0], e = L.d[r1 + x1];
+      return (a + (b - a) * tx) * (1 - ty) + (c + (e - c) * tx) * ty;
+    }
+
+    // Enhanced imperfections with more variety
+    function imperfections(amt, w, h) {
+      var rand = prng(0x1234abcd ^ photoSeed);
+
+      // Dust specks
+      var specks = Math.round(amt * 180);
+      for (var s = 0; s < specks; s++) {
+        var x = rand() * w, y = rand() * h;
+        var r = (0.3 + rand() * 2.5) * (w / 1200 + 0.3);
+        var bright = rand() < 0.65;
+        outCtx.save();
+        outCtx.globalAlpha = 0.25 + rand() * 0.55;
+        outCtx.fillStyle = bright ? "#fff8e0" : "#120a00";
+        if (rand() < 0.8) {
+          outCtx.beginPath();
+          outCtx.arc(x, y, r * (0.7 + rand() * 0.6), 0, Math.PI * 2);
+          outCtx.fill();
+        } else {
+          var a = rand() * Math.PI * 2;
+          outCtx.beginPath();
+          outCtx.ellipse(x, y, r * 1.5, r * (0.4 + rand() * 0.8), a, 0, Math.PI * 2);
+          outCtx.fill();
+        }
+        outCtx.restore();
+      }
+
+      // Hairline scratches
+      var scratches = Math.round(amt * 8);
+      for (var k = 0; k < scratches; k++) {
+        var sx = rand() * w;
+        var len = h * (0.4 + rand() * 0.6);
+        var sy = rand() * (h - len);
+        outCtx.save();
+        outCtx.globalAlpha = 0.1 + rand() * 0.35 * amt;
+        outCtx.strokeStyle = rand() < 0.7 ? "#fff4d8" : "#0a0600";
+        outCtx.lineWidth = 0.4 + rand() * 1.5;
+        outCtx.beginPath();
+        outCtx.moveTo(sx, sy);
+        var cp1x = sx + (rand() - 0.5) * 12;
+        var cp1y = sy + len / 3 + (rand() - 0.5) * 4;
+        var cp2x = sx + (rand() - 0.5) * 12;
+        var cp2y = sy + 2 * len / 3 + (rand() - 0.5) * 4;
+        outCtx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, sx + (rand() - 0.5) * 8, sy + len);
+        outCtx.stroke();
+        outCtx.restore();
+      }
+
+      // Light leaks
+      if (rand() < amt * 1.2) {
+        var edge = Math.floor(rand() * 4);
+        var leakAlpha = 0.15 + rand() * 0.30 * amt;
+        var colorVariation = rand() * 0.3;
+        outCtx.save();
+        var g;
+        if (edge === 0) { g = outCtx.createLinearGradient(0, 0, w * (0.15 + rand() * 0.35), 0); }
+        else if (edge === 1) { g = outCtx.createLinearGradient(w, 0, w * (1 - (0.15 + rand() * 0.35)), 0); }
+        else if (edge === 2) { g = outCtx.createLinearGradient(0, 0, 0, h * (0.15 + rand() * 0.35)); }
+        else { g = outCtx.createLinearGradient(0, h, 0, h * (1 - (0.15 + rand() * 0.35))); }
+        g.addColorStop(0, "rgba(255," + Math.round(150 + colorVariation * 55) + "," + Math.round(60 - colorVariation * 20) + "," + leakAlpha + ")");
+        g.addColorStop(1, "rgba(255," + Math.round(150 + colorVariation * 55) + "," + Math.round(60 - colorVariation * 20) + ",0)");
+        outCtx.globalCompositeOperation = "screen";
+        outCtx.fillStyle = g;
+        outCtx.fillRect(0, 0, w, h);
+        outCtx.restore();
+      }
+
+      // Processing banding
+      if (amt > 0.25) {
+        outCtx.save();
+        outCtx.globalCompositeOperation = "overlay";
+        outCtx.globalAlpha = amt * 0.15;
+        var bandSpacing = h / (12 + Math.floor(rand() * 10));
+        for (var by = 0; by < h; by += bandSpacing) {
+          var bandA = rand();
+          var bandHeight = bandSpacing * (0.3 + rand() * 0.4);
+          var bandColor = bandA < 0.3 ? "#ffe9c0" : bandA < 0.6 ? "#281e10" : "#ffcc80";
+          outCtx.fillStyle = bandColor;
+          outCtx.fillRect(0, by, w, bandHeight);
+        }
+        outCtx.restore();
+      }
+    }
+
+    // Paper texture overlay
+    function paperTexture(amt, w, h) {
+      var rand = prng(0x55555555 ^ photoSeed);
+      var strength = amt * 0.04;
+      
+      outCtx.save();
+      outCtx.globalCompositeOperation = "overlay";
+      outCtx.globalAlpha = strength;
+      
+      // Create paper texture pattern
+      var patternCanvas = document.createElement("canvas");
+      patternCanvas.width = 200;
+      patternCanvas.height = 200;
+      var pctx = patternCanvas.getContext("2d");
+      
+      // Fill with noise
+      var imgData = pctx.createImageData(200, 200);
+      var px = imgData.data;
+      for (var i = 0; i < px.length; i += 4) {
+        var v = (rand() - 0.5) * 0.3 + 0.5;
+        px[i] = px[i + 1] = px[i + 2] = v * 255;
+        px[i + 3] = 255;
+      }
+      pctx.putImageData(imgData, 0, 0);
+      
+      var pattern = outCtx.createPattern(patternCanvas, "repeat");
+      outCtx.fillStyle = pattern;
+      outCtx.fillRect(0, 0, w, h);
+      outCtx.restore();
+    }
+
+    function vignette(amt, w, h) {
+      outCtx.save();
+      var centerX = w / 2, centerY = h / 2;
+      var maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+      var g = outCtx.createRadialGradient(centerX, centerY, maxDist * 0.4, centerX, centerY, maxDist * 1.1);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(0.6, "rgba(0,0,0,0)");
+      g.addColorStop(1, "rgba(25,10,0," + (amt * 0.6) + ")");
+      outCtx.fillStyle = g;
+      outCtx.fillRect(0, 0, w, h);
+      outCtx.restore();
+    }
+
+    function stampDate(ctx, w, h, text) {
+      if (!text) return;
+      var fs = Math.max(12, Math.round(h * 0.038));
+      ctx.save();
+      ctx.font = "700 " + fs + "px 'Courier New', monospace";
+      ctx.textAlign = "right";
+      var x = w - Math.round(w * 0.035);
+      var y = h - Math.round(h * 0.035);
+      
+      // Shadow
+      ctx.fillStyle = "rgba(0,0,0,0.7)";
+      ctx.fillText(text, x + fs * 0.05 + 2, y + fs * 0.05 + 2);
+      
+      // Main text with glow
+      ctx.fillStyle = "#ffc850";
+      ctx.fillText(text, x, y);
+      
+      // Slight outer glow
+      ctx.shadowColor = "#ffc850";
+      ctx.shadowBlur = fs * 0.3;
+      ctx.fillText(text, x, y);
+      ctx.shadowBlur = 0;
+      
+      ctx.restore();
+    }
+
+    // Enhanced 35mm frame with more authentic details
+    function applyFrame(ctx, stockLabel) {
+      var src = ctx.canvas;
+      var w = src.width, h = src.height;
+      var mx = Math.round(w * 0.035);
+      var my = Math.round(h * 0.035);
+      var mt = Math.round(h * 0.12);
+      var fw = w + mx * 2, fh = h + mt * 2;
+      var c = document.createElement("canvas");
+      c.width = fw; c.height = fh;
+      var g = c.getContext("2d");
+
+      // Film base with subtle texture
+      g.fillStyle = "#0f0c08";
+      g.fillRect(0, 0, fw, fh);
+      
+      // Film base texture - horizontal lines
+      var frand = prng(0x51a3b7 ^ photoSeed);
+      for (var i = 0; i < fw / 3; i++) {
+        var y = frand() * fh;
+        g.fillStyle = "rgba(255,240,210," + (frand() * 0.04).toFixed(3) + ")";
+        g.fillRect(frand() * fw, y, 1 + frand() * 2, 1);
+      }
+
+      // Sprocket holes - more authentic
+      var holeW = Math.max(6, Math.round(fw * 0.022));
+      var holeH = Math.max(5, Math.round(mt * 0.35));
+      var rr = Math.min(holeW, holeH) * 0.35;
+      var count = Math.floor(fw / (holeW * 1.5));
+      if (count < 4) count = 4;
+      var pad = Math.round(holeW * 0.8);
+      var step = (fw - pad * 2 - holeW) / (count - 1);
+      
+      g.fillStyle = "#040302";
+      for (var k = 0; k < count; k++) {
+        var hx = pad + step * k;
+        // Top row
+        roundRectPath(g, hx, mt * 0.45 - holeH / 2, holeW, holeH, rr);
+        g.fill();
+        // Bottom row
+        roundRectPath(g, hx, fh - mt * 0.45 - holeH / 2, holeW, holeH, rr);
+        g.fill();
+      }
+
+      // Frame number markings (Bellamy marks)
+      var fsEdge = Math.max(8, Math.round(mt * 0.28));
+      g.font = "600 " + fsEdge + "px 'Courier New', monospace";
+      g.fillStyle = "#e8a54b";
+      g.globalAlpha = 0.9;
+      g.textBaseline = "middle";
+      g.textAlign = "left";
+      
+      // Left edge - stock name and frame number
+      g.fillText((stockLabel + "  " + frameNo + "A").toUpperCase(), mx, fh - mt * 0.42);
+      
+      // Right edge - frame number
+      g.textAlign = "right";
+      g.fillText(frameNo + "A \u25B8", fw - mx, mt * 0.42);
+      
+      // Perforation edge marks
+      for (var k = 0; k < count; k++) {
+        var hx = pad + step * k;
+        g.fillText("|", hx + holeW / 2, fh - mt * 0.42);
+        g.fillText("|", hx + holeW / 2, mt * 0.42);
+      }
+      
+      g.globalAlpha = 1;
+
+      // The photograph
+      g.drawImage(src, mx, mt, w, h);
+      
+      // Frame edge highlight
+      g.strokeStyle = "rgba(255,235,200,0.25)";
+      g.lineWidth = Math.max(1, Math.round(h / 800));
+      g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
+      
+      // Subtle inner shadow
+      g.save();
+      g.strokeStyle = "rgba(0,0,0,0.3)";
+      g.lineWidth = Math.max(1, Math.round(h / 600));
+      g.strokeRect(mx + 2, mt + 2, w - 4, h - 4);
+      g.restore();
+
+      // Copy back
+      src.width = fw;
+      src.height = fh;
+      ctx.drawImage(c, 0, 0);
+    }
+
+    function roundRectPath(g, x, y, rw, rh, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + rw, y, x + rw, y + rh, r);
+      g.arcTo(x + rw, y + rh, x, y + rh, r);
+      g.arcTo(x, y + rh, x, y, r);
+      g.arcTo(x, y, x + rw, y, r);
+      g.closePath();
+    }
+
+    function prng(seed) {
+      var s = seed >>> 0;
+      return function () {
+        s = (s * 1664525 + 1013904223) >>> 0;
+        return s / 4294967296;
+      };
+    }
+
+    // Download functions
+    function frameName(entry) {
+      return currentStock + "-" + (entry ? entry.name : "film") + ".jpg";
+    }
+    
+    function saveBlob(blob, name) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name || frameName(roll[active]);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    }
+
+    document.getElementById("download").addEventListener("click", function () {
+      if (!img) return;
+      var btn = this;
+      if (!document.getElementById("fullres").checked) {
+        outCanvas.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Developing full resolution…";
+      setTimeout(function () {
+        try {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var fullSrc = document.createElement("canvas");
+          fullSrc.width = w; fullSrc.height = h;
+          fullSrc.getContext("2d").drawImage(img, 0, 0);
+          var fullOut = document.createElement("canvas");
+          fullOut.width = w; fullOut.height = h;
+          developTo(fullOut.getContext("2d"), fullSrc.getContext("2d"), w, h, getParams());
+          fullOut.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
+        } finally {
+          outCtx = previewCtx;
+          btn.disabled = false;
+          btn.textContent = "Download this frame";
+        }
+      }, 30);
+    });
+
+    function developOne(entry, p, fullres, done) {
+      var im = entry.img;
+      var out2 = document.createElement("canvas");
+      photoSeed = entry.seed;
+      frameNo = entry.no;
+      
+      if (fullres) {
+        var w = im.naturalWidth, h = im.naturalHeight;
+        var src2 = document.createElement("canvas");
+        src2.width = w; src2.height = h;
+        src2.getContext("2d").drawImage(im, 0, 0);
+        out2.width = w; out2.height = h;
+        developTo(out2.getContext("2d"), src2.getContext("2d"), w, h, p);
+      } else {
+        var scale = Math.min(1, MAX / Math.max(im.naturalWidth, im.naturalHeight));
+        var pw = Math.round(im.naturalWidth * scale), ph = Math.round(im.naturalHeight * scale);
+        var s2 = document.createElement("canvas");
+        s2.width = pw; s2.height = ph;
+        s2.getContext("2d").drawImage(im, 0, 0, pw, ph);
+        out2.width = pw; out2.height = ph;
+        developTo(out2.getContext("2d"), s2.getContext("2d"), pw, ph, p);
+      }
+      
+      photoSeed = roll[active] ? roll[active].seed : 1;
+      frameNo = roll[active] ? roll[active].no : 1;
+      out2.toBlob(function (b) { saveBlob(b, frameName(entry)); done(); }, "image/jpeg", 0.92);
+    }
+
+    document.getElementById("downloadAll").addEventListener("click", function () {
+      if (!roll.length) return;
+      var btn = this;
+      btn.disabled = true;
+      var p = getParams();
+      var fullres = document.getElementById("fullres").checked;
+      var i = 0;
+      (function next() {
+        if (i >= roll.length) {
+          btn.disabled = false;
+          buildThumbs();
+          return;
+        }
+        var entry = roll[i];
+        i++;
+        btn.textContent = "Developing " + i + "/" + roll.length + "…";
+        setTimeout(function () {
+          developOne(entry, p, fullres, function () { setTimeout(next, 250); });
+        }, 30);
+      })();
+    });
+  </script>
+</body>
+</html>
