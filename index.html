@@ -136,6 +136,7 @@
     .drop .small { grid-column: 2; margin-top: 6px; color: var(--film-text-muted); font-size: 11px; }
     .drop-meta { display: flex; grid-column: 2; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
     .drop-meta span { padding: 5px 8px; border: 1px solid rgba(225, 195, 145, 0.12); border-radius: 3px; color: #999684; background: rgba(8, 11, 8, 0.32); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .upload-status { grid-column: 2; min-height: 13px; margin-top: 7px; color: var(--film-gold); font-size: 9px; }
     .drop:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--film-gold); outline-offset: 4px; }
     .work {
       margin-top: 24px;
@@ -230,6 +231,7 @@
       .drop .small { font-size: 9px; line-height: 1.6; }
       .drop-meta { gap: 5px; margin-top: 10px; }
       .drop-meta span { padding: 4px 6px; font-size: 7px; }
+      .upload-status { font-size: 8px; }
       .process-rail { justify-content: space-between; gap: 5px; margin-bottom: 10px; font-size: 7px; letter-spacing: 0.07em; }
       .process-rail span { gap: 4px; }
       .process-rail i { width: 9px; }
@@ -273,8 +275,9 @@
     <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose photos to develop">
       <div class="big">Drag photos here, or tap to browse</div>
       <div class="small">Choose a photograph to begin developing. Your original stays on this device.</div>
-      <div class="drop-meta"><span>Common image formats</span><span>Up to 40 frames</span><span>Local darkroom</span></div>
-      <input type="file" id="file" accept="image/*" multiple hidden />
+      <div class="drop-meta"><span>JPG · PNG · WEBP · HEIC</span><span>Up to 40 frames</span><span>Local darkroom</span></div>
+      <div class="upload-status" id="uploadStatus" aria-live="polite"></div>
+      <input type="file" id="file" accept="image/*,.heic,.heif" multiple hidden />
     </div>
     
     <div class="work" id="work" style="display:none">
@@ -786,12 +789,82 @@
     var active = -1;
     var frameNo = 1;
     var nextFrameNo = 1;
+    var pendingHeicLoads = 0;
+    var failedHeicLoads = 0;
+
+    function isHeicFile(file) {
+      return /\.(heic|heif)$/i.test(file.name || "") || /image\/(heic|heif)/i.test(file.type || "");
+    }
+
+    function loadBrowserLibrary(url, globalName) {
+      if (window[globalName]) return Promise.resolve(window[globalName]);
+      return new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = url;
+        script.async = true;
+        script.onload = function () {
+          if (window[globalName]) resolve(window[globalName]);
+          else reject(new Error(globalName + " failed to initialize"));
+        };
+        script.onerror = function () { reject(new Error("Could not load " + globalName)); };
+        document.head.appendChild(script);
+      });
+    }
+
+    var heicDecoderPromise = null;
+    var heicMetadataPromise = null;
+
+    function getHeicDecoder() {
+      if (!heicDecoderPromise) {
+        heicDecoderPromise = loadBrowserLibrary("https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js", "heic2any")
+          .catch(function (error) { heicDecoderPromise = null; throw error; });
+      }
+      return heicDecoderPromise;
+    }
+
+    function getHeicMetadataReader() {
+      if (!heicMetadataPromise) {
+        heicMetadataPromise = loadBrowserLibrary("https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js", "exifr")
+          .catch(function (error) { heicMetadataPromise = null; throw error; });
+      }
+      return heicMetadataPromise;
+    }
+
+    function imageBlobFor(file) {
+      if (!isHeicFile(file)) return Promise.resolve(file);
+      return getHeicDecoder().then(function (convert) {
+        return convert({ blob: file, toType: "image/jpeg", quality: 0.94 });
+      }).then(function (blob) {
+        return Array.isArray(blob) ? blob[0] : blob;
+      });
+    }
+
+    function finishHeicLoad(success) {
+      if (!success) failedHeicLoads++;
+      pendingHeicLoads--;
+      if (pendingHeicLoads === 0) {
+        document.getElementById("uploadStatus").textContent = failedHeicLoads
+          ? "Could not decode " + failedHeicLoads + " HEIC/HEIF photo(s). Try converting them to JPEG."
+          : "HEIC/HEIF photos are ready. Converted in your browser; originals stay untouched.";
+      }
+    }
 
     function cleanName(n) {
       return n.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "-").slice(0, 40) || "frame";
     }
 
     function readPhotoDate(file) {
+      if (isHeicFile(file)) {
+        return getHeicMetadataReader().then(function (exifr) {
+          return exifr.parse(file, ["DateTimeOriginal", "CreateDate", "ModifyDate"]);
+        }).then(function (metadata) {
+          var value = metadata && (metadata.DateTimeOriginal || metadata.CreateDate || metadata.ModifyDate);
+          if (value instanceof Date && !isNaN(value.getTime())) {
+            return value.getFullYear() + "-" + String(value.getMonth() + 1).padStart(2, "0") + "-" + String(value.getDate()).padStart(2, "0");
+          }
+          return normalizeExifDate(value || "");
+        }).catch(function () { return ""; });
+      }
       var metadataSlice = file.slice(0, Math.min(file.size, 1024 * 1024));
       if (metadataSlice.arrayBuffer) {
         return metadataSlice.arrayBuffer().then(extractCaptureDate).catch(function () { return ""; });
@@ -952,26 +1025,45 @@
 
     function loadFiles(files) {
       var list = Array.prototype.slice.call(files).filter(function (f) {
-        return f.type && f.type.indexOf("image/") === 0;
+        return (f.type && f.type.indexOf("image/") === 0) || isHeicFile(f);
       });
+      var loadable = [];
       list.forEach(function (f) {
         if (roll.length + pendingLoads >= 40) return;
         pendingLoads++;
-        var url = URL.createObjectURL(f);
-        var im = new Image();
-        im.onload = function () {
-          URL.revokeObjectURL(url);
-          readPhotoDate(f).then(function (captureDate) {
+        loadable.push(f);
+      });
+      var heicCount = loadable.filter(isHeicFile).length;
+      if (heicCount) {
+        if (!pendingHeicLoads) failedHeicLoads = 0;
+        pendingHeicLoads += heicCount;
+        document.getElementById("uploadStatus").textContent = "Preparing " + heicCount + " HEIC/HEIF photo(s) locally…";
+      }
+      loadable.forEach(function (f) {
+        var heic = isHeicFile(f);
+        var datePromise = readPhotoDate(f);
+        imageBlobFor(f).then(function (imageBlob) {
+          var url = URL.createObjectURL(imageBlob);
+          var im = new Image();
+          im.onload = function () {
+            URL.revokeObjectURL(url);
+            datePromise.then(function (captureDate) {
+              pendingLoads--;
+              roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1, captureDate: captureDate, dateText: captureDate });
+              if (heic) finishHeicLoad(true);
+              showPhoto(roll.length - 1);
+            });
+          };
+          im.onerror = function () {
             pendingLoads--;
-            roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1, captureDate: captureDate, dateText: captureDate });
-            showPhoto(roll.length - 1);
-          });
-        };
-        im.onerror = function () {
+            URL.revokeObjectURL(url);
+            if (heic) finishHeicLoad(false);
+          };
+          im.src = url;
+        }).catch(function () {
           pendingLoads--;
-          URL.revokeObjectURL(url);
-        };
-        im.src = url;
+          if (heic) finishHeicLoad(false);
+        });
       });
     }
 

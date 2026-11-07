@@ -2,7 +2,7 @@
 
 A small browser-based photo editor that gives digital images the character of classic color film. Choose a film stock, adjust the look, compare the original with the developed print, and download the result.
 
-Photos are processed in the browser and are not uploaded. Saved looks are kept in this browser's local storage. The page loads its display fonts from Google Fonts; if those fonts are unavailable, it falls back to system fonts.
+Photos are processed in the browser and are not uploaded. Saved looks are kept in this browser's local storage. The page loads its display fonts from Google Fonts; if those fonts are unavailable, it falls back to system fonts. HEIC/HEIF decoding and metadata reading are loaded from jsDelivr only when one of those formats is opened.
 
 ## Features
 
@@ -14,6 +14,7 @@ Photos are processed in the browser and are not uploaded. Saved looks are kept i
 - Save, apply, and delete custom looks in browser storage
 - Optional 35mm frame and camera date stamp, prefilled from EXIF capture metadata when available
 - Drag and drop or browse for multiple images, then switch between them in a contact sheet
+- HEIC/HEIF photo support with in-browser conversion and capture-date metadata reading
 - Export the current photo or whole roll as JPEG or lossless PNG; adjust JPEG quality and optionally develop at full resolution
 - Responsive layout for desktop and mobile
 
