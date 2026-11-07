@@ -1,594 +1,98 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Analog Film Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --film-black: #0a0806;
-        --film-base: #14100c;
-        --film-brown: #1b1712;
-        --film-warm: #2a2118;
-        --film-gold: #e8a54b;
-        --film-gold-light: #ffca6b;
-        --film-gold-dark: #c98a38;
-        --film-text: #f3ead9;
-        --film-text-muted: #a89a83;
-        --film-text-subtle: #7d7059;
-        --film-border: #33291b;
-        --film-border-light: #4a3b25;
-      }
-
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-
-      html, body {
-        min-height: 100vh;
-        font-family: 'IBM Plex Mono', 'Courier New', monospace;
-        background: var(--film-black);
-        color: var(--film-text);
-        line-height: 1.5;
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-image:
-          radial-gradient(ellipse at 10% 20%, rgba(255,240,210,0.03) 0%, transparent 20%),
-          radial-gradient(ellipse at 90% 80%, rgba(255,240,210,0.03) 0%, transparent 20%),
-          radial-gradient(ellipse at 50% 50%, rgba(255,240,210,0.02) 0%, transparent 30%);
-        pointer-events: none;
-        z-index: 1000;
-        opacity: 0.7;
-      }
-
-      body::after {
-        content: "";
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background:
-          linear-gradient(90deg, rgba(255,180,70,0.08) 0%, transparent 5%),
-          linear-gradient(270deg, rgba(255,180,70,0.08) 0%, transparent 5%),
-          linear-gradient(0deg, rgba(255,180,70,0.05) 0%, transparent 10%),
-          linear-gradient(180deg, rgba(255,180,70,0.05) 0%, transparent 10%);
-        pointer-events: none;
-        z-index: 1001;
-      }
-
-      .app {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 24px 16px 48px;
-        position: relative;
-      }
-
-      .app::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        border: 2px solid var(--film-gold);
-        border-radius: 4px;
-        pointer-events: none;
-        opacity: 0.15;
-        z-index: -1;
-      }
-
-      header {
-        text-align: center;
-        margin-bottom: 24px;
-        position: relative;
-      }
-
-      header h1 {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 32px;
-        margin: 0 0 8px;
-        letter-spacing: 2px;
-        font-weight: 500;
-        text-shadow: 0 0 10px rgba(232, 165, 75, 0.3);
-      }
-
-      header h1 .gold {
-        background: linear-gradient(135deg, #ffdf9a, #e8a54b, #c98a38, #ffca6b);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        background-size: 200% 200%;
-        animation: goldShimmer 8s ease-in-out infinite;
-      }
-
-      @keyframes goldShimmer {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-      }
-
-      header p.sub {
-        margin: 0 0 20px;
-        color: var(--film-text-muted);
-        font-size: 13px;
-        font-family: 'IBM Plex Mono', monospace;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .drop {
-        border: 3px dashed var(--film-border);
-        border-radius: 20px;
-        padding: 40px 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--film-base);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .drop::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: radial-gradient(circle at center, rgba(255,240,210,0.05) 0%, transparent 70%);
-        pointer-events: none;
-      }
-
-      .drop:hover, .drop.over {
-        border-color: var(--film-gold);
-        background: var(--film-brown);
-        box-shadow:
-          0 0 20px rgba(232, 165, 75, 0.2),
-          inset 0 0 30px rgba(232, 165, 75, 0.05);
-      }
-
-      .drop .big {
-        font-size: 18px;
-        font-weight: 600;
-        font-family: 'Playfair Display', Georgia, serif;
-        color: var(--film-gold-light);
-        text-shadow: 0 0 5px rgba(232, 165, 75, 0.3);
-      }
-
-      .drop .small {
-        font-size: 13px;
-        color: var(--film-text-muted);
-        margin-top: 8px;
-        font-family: 'IBM Plex Mono', monospace;
-      }
-
-      .work {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-top: 24px;
-        position: relative;
-      }
-
-      @media (max-width: 700px) { .work { grid-template-columns: 1fr; } }
-
-      .pane {
-        background: var(--film-base);
-        border: 1px solid var(--film-border);
-        border-radius: 16px;
-        padding: 16px 16px 12px;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .pane::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--film-gold-dark), var(--film-gold), var(--film-gold-light));
-        opacity: 0.3;
-      }
-
-      .pane h2 {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin: 8px 8px 12px;
-        color: var(--film-gold);
-        font-weight: 500;
-      }
-
-      .pane canvas {
-        width: 100%;
-        height: auto;
-        border-radius: 10px;
-        display: block;
-        background: #000;
-        box-shadow:
-          0 0 15px rgba(0, 0, 0, 0.5),
-          inset 0 0 10px rgba(232, 165, 75, 0.05);
-      }
-
-      .roll {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 20px;
-        padding: 12px;
-        background: var(--film-base);
-        border: 1px solid var(--film-border);
-        border-radius: 12px;
-      }
-
-      .roll .thumb {
-        position: relative;
-        width: 64px;
-        height: 64px;
-        padding: 0;
-        border: 2px solid var(--film-border);
-        border-radius: 8px;
-        background: #000;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      .roll .thumb:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(232, 165, 75, 0.2); }
-      .roll .thumb.active { border-color: var(--film-gold); box-shadow: 0 0 0 2px var(--film-gold); }
-      .roll .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-      .roll .thumb .rm {
-        position: absolute;
-        top: 2px; right: 2px;
-        width: 18px; height: 18px;
-        padding: 0;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.8);
-        color: var(--film-gold-light);
-        font-size: 12px;
-        line-height: 18px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      .roll .thumb .rm:hover { background: var(--film-gold); color: var(--film-black); }
-
-      .controls {
-        margin-top: 20px;
-        background: var(--film-base);
-        border: 1px solid var(--film-border);
-        border-radius: 16px;
-        padding: 20px;
-        position: relative;
-      }
-
-      .controls::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, transparent, var(--film-gold), transparent);
-        opacity: 0.4;
-      }
-
-      .controls h2 {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin: 0 0 20px;
-        color: var(--film-gold);
-        font-weight: 500;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--film-border);
-      }
-
-      .row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 12px 0;
-        font-size: 13px;
-        font-family: 'IBM Plex Mono', monospace;
-      }
-
-      .row label {
-        width: 140px;
-        color: var(--film-text-muted);
-        font-size: 12px;
-      }
-
-      .row input[type="range"] {
-        flex: 1;
-        -webkit-appearance: none;
-        height: 6px;
-        background: var(--film-warm);
-        border-radius: 3px;
-        outline: none;
-        accent-color: var(--film-gold);
-      }
-
-      .row input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        background: var(--film-gold);
-        border-radius: 50%;
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(232, 165, 75, 0.4), 0 0 0 2px var(--film-gold-dark);
-        transition: all 0.2s ease;
-      }
-
-      .row input[type="range"]::-webkit-slider-thumb:hover {
-        transform: scale(1.1);
-        box-shadow: 0 4px 10px rgba(232, 165, 75, 0.6), 0 0 0 3px var(--film-gold);
-      }
-
-      .row input[type="range"]::-moz-range-thumb {
-        width: 20px; height: 20px;
-        background: var(--film-gold);
-        border-radius: 50%;
-        cursor: pointer;
-        border: 2px solid var(--film-gold-dark);
-        box-shadow: 0 2px 6px rgba(232, 165, 75, 0.4);
-      }
-
-      .row .val {
-        width: 36px;
-        text-align: right;
-        color: var(--film-gold-light);
-        font-variant-numeric: tabular-nums;
-        font-weight: 600;
-        background: var(--film-warm);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 12px;
-      }
-
-      .tip {
-        position: relative;
-        cursor: help;
-        text-decoration: underline dotted rgba(207, 194, 171, 0.5);
-        text-underline-offset: 3px;
-        color: var(--film-text-muted);
-      }
-
-      .tip:hover::after, .tip:active::after {
-        content: attr(data-tip);
-        position: absolute;
-        left: 0;
-        top: 100%;
-        margin-top: 8px;
-        width: 280px;
-        background: var(--film-warm);
-        border: 1px solid var(--film-gold);
-        color: var(--film-text);
-        padding: 10px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 1.5;
-        z-index: 100;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(232, 165, 75, 0.2);
-        font-family: 'IBM Plex Mono', monospace;
-      }
-
-      .presets {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-        padding: 12px;
-        background: var(--film-brown);
-        border: 1px solid var(--film-border);
-        border-radius: 12px;
-      }
-
-      .preset {
-        background: var(--film-warm);
-        color: var(--film-text-muted);
-        border: 1px solid var(--film-border);
-        border-radius: 20px;
-        padding: 8px 16px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-family: 'IBM Plex Mono', monospace;
-        font-weight: 500;
-      }
-
-      .preset:hover { border-color: var(--film-gold); color: var(--film-gold-light); background: rgba(232, 165, 75, 0.1); }
-      .preset.active { background: var(--film-gold); color: var(--film-black); border-color: var(--film-gold); box-shadow: 0 0 10px rgba(232, 165, 75, 0.4); }
-
-      .btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-
-      button {
-        font: inherit;
-        font-family: 'IBM Plex Mono', monospace;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 20px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.2s ease;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-      }
-
-      .primary {
-        background: linear-gradient(135deg, var(--film-gold-dark), var(--film-gold), var(--film-gold-light));
-        color: var(--film-black);
-        box-shadow: 0 4px 12px rgba(232, 165, 75, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.2);
-      }
-
-      .primary:hover:not(:disabled) {
-        box-shadow: 0 6px 16px rgba(232, 165, 75, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.3);
-        transform: translateY(-1px);
-      }
-
-      .primary:active:not(:disabled) { transform: translateY(0); }
-
-      .ghost {
-        background: var(--film-warm);
-        color: var(--film-text);
-        border: 1px solid var(--film-border) !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-
-      .ghost:hover:not(:disabled) {
-        border-color: var(--film-gold) !important;
-        background: rgba(232, 165, 75, 0.1);
-        color: var(--film-gold-light);
-      }
-
-      button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-      .row select {
-        flex: 1;
-        background: var(--film-warm);
-        color: var(--film-text);
-        border: 1px solid var(--film-border);
-        border-radius: 8px;
-        padding: 8px 12px;
-        font: inherit;
-        font-family: 'IBM Plex Mono', monospace;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .row select:hover { border-color: var(--film-gold); }
-
-      .row input[type="text"], .row input[type="checkbox"] {
-        background: var(--film-warm);
-        color: var(--film-text);
-        border: 1px solid var(--film-border);
-        border-radius: 8px;
-        padding: 8px 10px;
-        font: inherit;
-        font-family: 'IBM Plex Mono', monospace;
-      }
-
-      .row input[type="checkbox"] {
-        width: 18px; height: 18px;
-        flex: none;
-        accent-color: var(--film-gold);
-        cursor: pointer;
-      }
-
-      .note {
-        font-size: 12px;
-        color: var(--film-text-subtle);
-        margin-top: 16px;
-        line-height: 1.6;
-        padding: 12px;
-        background: var(--film-brown);
-        border: 1px solid var(--film-border);
-        border-radius: 8px;
-        font-family: 'IBM Plex Mono', monospace;
-        font-style: italic;
-      }
-
-      @media (max-width: 600px) {
-        .row label { width: 100px; }
-        .row .val { width: 32px; }
-        .btns { gap: 8px; }
-        button { padding: 10px 14px; font-size: 12px; }
-      }
-
-      #grainPreview { display: none; }
-
-      ::-webkit-scrollbar { width: 8px; height: 8px; }
-      ::-webkit-scrollbar-track { background: var(--film-base); }
-      ::-webkit-scrollbar-thumb { background: var(--film-border); border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: var(--film-gold); }
-    </style>
-  </head>
-  <body>
-    <div class="app">
-      <header>
-        <h1><span class="gold">Analog Film</span> Studio</h1>
-        <p class="sub">Develop photos from your Sony a6300 on five classic emulsions &mdash; Gold 200, Portra 400, Ektar 100, CineStill 800T and Superia 400. Everything runs locally in your browser.</p>
-      </header>
-
-      <div class="drop" id="drop">
-        <div class="big">Drag photos here, or tap to browse</div>
-        <div class="small">Load a whole roll at once &mdash; JPEG / PNG from your a6300, nothing is uploaded anywhere</div>
-        <input type="file" id="file" accept="image/*" multiple hidden />
-      </div>
-
-      <div class="work" id="work" style="display:none">
-        <div class="pane">
-          <h2>Original</h2>
-          <canvas id="src"></canvas>
-        </div>
-        <div class="pane">
-          <h2 id="stockLabel">Kodak Gold 200</h2>
-          <canvas id="out"></canvas>
-        </div>
-      </div>
-
-      <div class="roll" id="rollStrip" style="display:none"></div>
-
-      <div class="controls" id="controls" style="display:none">
-        <h2>Film development controls</h2>
-        <div class="row"><label>Film stock</label>
-          <select id="stock">
-            <option value="gold" selected>Kodak Gold 200</option>
-            <option value="portra">Kodak Portra 400</option>
-            <option value="ektar">Kodak Ektar 100</option>
-            <option value="cinestill">CineStill 800T</option>
-            <option value="superia">Fuji Superia 400</option>
-          </select>
-        </div>
-        <div class="presets" id="presets">
-          <div class="preset" data-p="sunny">Sunny Day</div>
-          <div class="preset" data-p="muted">Muted Print</div>
-          <div class="preset" data-p="push">Push +1</div>
-          <div class="preset" data-p="wellworn">Well-Worn Roll</div>
-        </div>
-
-        <div class="row"><label class="tip" data-tip="Amber-red warmth across the image, strongest in shadows. High values give that golden-hour Gold 200 feel; low values stay cooler.">Warmth</label><input type="range" id="warmth" min="0" max="100" value="55" /><span class="val" id="warmthV">55</span></div>
-        <div class="row"><label class="tip" data-tip="Tints bright tones yellow-gold, mimicking how Gold's red layer keeps highlight detail while its blue layer saturates early. High values make sunlit skin and skies glow golden.">Golden highlights</label><input type="range" id="gold" min="0" max="100" value="60" /><span class="val" id="goldV">60</span></div>
-        <div class="row"><label class="tip" data-tip="Steepness of the film's density curve in the midtones. High values = punchy, snapshotty contrast; low values = flat, muted tones with more latitude.">Contrast</label><input type="range" id="contrast" min="0" max="100" value="45" /><span class="val" id="contrastV">45</span></div>
-        <div class="row"><label class="tip" data-tip="Lifts the black point like film base + chemical fog, so shadows end warm brown instead of pure black. Higher = more faded, vintage look. Highlights always roll off gently regardless.">Faded blacks</label><input type="range" id="fade" min="0" max="100" value="40" /><span class="val" id="fadeV">40</span></div>
-        <div class="row"><label class="tip" data-tip="Overall color intensity. Consumer films like Gold and Superia are punchy; Portra is naturally lower. Above ~60 colors get vivid, below ~30 muted and pastel-like.">Saturation</label><input type="range" id="sat" min="0" max="100" value="50" /><span class="val" id="satV">50</span></div>
-        <div class="row"><label class="tip" data-tip="Soft glow bleeding from bright highlights into surroundings — red light scattering off the film base. Each stock glows its own color; CineStill 800T's deep-red halation is the famous example.">Halation glow</label><input type="range" id="halation" min="0" max="100" value="35" /><span class="val" id="halationV">35</span></div>
-        <div class="row"><label class="tip" data-tip="Amount of silver-halide grain texture: soft crystal clusters, strongest in midtones and invisible in deep blacks and clean highlights. Each stock has its own grain character.">Grain</label><input type="range" id="grain" min="0" max="100" value="40" /><span class="val" id="grainV">40</span></div>
-        <div class="row"><label class="tip" data-tip="Physical wear and age: dust specks, hairline scratches, occasional light leaks and faint processing banding. High values make the photo look like an old, well-handled negative.">Dust &amp; scratches</label><input type="range" id="dust" min="0" max="100" value="25" /><span class="val" id="dustV">25</span></div>
-        <div class="row"><label class="tip" data-tip="Darkens the corners like lens falloff on an old compact camera. Subtle at low values; high values give a heavy, tunnel-like vintage look.">Vignette</label><input type="range" id="vignette" min="0" max="100" value="25" /><span class="val" id="vignetteV">25</span></div>
-
-        <div class="row"><label class="tip" data-tip="Adds a 35mm film-strip border around the photo: sprocket holes, faint film-base texture, and the orange edge print with the stock name and frame number — like a scanned negative. Untick for a clean, borderless photo.">35mm film frame</label><input type="checkbox" id="frame" checked style="width:18px;height:18px;accent-color:#e8a54b;flex:none;" /></div>
-        <div class="row"><label class="tip" data-tip="Prints text in the photo's corner in classic orange one-hour-lab style — type a date like '98 24 12 or anything else. Leave empty for no stamp.">Date stamp</label><input type="text" id="datetext" maxlength="24" placeholder="e.g. '98 24 12" style="flex:1;background:#2a2118;color:#f3ead9;border:1px solid #4a3b25;border-radius:8px;padding:8px 10px;font:inherit;" /></div>
-
-        <div class="row" style="margin-top:18px">
-          <label style="width:auto">Full-resolution export</label>
-          <input type="checkbox" id="fullres" style="width:18px;height:18px;accent-color:#e8a54b;" />
-          <span style="font-size:12px;color:#7d7059;">Develops the original file (e.g. 6000&times;4000 from the a6300) &mdash; takes a few extra seconds</span>
-        </div>
-        <div class="btns">
-          <button class="primary" id="download">Download this frame</button>
-          <button class="ghost" id="downloadAll" disabled>Develop &amp; download all</button>
-          <button class="ghost" id="reset">Reset sliders</button>
-          <button class="ghost" id="newPhoto">Add photos to roll</button>
-        </div>
-        <p class="note">Tip: for the most film-like results, shoot with slightly overexposed, flat profiles on the a6300 (e.g. Creative Style Neutral, -1 contrast) so this app has latitude to work with. For batch downloads, your browser may ask once for permission to save multiple files.</p>
-      </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analog Film Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --film-black: #0a0806;
+      --film-base: #14100c;
+      --film-brown: #1b1712;
+      --film-warm: #2a2118;
+      --film-gold: #e8a54b;
+      --film-gold-light: #ffca6b;
+      --film-text: #f3ead9;
+      --film-text-muted: #a89a83;
+      --film-border: #33291b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100vh; font-family: 'IBM Plex Mono', monospace; background: var(--film-black); color: var(--film-text); }
+    body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(ellipse at 10% 20%, rgba(255,240,210,0.03) 0%, transparent 20%), radial-gradient(ellipse at 90% 80%, rgba(255,240,210,0.03) 0%, transparent 20%); pointer-events: none; z-index: 1000; opacity: 0.7; }
+    body::after { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(255,180,70,0.08) 0%, transparent 5%), linear-gradient(270deg, rgba(255,180,70,0.08) 0%, transparent 5%); pointer-events: none; z-index: 1001; }
+    .app { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; }
+    header { text-align: center; margin-bottom: 24px; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin: 0 0 8px; letter-spacing: 2px; }
+    header h1 .gold { background: linear-gradient(135deg, #ffdf9a, #e8a54b, #c98a38); -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 8s infinite; }
+    @keyframes shimmer { 0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    header p.sub { margin: 0 0 20px; color: var(--film-text-muted); font-size: 13px; max-width: 600px; margin: 0 auto 20px; }
+    .drop { border: 3px dashed var(--film-border); border-radius: 20px; padding: 40px 20px; text-align: center; cursor: pointer; background: var(--film-base); transition: all 0.3s; }
+    .drop:hover, .drop.over { border-color: var(--film-gold); background: var(--film-brown); box-shadow: 0 0 20px rgba(232,165,75,0.2); }
+    .drop .big { font-size: 18px; font-weight: 600; color: var(--film-gold-light); }
+    .drop .small { font-size: 13px; color: var(--film-text-muted); margin-top: 8px; }
+    .work { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    @media (max-width: 700px) { .work { grid-template-columns: 1fr; } }
+    .pane { background: var(--film-base); border: 1px solid var(--film-border); border-radius: 16px; padding: 16px; }
+    .pane h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 8px 8px 12px; color: var(--film-gold); }
+    .pane canvas { width: 100%; height: auto; border-radius: 10px; display: block; background: #000; }
+    .roll { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; padding: 12px; background: var(--film-base); border: 1px solid var(--film-border); border-radius: 12px; }
+    .roll .thumb { position: relative; width: 64px; height: 64px; padding: 0; border: 2px solid var(--film-border); border-radius: 8px; background: #000; overflow: hidden; cursor: pointer; transition: all 0.2s; }
+    .roll .thumb:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(232,165,75,0.2); }
+    .roll .thumb.active { border-color: var(--film-gold); box-shadow: 0 0 0 2px var(--film-gold); }
+    .roll .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .roll .thumb .rm { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; padding: 0; border-radius: 50%; background: rgba(0,0,0,0.8); color: var(--film-gold-light); font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; }
+    .roll .thumb .rm:hover { background: var(--film-gold); color: #000; }
+    .controls { margin-top: 20px; background: var(--film-base); border: 1px solid var(--film-border); border-radius: 16px; padding: 20px; }
+    .controls h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 20px; color: var(--film-gold); padding-bottom: 8px; border-bottom: 1px solid var(--film-border); }
+    .row { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+    .row label { width: 140px; color: var(--film-text-muted); font-size: 12px; }
+    .row input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; background: var(--film-warm); border-radius: 3px; accent-color: var(--film-gold); }
+    .row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--film-gold); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(232,165,75,0.4); }
+    .row .val { width: 36px; text-align: right; color: var(--film-gold-light); font-variant-numeric: tabular-nums; background: var(--film-warm); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .tip { position: relative; cursor: help; text-decoration: underline dotted rgba(207,194,171,0.5); text-underline-offset: 3px; }
+    .tip:hover::after { content: attr(data-tip); position: absolute; left: 0; top: 100%; margin-top: 8px; width: 280px; background: var(--film-warm); border: 1px solid var(--film-gold); color: var(--film-text); padding: 10px 12px; border-radius: 8px; font-size: 12px; z-index: 100; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: var(--film-brown); border: 1px solid var(--film-border); border-radius: 12px; }
+    .preset { background: var(--film-warm); color: var(--film-text-muted); border: 1px solid var(--film-border); border-radius: 20px; padding: 8px 16px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .preset:hover { border-color: var(--film-gold); color: var(--film-gold-light); }
+    .preset.active { background: var(--film-gold); color: #000; border-color: var(--film-gold); }
+    .btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    button { font: inherit; border: none; border-radius: 10px; padding: 12px 20px; cursor: pointer; font-weight: 600; transition: all 0.2s; text-transform: uppercase; }
+    .primary { background: linear-gradient(135deg, #c98a38, #e8a54b, #ffca6b); color: #000; }
+    .ghost { background: var(--film-warm); color: var(--film-text); border: 1px solid var(--film-border); }
+    .ghost:hover { border-color: var(--film-gold); color: var(--film-gold-light); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .row select, .row input[type="text"] { flex: 1; background: var(--film-warm); color: var(--film-text); border: 1px solid var(--film-border); border-radius: 8px; padding: 8px 10px; }
+    .row input[type="checkbox"] { width: 18px; height: 18px; flex: none; accent-color: var(--film-gold); }
+    .note { font-size: 12px; color: #7d7059; margin-top: 16px; line-height: 1.6; padding: 12px; background: var(--film-brown); border: 1px solid var(--film-border); border-radius: 8px; font-style: italic; }
+    @media (max-width: 600px) { .row label { width: 100px; } .row .val { width: 32px; } .btns { gap: 8px; } button { padding: 10px 14px; font-size: 12px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1><span class="gold">Analog Film</span> Studio</h1>
+      <p class="sub">Develop photos from your Sony a6300 on five classic emulsions — Gold 200, Portra 400, Ektar 100, CineStill 800T and Superia 400. Everything runs locally in your browser.</p>
+    </header>
+    
+    <div class="drop" id="drop">
+      <div class="big">Drag photos here, or tap to browse</div>
+      <div class="small">Load a whole roll at once — JPEG / PNG from your a6300, nothing is uploaded anywhere</div>
+      <input type="file" id="file" accept="image/*" multiple hidden>
     </div>
-
-    <script>
-      "use strict";
-var srcCanvas = document.getElementById("src");
-var outCanvas = document.getElementById("out");
-var srcCtx = srcCanvas.getContext("2d");
-var outCtx = outCanvas.getContext("2d");
-var previewCtx = outCtx;
-var img = null;
-var photoSeed = 1;
-var MAX = 2400;
-
-var currentStock = "gold";
-
-var stocks = {
-  gold: {
-    label: "Kodak Gold 200",
-    gShift: -11, gSat: -
+    
+    <div class="work" id="work" style="display:none">
+      <div class="pane"><h2>Original</h2><canvas id="src"></canvas></div>
+      <div class="pane"><h2 id="stockLabel">Kodak Gold 200</h2><canvas id="out"></canvas></div>
+    </div>
+    
+    <div class="roll" id="rollStrip" style="display:none"></div>
+    
+    <div class="controls" id="controls" style="display:none">
+      <h2>Film development controls</h2>
+      <div class="row"><label>Film stock</label>
+        <select id="stock">
+          <option value="gold" selected>Kodak Gold 200</option>
+          <option value="portra">Kodak Portra 400</option>
+          <option value="ektar">Kodak Ektar 100</option>
+          <option value="cinestill">CineStill 800T
