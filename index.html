@@ -90,6 +90,31 @@
       .row label { width: 120px; color: #cfc2ab; }
       .row input[type="range"] { flex: 1; accent-color: #e8a54b; }
       .row .val { width: 34px; text-align: right; color: #a89a83; font-variant-numeric: tabular-nums; }
+      .tip {
+        position: relative;
+        cursor: help;
+        text-decoration: underline dotted rgba(207, 194, 171, 0.45);
+        text-underline-offset: 3px;
+      }
+      .tip:hover::after,
+      .tip:active::after {
+        content: attr(data-tip);
+        position: absolute;
+        left: 0;
+        top: 100%;
+        margin-top: 6px;
+        width: 250px;
+        background: #2a2118;
+        border: 1px solid #4a3b25;
+        color: #f3ead9;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.5;
+        z-index: 20;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      }
       .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
       button {
         font: inherit;
@@ -103,6 +128,34 @@
       .primary { background: linear-gradient(90deg, #e8a54b, #ffca6b); color: #241703; }
       .ghost { background: #2a2118; color: #f3ead9; border: 1px solid #4a3b25 !important; }
       button:disabled { opacity: 0.4; cursor: not-allowed; }
+      .roll { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+      .roll .thumb {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        padding: 0;
+        border: 2px solid #33291b;
+        border-radius: 8px;
+        background: #000;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .roll .thumb.active { border-color: #e8a54b; }
+      .roll .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .roll .thumb .rm {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        font-size: 12px;
+        line-height: 18px;
+        text-align: center;
+      }
       .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
       .preset {
         background: #2a2118;
@@ -135,9 +188,9 @@
       </header>
 
       <div class="drop" id="drop">
-        <div class="big">Drag a photo here, or tap to browse</div>
-        <div class="small">JPEG / PNG from your a6300 &mdash; nothing is uploaded anywhere</div>
-        <input type="file" id="file" accept="image/*" hidden />
+        <div class="big">Drag photos here, or tap to browse</div>
+        <div class="small">Load a whole roll at once &mdash; JPEG / PNG from your a6300, nothing is uploaded anywhere</div>
+        <input type="file" id="file" accept="image/*" multiple hidden />
       </div>
 
       <div class="work" id="work" style="display:none">
@@ -150,6 +203,8 @@
           <canvas id="out"></canvas>
         </div>
       </div>
+
+      <div class="roll" id="rollStrip" style="display:none"></div>
 
       <div class="controls" id="controls" style="display:none">
         <h2>Film development controls</h2>
@@ -169,15 +224,18 @@
           <div class="preset" data-p="wellworn">Well-Worn Roll</div>
         </div>
 
-        <div class="row"><label>Warmth</label><input type="range" id="warmth" min="0" max="100" value="55" /><span class="val" id="warmthV">55</span></div>
-        <div class="row"><label>Golden highlights</label><input type="range" id="gold" min="0" max="100" value="60" /><span class="val" id="goldV">60</span></div>
-        <div class="row"><label>Contrast</label><input type="range" id="contrast" min="0" max="100" value="45" /><span class="val" id="contrastV">45</span></div>
-        <div class="row"><label>Faded blacks</label><input type="range" id="fade" min="0" max="100" value="40" /><span class="val" id="fadeV">40</span></div>
-        <div class="row"><label>Saturation</label><input type="range" id="sat" min="0" max="100" value="50" /><span class="val" id="satV">50</span></div>
-        <div class="row"><label>Halation glow</label><input type="range" id="halation" min="0" max="100" value="35" /><span class="val" id="halationV">35</span></div>
-        <div class="row"><label>Grain</label><input type="range" id="grain" min="0" max="100" value="40" /><span class="val" id="grainV">40</span></div>
-        <div class="row"><label>Dust &amp; scratches</label><input type="range" id="dust" min="0" max="100" value="25" /><span class="val" id="dustV">25</span></div>
-        <div class="row"><label>Vignette</label><input type="range" id="vignette" min="0" max="100" value="25" /><span class="val" id="vignetteV">25</span></div>
+        <div class="row"><label class="tip" data-tip="Amber-red warmth across the image, strongest in shadows. High values give that golden-hour Gold 200 feel; low values stay cooler.">Warmth</label><input type="range" id="warmth" min="0" max="100" value="55" /><span class="val" id="warmthV">55</span></div>
+        <div class="row"><label class="tip" data-tip="Tints bright tones yellow-gold, mimicking how Gold's red layer keeps highlight detail while its blue layer saturates early. High values make sunlit skin and skies glow golden.">Golden highlights</label><input type="range" id="gold" min="0" max="100" value="60" /><span class="val" id="goldV">60</span></div>
+        <div class="row"><label class="tip" data-tip="Steepness of the film's density curve in the midtones. High values = punchy, snapshotty contrast; low values = flat, muted tones with more latitude.">Contrast</label><input type="range" id="contrast" min="0" max="100" value="45" /><span class="val" id="contrastV">45</span></div>
+        <div class="row"><label class="tip" data-tip="Lifts the black point like film base + chemical fog, so shadows end warm brown instead of pure black. Higher = more faded, vintage look. Highlights always roll off gently regardless.">Faded blacks</label><input type="range" id="fade" min="0" max="100" value="40" /><span class="val" id="fadeV">40</span></div>
+        <div class="row"><label class="tip" data-tip="Overall color intensity. Consumer films like Gold and Superia are punchy; Portra is naturally lower. Above ~60 colors get vivid, below ~30 muted and pastel-like.">Saturation</label><input type="range" id="sat" min="0" max="100" value="50" /><span class="val" id="satV">50</span></div>
+        <div class="row"><label class="tip" data-tip="Soft glow bleeding from bright highlights into surroundings — red light scattering off the film base. Each stock glows its own color; CineStill 800T's deep-red halation is the famous example.">Halation glow</label><input type="range" id="halation" min="0" max="100" value="35" /><span class="val" id="halationV">35</span></div>
+        <div class="row"><label class="tip" data-tip="Amount of silver-halide grain texture: soft crystal clusters, strongest in midtones and invisible in deep blacks and clean highlights. Each stock has its own grain character.">Grain</label><input type="range" id="grain" min="0" max="100" value="40" /><span class="val" id="grainV">40</span></div>
+        <div class="row"><label class="tip" data-tip="Physical wear and age: dust specks, hairline scratches, occasional light leaks and faint processing banding. High values make the photo look like an old, well-handled negative.">Dust &amp; scratches</label><input type="range" id="dust" min="0" max="100" value="25" /><span class="val" id="dustV">25</span></div>
+        <div class="row"><label class="tip" data-tip="Darkens the corners like lens falloff on an old compact camera. Subtle at low values; high values give a heavy, tunnel-like vintage look.">Vignette</label><input type="range" id="vignette" min="0" max="100" value="25" /><span class="val" id="vignetteV">25</span></div>
+
+        <div class="row"><label class="tip" data-tip="Adds a 35mm film-strip border around the photo: sprocket holes, faint film-base texture, and the orange edge print with the stock name and frame number — like a scanned negative. Untick for a clean, borderless photo.">35mm film frame</label><input type="checkbox" id="frame" checked style="width:18px;height:18px;accent-color:#e8a54b;flex:none;" /></div>
+        <div class="row"><label class="tip" data-tip="Prints text in the photo's corner in classic orange one-hour-lab style — type a date like '98 24 12 or anything else. Leave empty for no stamp.">Date stamp</label><input type="text" id="datetext" maxlength="24" placeholder="e.g. '98 24 12" style="flex:1;background:#2a2118;color:#f3ead9;border:1px solid #4a3b25;border-radius:8px;padding:8px 10px;font:inherit;" /></div>
 
         <div class="row" style="margin-top:16px">
           <label style="width:auto">Full-resolution export</label>
@@ -185,11 +243,12 @@
           <span style="font-size:12px;color:#7d7059;">Develops the original file (e.g. 6000&times;4000 from the a6300) &mdash; takes a few extra seconds</span>
         </div>
         <div class="btns">
-          <button class="primary" id="download">Download developed JPEG</button>
+          <button class="primary" id="download">Download this frame</button>
+          <button class="ghost" id="downloadAll" disabled>Develop &amp; download all</button>
           <button class="ghost" id="reset">Reset sliders</button>
-          <button class="ghost" id="newPhoto">Load another photo</button>
+          <button class="ghost" id="newPhoto">Add photos to roll</button>
         </div>
-        <p class="note">Tip: for the most film-like results, shoot with slightly overexposed, flat profiles on the a6300 (e.g. Creative Style Neutral, -1 contrast) so this app has latitude to work with.</p>
+        <p class="note">Tip: for the most film-like results, shoot with slightly overexposed, flat profiles on the a6300 (e.g. Creative Style Neutral, -1 contrast) so this app has latitude to work with. For batch downloads, your browser may ask once for permission to save multiple files.</p>
       </div>
     </div>
 
@@ -288,6 +347,8 @@
         sliders.forEach(function (k) {
           p[k] = (+document.getElementById(k).value) / 100;
         });
+        p.frame = document.getElementById("frame").checked;
+        p.dateText = document.getElementById("datetext").value.trim();
         return p;
       }
 
@@ -336,11 +397,17 @@
         document.querySelectorAll(".preset").forEach(function (p) { p.classList.remove("active"); });
       }
 
+      document.getElementById("frame").addEventListener("change", scheduleRender);
+      document.getElementById("datetext").addEventListener("input", scheduleRender);
+
       // --- loading ---
       var drop = document.getElementById("drop");
       var fileInput = document.getElementById("file");
       drop.addEventListener("click", function () { fileInput.click(); });
-      fileInput.addEventListener("change", function () { if (fileInput.files[0]) load(fileInput.files[0]); });
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files.length) loadFiles(fileInput.files);
+        fileInput.value = "";
+      });
       ["dragover", "dragenter"].forEach(function (ev) {
         drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); });
       });
@@ -348,8 +415,7 @@
         drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); });
       });
       drop.addEventListener("drop", function (e) {
-        var f = e.dataTransfer.files[0];
-        if (f) load(f);
+        if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
       });
       document.getElementById("newPhoto").addEventListener("click", function () { fileInput.click(); });
       document.getElementById("reset").addEventListener("click", function () {
@@ -358,31 +424,116 @@
         render();
       });
 
-      function load(file) {
-        if (!file.type.startsWith("image/")) return;
-        var url = URL.createObjectURL(file);
-        var im = new Image();
-        im.onload = function () {
-          img = im;
-          var scale = Math.min(1, MAX / Math.max(im.width, im.height));
-          var w = Math.round(im.width * scale), h = Math.round(im.height * scale);
-          srcCanvas.width = outCanvas.width = w;
-          srcCanvas.height = outCanvas.height = h;
-          srcCtx.drawImage(im, 0, 0, w, h);
-          // derive a seed from the photo's own pixels so every photo gets
-          // its own (but stable) dust, scratches and grain pattern
-          var s = srcCtx.getImageData(0, 0, w, h).data;
-          var acc = 0x811c9dc5;
-          for (var si = 0; si < s.length; si += 4096) {
-            acc = ((acc ^ s[si]) * 16777619) >>> 0;
-          }
-          photoSeed = acc || 1;
-          document.getElementById("work").style.display = "grid";
-          document.getElementById("controls").style.display = "block";
-          render();
-          URL.revokeObjectURL(url);
-        };
-        im.src = url;
+      // --- the roll: load many photos, develop them all with one setting ---
+      var roll = [];   // loaded photos: one entry per frame
+      var active = -1; // index of the frame currently on the lightbox
+      var frameNo = 1;     // number shown in the 35mm edge print
+      var nextFrameNo = 1; // sequential counter, wraps at 36 like a real roll
+
+      function cleanName(n) {
+        return n.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "-").slice(0, 40) || "frame";
+      }
+
+      // seed derived from the photo's own pixels: every frame gets its own
+      // (but stable) dust, scratches and grain pattern
+      function computeSeed(im) {
+        var c = document.createElement("canvas");
+        var scale = Math.min(1, 300 / Math.max(im.width, im.height));
+        c.width = Math.max(1, Math.round(im.width * scale));
+        c.height = Math.max(1, Math.round(im.height * scale));
+        var cctx = c.getContext("2d");
+        cctx.drawImage(im, 0, 0, c.width, c.height);
+        var s = cctx.getImageData(0, 0, c.width, c.height).data;
+        var acc = 0x811c9dc5;
+        for (var si = 0; si < s.length; si += 4096) {
+          acc = ((acc ^ s[si]) * 16777619) >>> 0;
+        }
+        return acc || 1;
+      }
+
+      function makeThumb(im) {
+        var t = document.createElement("canvas");
+        t.width = t.height = 128;
+        var tctx = t.getContext("2d");
+        var s = Math.max(im.width, im.height);
+        var dw = im.width / s * 128, dh = im.height / s * 128;
+        tctx.drawImage(im, (128 - dw) / 2, (128 - dh) / 2, dw, dh);
+        return t.toDataURL("image/jpeg", 0.7);
+      }
+
+      function loadFiles(files) {
+        var list = Array.prototype.slice.call(files).filter(function (f) {
+          return f.type && f.type.indexOf("image/") === 0;
+        });
+        list.forEach(function (f) {
+          if (roll.length >= 40) return; // one roll of 36, plus slack
+          var url = URL.createObjectURL(f);
+          var im = new Image();
+          im.onload = function () {
+            roll.push({ img: im, name: cleanName(f.name), seed: computeSeed(im), thumb: makeThumb(im), no: (((nextFrameNo++) - 1) % 36) + 1 });
+            URL.revokeObjectURL(url);
+            showPhoto(roll.length - 1);
+          };
+          im.src = url;
+        });
+      }
+
+      function showPhoto(i) {
+        if (i < 0 || i >= roll.length) return;
+        active = i;
+        img = roll[i].img;
+        photoSeed = roll[i].seed;
+        var scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        srcCanvas.width = outCanvas.width = w;
+        srcCanvas.height = outCanvas.height = h;
+        srcCtx.drawImage(img, 0, 0, w, h);
+        document.getElementById("work").style.display = "grid";
+        document.getElementById("controls").style.display = "block";
+        buildThumbs();
+        render();
+      }
+
+      function rollEmpty() {
+        img = null;
+        active = -1;
+        document.getElementById("work").style.display = "none";
+        document.getElementById("controls").style.display = "none";
+        buildThumbs();
+      }
+
+      function buildThumbs() {
+        var strip = document.getElementById("rollStrip");
+        strip.innerHTML = "";
+        strip.style.display = roll.length ? "flex" : "none";
+        roll.forEach(function (entry, i) {
+          var b = document.createElement("button");
+          b.className = "thumb" + (i === active ? " active" : "");
+          b.title = "Show this frame";
+          var t = document.createElement("img");
+          t.src = entry.thumb;
+          b.appendChild(t);
+          var rm = document.createElement("span");
+          rm.className = "rm";
+          rm.textContent = "\u00d7";
+          rm.title = "Remove from roll";
+          rm.addEventListener("click", function (e) {
+            e.stopPropagation();
+            roll.splice(i, 1);
+            if (!roll.length) { rollEmpty(); return; }
+            if (i < active) active--;
+            if (i === active) showPhoto(Math.min(active, roll.length - 1));
+            else buildThumbs();
+          });
+          b.appendChild(rm);
+          b.addEventListener("click", function () { showPhoto(i); });
+          strip.appendChild(b);
+        });
+        var all = document.getElementById("downloadAll");
+        all.textContent = roll.length > 1
+          ? "Develop & download all (" + roll.length + ")"
+          : "Develop & download all";
+        all.disabled = !roll.length;
       }
 
       // --- the Kodak Gold 200 look ---
@@ -395,7 +546,9 @@
 
       function render() {
         if (!img) return;
-        developTo(outCtx, srcCtx, outCanvas.width, outCanvas.height, getParams());
+        frameNo = roll[active] ? roll[active].no : 1;
+        // always size from the source canvas: the output may carry a frame
+        developTo(outCtx, srcCtx, srcCanvas.width, srcCanvas.height, getParams());
       }
 
       // Full development pipeline: colour grade + halation + grain + dust +
@@ -404,6 +557,9 @@
       // on the original file, so exports match the preview 1:1.
       function developTo(destCtx, sourceCtx, w, h, p) {
         outCtx = destCtx; // spatial effects (halation/grain/dust) draw here
+        // reset the target size: the previous render may have added a frame
+        if (destCtx.canvas.width !== w) destCtx.canvas.width = w;
+        if (destCtx.canvas.height !== h) destCtx.canvas.height = h;
         var data = sourceCtx.getImageData(0, 0, w, h);
         var px = data.data;
 
@@ -478,6 +634,10 @@
 
         // vignette
         if (p.vignette > 0) vignette(p.vignette, w, h);
+
+        // finishing: lab-style date stamp, then the 35mm film-strip frame
+        if (p.dateText) stampDate(destCtx, w, h, p.dateText);
+        if (p.frame) applyFrame(destCtx, st.label);
         outCtx = previewCtx; // restore the on-screen preview target
       }
 
@@ -711,12 +871,105 @@
         outCtx.restore();
       }
 
+      // classic one-hour-lab date print: hard dark shadow, glowing orange digits
+      function stampDate(ctx, w, h, text) {
+        var fs = Math.max(12, Math.round(h * 0.034));
+        ctx.save();
+        ctx.font = "700 " + fs + "px 'Courier New', monospace";
+        ctx.textAlign = "right";
+        var x = w - Math.round(w * 0.03);
+        var y = h - Math.round(h * 0.035);
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.fillText(text, x + fs * 0.05 + 2, y + fs * 0.05 + 2);
+        ctx.fillStyle = "#ffb648";
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      // Composite the developed photo onto a 35mm film strip: warm near-black
+      // film base, sprocket holes top & bottom, and the orange edge print
+      // with the stock name and this frame's number — like a lab scan.
+      function applyFrame(ctx, stockLabel) {
+        var src = ctx.canvas;
+        var w = src.width, h = src.height;
+        var mx = Math.round(w * 0.035);          // side margin
+        var mt = Math.round(h * 0.13);           // top/bottom strip
+        var fw = w + mx * 2, fh = h + mt * 2;
+        var c = document.createElement("canvas");
+        c.width = fw; c.height = fh;
+        var g = c.getContext("2d");
+
+        // film base
+        g.fillStyle = "#14100b";
+        g.fillRect(0, 0, fw, fh);
+        // faint streaks of film-base texture, stable per photo
+        var frand = prng(0x51a3b7 ^ photoSeed);
+        for (var i = 0; i < fw / 6; i++) {
+          g.fillStyle = "rgba(255,240,210," + (frand() * 0.03).toFixed(3) + ")";
+          g.fillRect(frand() * fw, 0, 1, fh);
+        }
+
+        // sprocket holes
+        var holeW = Math.max(5, Math.round(fw * 0.024));
+        var holeH = Math.max(4, Math.round(mt * 0.38));
+        var rr = Math.min(holeW, holeH) * 0.3;
+        var count = 8;
+        var pad = Math.round(holeW * 0.8);
+        var step = (fw - pad * 2 - holeW) / (count - 1);
+        g.fillStyle = "#060504";
+        for (var k = 0; k < count; k++) {
+          var hx = pad + step * k;
+          roundRectPath(g, hx, mt * 0.45 - holeH / 2, holeW, holeH, rr);
+          g.fill();
+          roundRectPath(g, hx, fh - mt * 0.45 - holeH / 2, holeW, holeH, rr);
+          g.fill();
+        }
+
+        // orange edge print: stock name + frame number (real films print
+        // the emulsion name and exposure numbers along the strip)
+        var fs = Math.max(10, Math.round(mt * 0.3));
+        g.font = "600 " + fs + "px 'Courier New', monospace";
+        g.fillStyle = "#e8a54b";
+        g.globalAlpha = 0.85;
+        g.textBaseline = "middle";
+        g.textAlign = "left";
+        g.fillText((stockLabel + "  " + frameNo + "A").toUpperCase(), mx, fh - mt * 0.42);
+        g.textAlign = "right";
+        g.fillText(frameNo + "A \u25B8", fw - mx, mt * 0.42);
+        g.globalAlpha = 1;
+
+        // the photograph
+        g.drawImage(src, mx, mt, w, h);
+        // faint frame edge highlight
+        g.strokeStyle = "rgba(255,235,200,0.15)";
+        g.lineWidth = Math.max(1, Math.round(h / 1000));
+        g.strokeRect(mx + 0.5, mt + 0.5, w - 1, h - 1);
+
+        // copy the framed result back onto the target canvas
+        src.width = fw;
+        src.height = fh;
+        ctx.drawImage(c, 0, 0);
+      }
+
+      function roundRectPath(g, x, y, rw, rh, r) {
+        g.beginPath();
+        g.moveTo(x + r, y);
+        g.arcTo(x + rw, y, x + rw, y + rh, r);
+        g.arcTo(x + rw, y + rh, x, y + rh, r);
+        g.arcTo(x, y + rh, x, y, r);
+        g.arcTo(x, y, x + rw, y, r);
+        g.closePath();
+      }
+
       // --- download ---
       // --- download ---
-      function saveBlob(blob) {
+      function frameName(entry) {
+        return currentStock + "-" + (entry ? entry.name : "film") + ".jpg";
+      }
+      function saveBlob(blob, name) {
         var a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = currentStock + "-film.jpg";
+        a.download = name || frameName(roll[active]);
         a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
       }
@@ -725,7 +978,7 @@
         if (!img) return;
         var btn = this;
         if (!document.getElementById("fullres").checked) {
-          outCanvas.toBlob(saveBlob, "image/jpeg", 0.92);
+          outCanvas.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
           return;
         }
         // re-run the whole pipeline on the original file at native resolution
@@ -740,13 +993,64 @@
             var fullOut = document.createElement("canvas");
             fullOut.width = w; fullOut.height = h;
             developTo(fullOut.getContext("2d"), fullSrc.getContext("2d"), w, h, getParams());
-            fullOut.toBlob(saveBlob, "image/jpeg", 0.92);
+            fullOut.toBlob(function (b) { saveBlob(b, frameName(roll[active])); }, "image/jpeg", 0.92);
           } finally {
             outCtx = previewCtx;
             btn.disabled = false;
-            btn.textContent = "Download developed JPEG";
+            btn.textContent = "Download this frame";
           }
         }, 30);
+      });
+
+      // batch: develop the whole roll with the current settings, one by one
+      function developOne(entry, p, fullres, done) {
+        var im = entry.img;
+        var out2 = document.createElement("canvas");
+        // this frame's own imperfection seed and edge-print number
+        photoSeed = entry.seed;
+        frameNo = entry.no;
+        if (fullres) {
+          var w = im.naturalWidth, h = im.naturalHeight;
+          var src2 = document.createElement("canvas");
+          src2.width = w; src2.height = h;
+          src2.getContext("2d").drawImage(im, 0, 0);
+          out2.width = w; out2.height = h;
+          developTo(out2.getContext("2d"), src2.getContext("2d"), w, h, p);
+        } else {
+          var scale = Math.min(1, MAX / Math.max(im.naturalWidth, im.naturalHeight));
+          var pw = Math.round(im.naturalWidth * scale), ph = Math.round(im.naturalHeight * scale);
+          var s2 = document.createElement("canvas");
+          s2.width = pw; s2.height = ph;
+          s2.getContext("2d").drawImage(im, 0, 0, pw, ph);
+          out2.width = pw; out2.height = ph;
+          developTo(out2.getContext("2d"), s2.getContext("2d"), pw, ph, p);
+        }
+        // restore the lightbox frame's seed/number for on-screen previews
+        photoSeed = roll[active] ? roll[active].seed : 1;
+        frameNo = roll[active] ? roll[active].no : 1;
+        out2.toBlob(function (b) { saveBlob(b, frameName(entry)); done(); }, "image/jpeg", 0.92);
+      }
+
+      document.getElementById("downloadAll").addEventListener("click", function () {
+        if (!roll.length) return;
+        var btn = this;
+        btn.disabled = true;
+        var p = getParams();
+        var fullres = document.getElementById("fullres").checked;
+        var i = 0;
+        (function next() {
+          if (i >= roll.length) {
+            btn.disabled = false;
+            buildThumbs();
+            return;
+          }
+          var entry = roll[i];
+          i++;
+          btn.textContent = "Developing " + i + "/" + roll.length + "\u2026";
+          setTimeout(function () {
+            developOne(entry, p, fullres, function () { setTimeout(next, 250); });
+          }, 30);
+        })();
       });
     </script>
   </body>
