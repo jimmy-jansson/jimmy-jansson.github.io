@@ -575,45 +575,58 @@
         };
       }
 
+      // Film grain via multi-octave value noise sampled with bilinear
+      // interpolation. Hard per-pixel noise reads as digital sensor noise;
+      // smooth, overlapping octaves read as silver-halide crystal clusters.
       function grain(amt, w, h) {
-        // Two octaves: soft clumps (film crystal clusters) + fine sparkle.
-        var strength = amt * 30;
+        var strength = amt * 34;
         var rand = prng(0x9e3779b9 ^ photoSeed);
         var data = outCtx.getImageData(0, 0, w, h);
         var px = data.data;
 
-        // Octave 1: clumped noise on a 1/3-scale buffer, upscaled
-        var cw = Math.max(2, Math.round(w / 3)), ch = Math.max(2, Math.round(h / 3));
-        var clumps = new Float32Array(cw * ch);
-        for (var i = 0; i < clumps.length; i++) clumps[i] = rand() - 0.5;
-
-        // Octave 2: per-pixel fine grain, seeded
-        var fine = new Float32Array(w * h);
-        for (var j = 0; j < fine.length; j += 3) {
-          var v = rand() - 0.5;
-          fine[j] = v; fine[j + 1] = v * 0.7; fine[j + 2] = v * 0.9; // slight clumping even in fine pass
-        }
+        // three octaves: coarse clumps, medium clusters, fine sparkle —
+        // each a small random lattice, smoothly interpolated, never blocky
+        var o1 = noiseLattice(Math.max(3, Math.round(w / 28)),  Math.max(3, Math.round(h / 28)),  rand);
+        var o2 = noiseLattice(Math.max(4, Math.round(w / 9)),   Math.max(4, Math.round(h / 9)),   rand);
+        var o3 = noiseLattice(Math.max(6, Math.round(w / 2.5)), Math.max(6, Math.round(h / 2.5)), rand);
 
         for (var y = 0; y < h; y++) {
-          var cy = Math.min(ch - 1, (y / h * ch) | 0);
+          var fy = y / h;
           for (var x = 0; x < w; x++) {
             var idx = (y * w + x) * 4;
             var lum = (px[idx] + px[idx + 1] + px[idx + 2]) / 765;
             // grain lives mostly in midtones, fades near black & white
             var m = 4 * lum * (1 - lum);
+            var fx = x / w;
+            var n = (lattice(o1, fx, fy) * 0.50 +
+                     lattice(o2, fx, fy) * 0.33 +
+                     lattice(o3, fx, fy) * 0.17) * strength * m;
 
-            var cx = Math.min(cw - 1, (x / w * cw) | 0);
             // neutral (luminance-only) grain: same value across all channels
-            var clump = clumps[cy * cw + cx] * 1.6;
-            var fj = y * w + x;
-            var n = (clump * 0.65 + fine[fj] * 0.35) * strength * m;
-
             px[idx]     = clamp(px[idx] + n);
             px[idx + 1] = clamp(px[idx + 1] + n * 0.97);
             px[idx + 2] = clamp(px[idx + 2] + n * 0.97);
           }
         }
         outCtx.putImageData(data, 0, 0);
+      }
+
+      // random value lattice, sampled with bilinear interpolation so the
+      // grain blobs have soft, organic edges instead of hard pixel steps
+      function noiseLattice(cw, ch, rand) {
+        var d = new Float32Array(cw * ch);
+        for (var i = 0; i < d.length; i++) d[i] = rand() - 0.5;
+        return { d: d, w: cw, h: ch };
+      }
+      function lattice(L, fx, fy) {
+        var x = fx * (L.w - 1), y = fy * (L.h - 1);
+        var x0 = x | 0, y0 = y | 0;
+        var x1 = x0 + 1 < L.w ? x0 + 1 : x0;
+        var y1 = y0 + 1 < L.h ? y0 + 1 : y0;
+        var tx = x - x0, ty = y - y0;
+        var r0 = y0 * L.w, r1 = y1 * L.w;
+        var a = L.d[r0 + x0], b = L.d[r0 + x1], c = L.d[r1 + x0], e = L.d[r1 + x1];
+        return (a + (b - a) * tx) * (1 - ty) + (c + (e - c) * tx) * ty;
       }
 
       function imperfections(amt, w, h) {
