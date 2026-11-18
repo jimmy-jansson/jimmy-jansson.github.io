@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#10151a" />
+  <meta name="description" content="A pixel-art geography game. Pin world capitals and see how close you can get." />
+  <title>Pixel Atlas — Capital Pin Game</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f1eddb;
+      --muted: #9ba99e;
+      --dim: #5c7068;
+      --night: #10151a;
+      --panel: #182126;
+      --panel-deep: #11191e;
+      --edge: #33423e;
+      --mint: #a5d982;
+      --mint-deep: #608f69;
+      --sun: #ffc66e;
+      --coral: #ff7d68;
+      --blue: #7fc3d3;
+      --pixel: "Courier New", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--night); }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--pixel);
+      background:
+        radial-gradient(ellipse at 50% -15%, rgba(91, 137, 115, 0.19), transparent 58%),
+        linear-gradient(180deg, #11191e, #0c1116 72%);
+    }
+    button, select { font: inherit; }
+    button:focus-visible, select:focus-visible, canvas:focus-visible, a:focus-visible { outline: 2px solid var(--sun); outline-offset: 4px; }
+    .shell { width: min(1180px, calc(100% - 36px)); margin: 0 auto; padding: 23px 0 38px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 15px; border-bottom: 1px solid rgba(165, 217, 130, 0.18); }
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .brand-mark { display: grid; width: 25px; height: 25px; place-items: center; color: #152018; background: var(--mint); box-shadow: 4px 4px 0 #425f4b; font-size: 15px; }
+    .top-note { color: var(--muted); font-size: 9px; letter-spacing: 0.14em; text-align: right; text-transform: uppercase; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 34px 1px 25px; }
+    .eyebrow { margin: 0 0 13px; color: var(--mint); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
+    .eyebrow::before { content: "■"; margin-right: 8px; color: var(--sun); }
+    h1 { margin: 0; font-size: clamp(36px, 7vw, 70px); font-weight: 700; letter-spacing: -0.08em; line-height: 0.92; text-transform: uppercase; }
+    h1 span { color: var(--mint); }
+    .hero-copy { max-width: 385px; padding-bottom: 3px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+    .hero-copy p { margin: 0 0 10px; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 7px; padding: 6px 8px; border: 1px solid rgba(165, 217, 130, 0.2); color: var(--mint); background: rgba(165, 217, 130, 0.045); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .hero-tag::before { width: 6px; height: 6px; background: var(--mint); content: ""; box-shadow: 0 0 10px rgba(165, 217, 130, 0.6); }
+
+    .game { overflow: hidden; border: 1px solid var(--edge); border-radius: 8px; background: var(--panel); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.035); }
+    .game-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 17px; border-bottom: 1px solid var(--edge); background: #151e23; }
+    .game-meta { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+    .game-name { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 9px; letter-spacing: 0.13em; text-transform: uppercase; }
+    .game-name strong { color: var(--sun); font-weight: 700; }
+    .score-strip { display: flex; gap: 12px; color: var(--dim); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .score-strip strong { margin-left: 4px; color: var(--sun); font-size: 10px; font-variant-numeric: tabular-nums; }
+    .game-tools { display: flex; align-items: center; gap: 9px; }
+    .difficulty { min-height: 34px; padding: 0 27px 0 10px; border: 1px solid var(--edge); border-radius: 3px; color: var(--ink); background: #10171b; font-size: 9px; }
+    .button { min-height: 36px; padding: 0 13px; border: 1px solid #647d62; border-radius: 3px; color: #182018; background: var(--mint); box-shadow: 3px 3px 0 #405848; cursor: pointer; font-size: 9px; font-weight: 700; letter-spacing: 0.04em; transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease; }
+    .button:hover:not(:disabled) { filter: brightness(1.08); transform: translate(1px, 1px); box-shadow: 2px 2px 0 #405848; }
+    .button:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: none; }
+    .button:disabled { opacity: 0.42; cursor: not-allowed; }
+    .button.secondary { border-color: var(--edge); color: var(--ink); background: #222d31; box-shadow: 3px 3px 0 #0c1215; }
+    .button.secondary:hover:not(:disabled) { box-shadow: 2px 2px 0 #0c1215; }
+    .button.hint { color: #221b0e; border-color: #997b49; background: var(--sun); box-shadow: 3px 3px 0 #725c38; }
+
+    .game-layout { display: grid; grid-template-columns: minmax(235px, 0.72fr) minmax(0, 1.8fr); gap: 0; }
+    .mission { display: flex; flex-direction: column; min-height: 100%; padding: 21px 19px; border-right: 1px solid var(--edge); background: linear-gradient(160deg, rgba(165, 217, 130, 0.045), transparent 50%), var(--panel-deep); }
+    .mission-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .streak { color: var(--sun); }
+    .progress { display: flex; gap: 4px; margin: 12px 0 27px; }
+    .progress i { flex: 1; height: 5px; background: #2a3838; }
+    .progress i.done { background: var(--mint-deep); }
+    .progress i.current { background: var(--sun); box-shadow: 0 0 8px rgba(255, 198, 110, 0.35); }
+    .prompt-label { margin-bottom: 11px; color: var(--dim); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; }
+    .country-label { margin-bottom: 8px; color: var(--mint); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .capital { margin: 0; color: var(--ink); font-size: clamp(23px, 3vw, 34px); line-height: 1.05; overflow-wrap: anywhere; }
+    .mission-copy { min-height: 39px; margin: 10px 0 18px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+    .hint-box { min-height: 62px; margin: 0 0 14px; padding: 10px; border: 1px dashed rgba(255, 198, 110, 0.27); color: #d0b987; background: rgba(255, 198, 110, 0.045); font-size: 9px; line-height: 1.65; }
+    .hint-box strong { display: block; margin-bottom: 3px; color: var(--sun); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .mission-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: auto; }
+    .mission-actions .submit { grid-column: 1 / -1; min-height: 42px; font-size: 10px; }
+    .score-note { margin: 13px 0 0; color: var(--dim); font-size: 8px; line-height: 1.6; text-align: center; }
+
+    .map-wrap { min-width: 0; padding: 17px; }
+    .map-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 1px 11px; }
+    .map-title { color: var(--ink); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; }
+    .map-title span { color: var(--dim); }
+    .coords { color: var(--muted); font-size: 8px; font-variant-numeric: tabular-nums; text-align: right; }
+    .map-stage { position: relative; overflow: hidden; border: 1px solid #415553; background: #071319; box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.17), 0 7px 20px rgba(0, 0, 0, 0.16); }
+    #worldMap { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; image-rendering: pixelated; cursor: crosshair; touch-action: manipulation; }
+    .map-instruction { display: flex; justify-content: space-between; gap: 10px; padding: 9px 2px 0; color: var(--dim); font-size: 8px; line-height: 1.5; }
+    .map-instruction strong { color: var(--mint); font-weight: 500; }
+    .legend { display: flex; align-items: center; gap: 13px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(165, 217, 130, 0.12); color: var(--muted); font-size: 8px; text-transform: uppercase; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { display: inline-block; width: 8px; height: 8px; }
+    .legend .guess-dot { background: var(--sun); }
+    .legend .answer-dot { background: var(--coral); }
+    .legend .land-dot { background: #8dbb7c; }
+
+    .result { display: none; gap: 12px; align-items: center; justify-content: space-between; padding: 15px 19px; border-top: 1px solid var(--edge); background: #141d21; }
+    .result.show { display: flex; }
+    .result-copy { min-width: 0; }
+    .result-title { margin: 0 0 5px; color: var(--mint); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .result-body { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
+    .round-points { flex: 0 0 auto; color: var(--sun); font-size: 13px; text-align: right; }
+    .round-points small { display: block; margin-top: 4px; color: var(--dim); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .complete { display: none; margin-top: 16px; padding: 18px; border: 1px solid rgba(165, 217, 130, 0.28); background: linear-gradient(100deg, rgba(165, 217, 130, 0.09), transparent 75%), #141d21; }
+    .complete.show { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .complete h2 { margin: 0 0 6px; color: var(--mint); font-size: 14px; text-transform: uppercase; }
+    .complete p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
+    .complete-score { color: var(--sun); font-size: 22px; white-space: nowrap; }
+    .complete-score small { display: block; margin-top: 4px; color: var(--dim); font-size: 7px; text-align: right; }
+    .footer { display: flex; justify-content: space-between; gap: 12px; padding: 16px 2px 0; color: #718077; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .footer a { color: var(--mint); text-decoration-color: rgba(165, 217, 130, 0.45); text-underline-offset: 3px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 24px, 680px); padding-top: 14px; }
+      .hero { align-items: start; flex-direction: column; gap: 15px; padding-top: 27px; }
+      .hero-copy { max-width: 520px; }
+      .game-layout { grid-template-columns: 1fr; }
+      .mission { min-height: auto; padding: 17px; border-right: 0; border-bottom: 1px solid var(--edge); }
+      .progress { margin-bottom: 19px; }
+      .mission-copy { min-height: auto; margin-bottom: 12px; }
+      .hint-box { min-height: 52px; }
+      .mission-actions { grid-template-columns: 1fr 1fr auto; }
+      .mission-actions .submit { grid-column: auto; }
+      .score-note { display: none; }
+      .map-wrap { padding: 13px; }
+    }
+    @media (max-width: 480px) {
+      .shell { width: calc(100% - 18px); }
+      .topbar { align-items: start; }
+      .top-note { max-width: 130px; font-size: 7px; }
+      .game-head { align-items: stretch; flex-direction: column; padding: 11px; }
+      .game-meta { justify-content: space-between; gap: 10px; }
+      .game-name { gap: 6px; font-size: 8px; }
+      .score-strip { gap: 7px; font-size: 7px; }
+      .game-tools { display: grid; grid-template-columns: 1fr auto; }
+      .difficulty { width: 100%; }
+      .mission-actions { grid-template-columns: 1fr 1fr; }
+      .mission-actions .submit { grid-column: 1 / -1; grid-row: 1; }
+      .map-wrap { padding: 10px; }
+      .map-instruction { font-size: 7px; }
+      .legend { gap: 9px; font-size: 7px; }
+      .result { align-items: start; flex-wrap: wrap; padding: 12px; }
+      .result-copy { flex: 1 1 65%; }
+      .round-points { font-size: 11px; }
+      .complete.show { align-items: start; flex-direction: column; }
+      .complete-score small { text-align: left; }
+      .footer { flex-direction: column; font-size: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="topbar" aria-label="Site navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">⌖</span> Field Notes Arcade</a>
+      <span class="top-note">No accounts · no downloads · play in your browser</span>
+    </nav>
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow">8-bit geography / field game 001</p>
+        <h1>Pixel <span>Atlas</span></h1>
+      </div>
+      <div class="hero-copy">
+        <p>Ten capitals. One pixel world. Drop your pin, trust your instincts, and see how close you land.</p>
+        <span class="hero-tag">A little map, a long way to go</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="game" aria-label="Capital pin geography game">
+        <div class="game-head">
+          <div class="game-meta">
+            <div class="game-name"><strong>Expedition</strong><span>/</span><span id="difficultyName">World Tour</span><span>·</span><span>10 rounds</span></div>
+            <div class="score-strip" aria-label="Score and personal best"><span>Run <strong id="scoreLabel">0</strong></span><span>Best <strong id="bestScoreLabel">0</strong></span></div>
+          </div>
+          <div class="game-tools">
+            <label class="sr-only" for="difficulty">Choose difficulty</label>
+            <select class="difficulty" id="difficulty">
+              <option value="starter">Starter map</option>
+              <option value="world" selected>World tour</option>
+              <option value="expert">Expert · no country clues</option>
+            </select>
+            <button class="button" id="newGame" type="button">New expedition ↻</button>
+          </div>
+        </div>
+
+        <div class="game-layout">
+          <section class="mission" aria-labelledby="capitalName">
+            <div class="mission-top">
+              <span id="roundLabel">Round 01 / 10</span>
+              <span class="streak" id="streakLabel">Streak ×0</span>
+            </div>
+            <div class="progress" id="progress" aria-label="Expedition progress"></div>
+            <p class="prompt-label">Place a pin on the map for</p>
+            <p class="country-label" id="countryLabel">COUNTRY / —</p>
+            <h2 class="capital" id="capitalName">Loading…</h2>
+            <p class="mission-copy" id="missionCopy">Click the map where you think this capital sits.</p>
+            <div class="hint-box" id="hintBox" aria-live="polite">
+              <strong>Field note</strong>
+              Hints cost 300 points. Save yours for a tricky corner of the map.
+            </div>
+            <div class="mission-actions">
+              <button class="button hint" id="hintButton" type="button">Hint −300</button>
+              <button class="button secondary" id="clearPin" type="button" disabled>Clear pin</button>
+              <button class="button submit" id="submitGuess" type="button" disabled>Lock in pin →</button>
+            </div>
+            <p class="score-note">Closer pins earn more points. A perfect spot is worth 5,000.</p>
+          </section>
+
+          <section class="map-wrap" aria-label="Interactive world map">
+            <div class="map-head">
+              <div class="map-title">World map <span>/ 360° × 180°</span></div>
+              <div class="coords" id="coordinates">MOVE YOUR PIN</div>
+            </div>
+            <div class="map-stage">
+              <canvas id="worldMap" width="960" height="480" tabindex="0" role="button" aria-label="Pixel world map. Click to place a guess, or use arrow keys and Enter." ></canvas>
+            </div>
+            <div class="map-instruction"><span><strong>CLICK</strong> anywhere to place your pin</span><span>Arrow keys + Enter also work</span></div>
+            <div class="legend" aria-label="Map legend">
+              <span><i class="guess-dot"></i>Your pin</span>
+              <span><i class="answer-dot"></i>Capital</span>
+              <span><i class="land-dot"></i>Land</span>
+            </div>
+          </section>
+        </div>
+
+        <div class="result" id="result" role="status" aria-live="polite">
+          <div class="result-copy">
+            <p class="result-title" id="resultTitle"></p>
+            <p class="result-body" id="resultBody"></p>
+          </div>
+          <div class="round-points" id="roundPoints"></div>
+          <button class="button" id="nextRound" type="button">Next location →</button>
+        </div>
+      </section>
+
+      <section class="complete" id="complete" aria-live="polite">
+        <div>
+          <h2 id="completeTitle">Expedition complete</h2>
+          <p id="completeCopy">Your atlas is a little bigger now.</p>
+        </div>
+        <div class="complete-score" id="completeScore"></div>
+        <button class="button" id="playAgain" type="button">Play again ↻</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Pixel Atlas / made for curious minds</span>
+      <a href="../">Back to Analog Film Studio ↗</a>
+    </footer>
+  </div>
+
+  <script>
+    "use strict";
+
+    var places = [
+      { city: "Reykjavík", country: "Iceland", lat: 64.1466, lon: -21.9426, region: "Europe" },
+      { city: "London", country: "United Kingdom", lat: 51.5072, lon: -0.1276, region: "Europe" },
+      { city: "Paris", country: "France", lat: 48.8566, lon: 2.3522, region: "Europe" },
+      { city: "Lisbon", country: "Portugal", lat: 38.7223, lon: -9.1393, region: "Europe" },
+      { city: "Oslo", country: "Norway", lat: 59.9139, lon: 10.7522, region: "Europe" },
+      { city: "Stockholm", country: "Sweden", lat: 59.3293, lon: 18.0686, region: "Europe" },
+      { city: "Rome", country: "Italy", lat: 41.9028, lon: 12.4964, region: "Europe" },
+      { city: "Athens", country: "Greece", lat: 37.9838, lon: 23.7275, region: "Europe" },
+      { city: "Prague", country: "Czechia", lat: 50.0755, lon: 14.4378, region: "Europe" },
+      { city: "Warsaw", country: "Poland", lat: 52.2297, lon: 21.0122, region: "Europe" },
+      { city: "Madrid", country: "Spain", lat: 40.4168, lon: -3.7038, region: "Europe" },
+      { city: "Bern", country: "Switzerland", lat: 46.948, lon: 7.4474, region: "Europe" },
+      { city: "Moscow", country: "Russia", lat: 55.7558, lon: 37.6173, region: "Europe" },
+      { city: "Ankara", country: "Türkiye", lat: 39.9334, lon: 32.8597, region: "Europe & Asia" },
+      { city: "Cairo", country: "Egypt", lat: 30.0444, lon: 31.2357, region: "Africa" },
+      { city: "Rabat", country: "Morocco", lat: 34.0209, lon: -6.8416, region: "Africa" },
+      { city: "Dakar", country: "Senegal", lat: 14.7167, lon: -17.4677, region: "Africa" },
+      { city: "Accra", country: "Ghana", lat: 5.6037, lon: -0.187, region: "Africa" },
+      { city: "Abuja", country: "Nigeria", lat: 9.0765, lon: 7.3986, region: "Africa" },
+      { city: "Nairobi", country: "Kenya", lat: -1.2921, lon: 36.8219, region: "Africa" },
+      { city: "Addis Ababa", country: "Ethiopia", lat: 8.9806, lon: 38.7578, region: "Africa" },
+      { city: "Kigali", country: "Rwanda", lat: -1.9441, lon: 30.0619, region: "Africa" },
+      { city: "Pretoria", country: "South Africa", lat: -25.7479, lon: 28.2293, region: "Africa" },
+      { city: "Tokyo", country: "Japan", lat: 35.6762, lon: 139.6503, region: "Asia" },
+      { city: "Seoul", country: "South Korea", lat: 37.5665, lon: 126.978, region: "Asia" },
+      { city: "Beijing", country: "China", lat: 39.9042, lon: 116.4074, region: "Asia" },
+      { city: "Ulaanbaatar", country: "Mongolia", lat: 47.9184, lon: 106.9177, region: "Asia" },
+      { city: "Kathmandu", country: "Nepal", lat: 27.7172, lon: 85.324, region: "Asia" },
+      { city: "New Delhi", country: "India", lat: 28.6139, lon: 77.209, region: "Asia" },
+      { city: "Bangkok", country: "Thailand", lat: 13.7563, lon: 100.5018, region: "Asia" },
+      { city: "Hanoi", country: "Vietnam", lat: 21.0285, lon: 105.8542, region: "Asia" },
+      { city: "Singapore", country: "Singapore", lat: 1.3521, lon: 103.8198, region: "Asia" },
+      { city: "Riyadh", country: "Saudi Arabia", lat: 24.7136, lon: 46.6753, region: "Asia" },
+      { city: "Tehran", country: "Iran", lat: 35.6892, lon: 51.389, region: "Asia" },
+      { city: "Ottawa", country: "Canada", lat: 45.4215, lon: -75.6972, region: "North America" },
+      { city: "Washington, D.C.", country: "United States", lat: 38.9072, lon: -77.0369, region: "North America" },
+      { city: "Mexico City", country: "Mexico", lat: 19.4326, lon: -99.1332, region: "North America" },
+      { city: "Havana", country: "Cuba", lat: 23.1136, lon: -82.3666, region: "North America" },
+      { city: "Kingston", country: "Jamaica", lat: 17.9712, lon: -76.7936, region: "North America" },
+      { city: "Bogotá", country: "Colombia", lat: 4.711, lon: -74.0721, region: "South America" },
+      { city: "Lima", country: "Peru", lat: -12.0464, lon: -77.0428, region: "South America" },
+      { city: "Brasília", country: "Brazil", lat: -15.7939, lon: -47.8828, region: "South America" },
+      { city: "Buenos Aires", country: "Argentina", lat: -34.6037, lon: -58.3816, region: "South America" },
+      { city: "Santiago", country: "Chile", lat: -33.4489, lon: -70.6693, region: "South America" },
+      { city: "Canberra", country: "Australia", lat: -35.2809, lon: 149.13, region: "Oceania" },
+      { city: "Wellington", country: "New Zealand", lat: -41.2866, lon: 174.7756, region: "Oceania" },
+      { city: "Suva", country: "Fiji", lat: -18.1416, lon: 178.4419, region: "Oceania" },
+      { city: "Port Moresby", country: "Papua New Guinea", lat: -9.4438, lon: 147.1803, region: "Oceania" }
+    ];
+
+    var starterNames = ["London", "Paris", "Stockholm", "Rome", "Cairo", "Tokyo", "Beijing", "New Delhi", "Ottawa", "Washington, D.C.", "Brasília", "Canberra", "Mexico City", "Buenos Aires", "Moscow", "Nairobi"];
+    var roundsTotal = 10;
+    var roundIndex = 0;
+    var questionSet = [];
+    var target = null;
+    var guess = null;
+    var answered = false;
+    var score = 0;
+    var streak = 0;
+    var hintUsed = false;
+    var hintPenalty = 0;
+    var bestScoreKey = "pixel-atlas:best:v1";
+    var map = document.getElementById("worldMap");
+    var ctx = map.getContext("2d");
+    var MAP_W = map.width;
+    var MAP_H = map.height;
+    var landMap = makeLandMap();
+
+    var continents = [
+      { color: "#76aa80", points: [[-168,70],[-156,72],[-145,68],[-137,62],[-130,57],[-126,51],[-128,46],[-124,41],[-122,36],[-117,32],[-112,29],[-106,24],[-100,20],[-95,18],[-91,15],[-87,12],[-84,9],[-81,9],[-78,17],[-80,22],[-83,25],[-81,29],[-77,32],[-74,36],[-70,42],[-65,46],[-58,51],[-61,56],[-69,59],[-77,64],[-86,69],[-98,73],[-113,74],[-129,72],[-144,71],[-158,72]] },
+      { color: "#76aa80", points: [[-168,62],[-160,65],[-153,61],[-151,57],[-158,55],[-165,58]] },
+      { color: "#76aa80", points: [[-53,59],[-43,60],[-36,67],[-40,76],[-48,82],[-58,82],[-64,76],[-61,67]] },
+      { color: "#6d9b78", points: [[-80,9],[-74,11],[-69,8],[-62,9],[-51,4],[-45,-2],[-39,-8],[-35,-15],[-40,-22],[-44,-28],[-49,-34],[-53,-42],[-58,-51],[-66,-55],[-72,-47],[-74,-37],[-77,-27],[-79,-15],[-81,-4]] },
+      { color: "#91b875", points: [[-11,36],[-9,43],[-3,44],[2,49],[-5,53],[-9,57],[-1,59],[5,56],[9,54],[14,58],[19,64],[24,70],[39,72],[52,75],[74,77],[96,76],[115,73],[130,69],[145,66],[159,60],[178,65],[180,52],[166,52],[157,55],[151,48],[144,43],[139,37],[130,34],[124,28],[118,22],[111,18],[110,10],[105,5],[99,1],[94,10],[90,19],[85,22],[80,9],[76,8],[72,20],[68,24],[61,25],[56,29],[51,31],[47,38],[42,41],[36,39],[30,42],[26,39],[22,42],[17,40],[12,43],[7,41],[3,43],[-2,40],[-7,37]] },
+      { color: "#c2a66d", points: [[-17,36],[-5,36],[10,37],[20,32],[31,31],[34,25],[42,12],[50,10],[44,2],[42,-9],[35,-18],[33,-29],[28,-34],[18,-35],[12,-29],[9,-17],[3,-5],[-2,5],[-8,12],[-14,16],[-17,23],[-16,29]] },
+      { color: "#9eaf74", points: [[43,12],[51,12],[57,20],[55,25],[49,29],[44,24]] },
+      { color: "#c2a66d", points: [[112,-11],[124,-10],[136,-13],[146,-17],[153,-25],[151,-34],[143,-39],[132,-36],[123,-33],[116,-27]] },
+      { color: "#92b676", points: [[129,-3],[137,-2],[145,-6],[150,-9],[146,-10],[138,-8]] },
+      { color: "#9eaf74", points: [[47,-13],[50,-15],[49,-23],[45,-25],[43,-19]] },
+      { color: "#9eaf74", points: [[-8,50],[-5,50],[-5,58],[-8,58]] },
+      { color: "#b8a56f", points: [[130,31],[135,33],[141,39],[145,44],[142,46],[138,42],[134,37]] },
+      { color: "#7ca98c", points: [[95,5],[105,5],[116,0],[123,-5],[130,-4],[133,-8],[126,-9],[119,-7],[112,-8],[106,-5],[101,-2]] }
+    ];
+
+    function makeLandMap() {
+      var layer = document.createElement("canvas");
+      layer.width = 320;
+      layer.height = 160;
+      var landCtx = layer.getContext("2d");
+      landCtx.fillStyle = "#07151b";
+      landCtx.fillRect(0, 0, layer.width, layer.height);
+      var water = landCtx.createLinearGradient(0, 0, layer.width, layer.height);
+      water.addColorStop(0, "rgba(36, 86, 91, 0.22)");
+      water.addColorStop(0.55, "rgba(11, 42, 51, 0.05)");
+      water.addColorStop(1, "rgba(50, 77, 73, 0.16)");
+      landCtx.fillStyle = water;
+      landCtx.fillRect(0, 0, layer.width, layer.height);
+
+      continents.forEach(function (continent) {
+        landCtx.beginPath();
+        continent.points.forEach(function (point, index) {
+          var x = Math.round((point[0] + 180) / 360 * (layer.width - 1));
+          var y = Math.round((90 - point[1]) / 180 * (layer.height - 1));
+          if (index === 0) landCtx.moveTo(x, y);
+          else landCtx.lineTo(x, y);
+        });
+        landCtx.closePath();
+        landCtx.fillStyle = continent.color;
+        landCtx.fill();
+        landCtx.strokeStyle = "rgba(202, 220, 151, 0.62)";
+        landCtx.lineWidth = 1;
+        landCtx.stroke();
+      });
+
+      var rand = seededRandom(42017);
+      for (var i = 0; i < 1400; i++) {
+        var x = Math.floor(rand() * layer.width);
+        var y = Math.floor(rand() * layer.height);
+        landCtx.fillStyle = rand() > 0.5 ? "rgba(98, 161, 153, 0.1)" : "rgba(0, 0, 0, 0.1)";
+        landCtx.fillRect(x, y, rand() > 0.85 ? 2 : 1, 1);
+      }
+      return layer;
+    }
+
+    function seededRandom(seed) {
+      var state = seed >>> 0;
+      return function () {
+        state = (state * 1664525 + 1013904223) >>> 0;
+        return state / 4294967296;
+      };
+    }
+
+    function project(lon, lat) {
+      return { x: (lon + 180) / 360 * MAP_W, y: (90 - lat) / 180 * MAP_H };
+    }
+
+    function drawMap() {
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = "#07151b";
+      ctx.fillRect(0, 0, MAP_W, MAP_H);
+      ctx.drawImage(landMap, 0, 0, MAP_W, MAP_H);
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(157, 203, 188, 0.16)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 7]);
+      for (var lon = -150; lon <= 150; lon += 30) {
+        var gx = project(lon, 0).x;
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, MAP_H); ctx.stroke();
+      }
+      for (var lat = -60; lat <= 60; lat += 30) {
+        var gy = project(0, lat).y;
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(MAP_W, gy); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.strokeStyle = "rgba(255, 198, 110, 0.36)";
+      ctx.beginPath(); ctx.moveTo(0, MAP_H / 2); ctx.lineTo(MAP_W, MAP_H / 2); ctx.stroke();
+      ctx.restore();
+
+      if (answered && target && guess) drawDistanceLine(guess, target);
+      if (guess) drawMarker(guess.lon, guess.lat, "#ffc66e", "PIN");
+      if (answered && target) drawMarker(target.lon, target.lat, "#ff7d68", "CAPITAL");
+
+      ctx.strokeStyle = "rgba(191, 220, 195, 0.2)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, MAP_W - 2, MAP_H - 2);
+    }
+
+    function drawMarker(lon, lat, color, label) {
+      var point = project(lon, lat);
+      var x = Math.round(point.x / 4) * 4;
+      var y = Math.round(point.y / 4) * 4;
+      ctx.save();
+      ctx.fillStyle = "rgba(4, 10, 13, 0.8)";
+      ctx.fillRect(x - 11, y - 11, 22, 22);
+      ctx.fillStyle = color;
+      ctx.fillRect(x - 2, y - 10, 4, 20);
+      ctx.fillRect(x - 10, y - 2, 20, 4);
+      ctx.fillRect(x - 5, y - 5, 10, 10);
+      ctx.fillStyle = "#10151a";
+      ctx.fillRect(x - 2, y - 2, 4, 4);
+      ctx.font = "bold 12px Courier New, monospace";
+      ctx.textAlign = x > MAP_W - 130 ? "right" : "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillStyle = "rgba(4, 10, 13, 0.86)";
+      var labelX = x > MAP_W - 130 ? x - 14 : x + 14;
+      ctx.fillRect(ctx.textAlign === "right" ? labelX - 95 : labelX - 3, y - 27, 98, 19);
+      ctx.fillStyle = color;
+      ctx.fillText(label, labelX, y - 12);
+      ctx.restore();
+    }
+
+    function drawDistanceLine(from, to) {
+      var a = project(from.lon, from.lat), b = project(to.lon, to.lat);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 226, 169, 0.72)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 7]);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.restore();
+    }
+
+    function mapPointFromEvent(event) {
+      var rect = map.getBoundingClientRect();
+      var x = (event.clientX - rect.left) / rect.width * MAP_W;
+      var y = (event.clientY - rect.top) / rect.height * MAP_H;
+      return { lon: x / MAP_W * 360 - 180, lat: 90 - y / MAP_H * 180 };
+    }
+
+    function formatCoordinate(value, isLatitude) {
+      var abs = Math.abs(value).toFixed(1) + "°";
+      if (Math.abs(value) < 0.05) return "0.0°";
+      return abs + (isLatitude ? (value > 0 ? "N" : "S") : (value > 0 ? "E" : "W"));
+    }
+
+    function updateCoordinateText(point) {
+      document.getElementById("coordinates").textContent = point
+        ? formatCoordinate(point.lat, true) + "   /   " + formatCoordinate(point.lon, false)
+        : (guess ? formatCoordinate(guess.lat, true) + "   /   " + formatCoordinate(guess.lon, false) : "MOVE YOUR PIN");
+    }
+
+    function shuffle(items) {
+      for (var i = items.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = items[i]; items[i] = items[j]; items[j] = temp;
+      }
+      return items;
+    }
+
+    function startExpedition() {
+      var difficulty = document.getElementById("difficulty").value;
+      var pool = difficulty === "starter"
+        ? places.filter(function (place) { return starterNames.indexOf(place.city) !== -1; })
+        : places.slice();
+      questionSet = shuffle(pool.slice()).slice(0, roundsTotal);
+      roundIndex = 0;
+      score = 0;
+      streak = 0;
+      updateScoreDisplay();
+      document.getElementById("difficultyName").textContent = difficulty === "starter" ? "Starter Map" : difficulty === "expert" ? "Expert" : "World Tour";
+      document.getElementById("complete").classList.remove("show");
+      document.getElementById("result").classList.remove("show");
+      showQuestion();
+    }
+
+    function showQuestion() {
+      target = questionSet[roundIndex];
+      guess = null;
+      answered = false;
+      hintUsed = false;
+      hintPenalty = 0;
+      var expert = document.getElementById("difficulty").value === "expert";
+      document.getElementById("roundLabel").textContent = "Round " + String(roundIndex + 1).padStart(2, "0") + " / " + roundsTotal;
+      document.getElementById("streakLabel").textContent = "Streak ×" + streak;
+      document.getElementById("countryLabel").textContent = expert ? "COUNTRY / ???" : "COUNTRY / " + target.country.toUpperCase();
+      document.getElementById("capitalName").textContent = target.city;
+      document.getElementById("missionCopy").textContent = expert
+        ? "Find this capital without a country clue. Place your pin, then lock it in."
+        : "Click the map where you think this capital sits.";
+      document.getElementById("hintBox").innerHTML = "<strong>Field note</strong>Hints cost 300 points. Save yours for a tricky corner of the map.";
+      document.getElementById("hintButton").disabled = false;
+      document.getElementById("clearPin").disabled = true;
+      document.getElementById("submitGuess").disabled = true;
+      document.getElementById("result").classList.remove("show");
+      document.getElementById("complete").classList.remove("show");
+      var progress = document.getElementById("progress");
+      progress.innerHTML = "";
+      for (var i = 0; i < roundsTotal; i++) {
+        var segment = document.createElement("i");
+        if (i < roundIndex) segment.className = "done";
+        if (i === roundIndex) segment.className = "current";
+        progress.appendChild(segment);
+      }
+      updateCoordinateText();
+      drawMap();
+    }
+
+    function showHint() {
+      if (answered || hintUsed) return;
+      hintUsed = true;
+      hintPenalty = 300;
+      var latBand = Math.round(Math.abs(target.lat) / 10) * 10;
+      var hemi = target.lat >= 0 ? "north" : "south";
+      var lonDirection = target.lon >= 0 ? "east" : "west";
+      var lonBand = Math.round(Math.abs(target.lon) / 20) * 20;
+      document.getElementById("hintBox").innerHTML = "<strong>Field note · −300 points</strong>" + target.region + " · about " + latBand + "° " + hemi + " and " + lonBand + "° " + lonDirection + ".";
+      document.getElementById("hintButton").disabled = true;
+    }
+
+    function distanceKm(a, b) {
+      var rad = Math.PI / 180;
+      var lat1 = a.lat * rad, lat2 = b.lat * rad;
+      var dLat = (b.lat - a.lat) * rad;
+      var dLon = (b.lon - a.lon) * rad;
+      var sinLat = Math.sin(dLat / 2), sinLon = Math.sin(dLon / 2);
+      var h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon;
+      return 6371.0088 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+    }
+
+    function updateScoreDisplay(best) {
+      var saved = best;
+      if (saved === undefined) {
+        try { saved = parseInt(localStorage.getItem(bestScoreKey) || "0", 10) || 0; } catch (e) { saved = 0; }
+      }
+      document.getElementById("scoreLabel").textContent = score.toLocaleString();
+      document.getElementById("bestScoreLabel").textContent = saved.toLocaleString();
+    }
+
+    function submitAnswer() {
+      if (!guess || answered) return;
+      answered = true;
+      var km = distanceKm(guess, target);
+      streak = km <= 250 ? streak + 1 : 0;
+      var difficulty = document.getElementById("difficulty").value;
+      var bonus = km <= 250 ? Math.min(250, streak * 50) : 0;
+      var multiplier = difficulty === "expert" ? 1.1 : difficulty === "world" ? 1 : 0.9;
+      var points = Math.max(0, Math.min(5000, Math.round(5000 * Math.exp(-km / 2500) * multiplier) + bonus - hintPenalty));
+      score += points;
+      updateScoreDisplay();
+      document.getElementById("streakLabel").textContent = "Streak ×" + streak;
+      document.getElementById("hintButton").disabled = true;
+      document.getElementById("clearPin").disabled = true;
+      document.getElementById("submitGuess").disabled = true;
+      document.getElementById("nextRound").textContent = roundIndex === roundsTotal - 1 ? "Finish expedition →" : "Next location →";
+      document.getElementById("resultTitle").textContent = km < 100 ? "Incredible navigation!" : km < 600 ? "Right on the map." : km < 2200 ? "A solid expedition." : "The world is a big place.";
+      document.getElementById("resultBody").textContent = target.city + " is the capital of " + target.country + " · " + target.region + " · " + Math.round(km).toLocaleString() + " km away.";
+      document.getElementById("roundPoints").innerHTML = "+" + points.toLocaleString() + "<small>points this round</small>";
+      document.getElementById("result").classList.add("show");
+      updateCoordinateText();
+      drawMap();
+      document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function finishExpedition() {
+      var previousBest = 0;
+      try { previousBest = parseInt(localStorage.getItem(bestScoreKey) || "0", 10) || 0; } catch (e) {}
+      var newBest = score > previousBest;
+      if (newBest) {
+        try { localStorage.setItem(bestScoreKey, String(score)); } catch (e) {}
+      }
+      updateScoreDisplay(Math.max(score, previousBest));
+      document.getElementById("completeTitle").textContent = newBest ? "New personal best!" : "Expedition complete";
+      document.getElementById("completeCopy").textContent = "You pinned " + roundsTotal + " capitals. Start another tour and beat your score.";
+      document.getElementById("completeScore").innerHTML = score.toLocaleString() + "<small>POINTS · BEST " + Math.max(score, previousBest).toLocaleString() + "</small>";
+      document.getElementById("complete").classList.add("show");
+      document.getElementById("complete").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    map.addEventListener("click", function (event) {
+      if (answered) return;
+      guess = mapPointFromEvent(event);
+      document.getElementById("clearPin").disabled = false;
+      document.getElementById("submitGuess").disabled = false;
+      updateCoordinateText(guess);
+      drawMap();
+    });
+    map.addEventListener("pointermove", function (event) {
+      if (!answered) updateCoordinateText(mapPointFromEvent(event));
+    });
+    map.addEventListener("pointerleave", function () { updateCoordinateText(); });
+    map.addEventListener("keydown", function (event) {
+      var steps = { ArrowLeft: [-2, 0], ArrowRight: [2, 0], ArrowUp: [0, 2], ArrowDown: [0, -2] };
+      if (steps[event.key] && !answered) {
+        event.preventDefault();
+        var start = guess || { lon: 0, lat: 0 };
+        guess = { lon: Math.max(-180, Math.min(180, start.lon + steps[event.key][0])), lat: Math.max(-84, Math.min(84, start.lat + steps[event.key][1])) };
+        document.getElementById("clearPin").disabled = false;
+        document.getElementById("submitGuess").disabled = false;
+        updateCoordinateText(guess);
+        drawMap();
+      } else if (event.key === "Enter" && guess && !answered) {
+        event.preventDefault(); submitAnswer();
+      }
+    });
+    document.getElementById("clearPin").addEventListener("click", function () {
+      if (answered) return;
+      guess = null;
+      this.disabled = true;
+      document.getElementById("submitGuess").disabled = true;
+      updateCoordinateText();
+      drawMap();
+    });
+    document.getElementById("submitGuess").addEventListener("click", submitAnswer);
+    document.getElementById("hintButton").addEventListener("click", showHint);
+    document.getElementById("nextRound").addEventListener("click", function () {
+      if (!answered) return;
+      if (roundIndex === roundsTotal - 1) finishExpedition();
+      else { roundIndex++; showQuestion(); }
+    });
+    document.getElementById("newGame").addEventListener("click", startExpedition);
+    document.getElementById("playAgain").addEventListener("click", startExpedition);
+    document.getElementById("difficulty").addEventListener("change", startExpedition);
+
+    startExpedition();
+  </script>
+</body>
+</html>

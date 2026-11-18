@@ -212,6 +212,8 @@
     button:disabled { opacity: 0.42; cursor: not-allowed; }
     .note { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--film-soft-border); color: var(--film-text-muted); font-size: 10px; line-height: 1.7; }
     .site-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 25px; padding: 14px 2px 0; border-top: 1px solid var(--film-soft-border); color: #777b69; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .site-footer a { color: var(--film-gold); text-decoration: none; }
+    .site-footer a:hover { color: var(--film-gold-light); text-decoration: underline; text-underline-offset: 3px; }
     @media (max-width: 760px) {
       .app { width: min(100% - 30px, 620px); padding-top: 22px; }
       .masthead { align-items: start; }
@@ -440,8 +442,8 @@
           </div>
           <div class="row">
             <label for="exportQuality">JPEG quality</label>
-            <input type="range" id="exportQuality" min="50" max="100" value="92" />
-            <span class="val" id="exportQualityV">92%</span>
+            <input type="range" id="exportQuality" min="50" max="100" value="95" />
+            <span class="val" id="exportQualityV">95%</span>
           </div>
           <div class="row">
             <label for="fullres">Full-resolution export</label>
@@ -463,6 +465,7 @@
     <footer class="site-footer">
       <span>Analog Room / Color negative department</span>
       <span>Exposed locally · Printed in your browser</span>
+      <a href="./geo-game/">Play Pixel Atlas · geography game ↗</a>
     </footer>
   </div>
 
@@ -484,6 +487,7 @@
         label: "Kodak Gold 200",
         description: "Warm daylight color with golden highlights.",
         frame: { base: "#13170f", tint: "rgba(190, 119, 47, 0.18)", glow: "rgba(229, 156, 65, 0.16)", accent: "#eaa143", grain: "rgba(247,185,97,", gate: "rgba(233, 159, 77, 0.42)" },
+        response: { contrast: 1.015, saturation: 0.99, highlightDesaturation: 0.1, shadows: [0.4, 0.15, -0.3], highlights: [2.8, 1.25, -1.1] },
         gShift: -2, gSat: -0.02,
         ySat: 0.03, yVal: 0.01,
         bSat: -0.01,
@@ -491,12 +495,13 @@
         toe: [0.95, 0.95, 0.7], shoulder: [0.92, 0.88, 0.75],
         hal: [1, 0.5, 0.3], halBoost: 0.6,
         grain: 1.0,
-        base: { warmth: 0, exposure: 0, contrast: 2, fade: 1, sat: -1, halation: 0, lightLeak: 0, grain: 4, grainSize: 4, dust: 0, vignette: 1 }
+        base: { warmth: 1, exposure: 0, contrast: 2, fade: 1, sat: 0, halation: 0, lightLeak: 0, grain: 4, grainSize: 4, dust: 0, vignette: 1 }
       },
       portra: {
         label: "Kodak Portra 400",
         description: "Soft skin tones, gentle contrast, and open shadows.",
         frame: { base: "#17150f", tint: "rgba(177, 117, 70, 0.15)", glow: "rgba(221, 163, 112, 0.12)", accent: "#dcae78", grain: "rgba(239,195,144,", gate: "rgba(221, 177, 131, 0.38)" },
+        response: { contrast: 0.985, saturation: 0.97, highlightDesaturation: 0.14, shadows: [0.15, 0.45, 0.8], highlights: [2.1, 0.8, -0.2] },
         gShift: -1, gSat: -0.01,
         ySat: 0.01, yVal: 0.01,
         bSat: -0.01,
@@ -504,12 +509,13 @@
         toe: [0.85, 0.85, 0.85], shoulder: [0.96, 0.94, 0.92],
         hal: [1, 0.6, 0.5], halBoost: 0.4,
         grain: 0.65,
-        base: { warmth: -1, exposure: 0, contrast: 0, fade: 2, sat: -2, halation: 0, lightLeak: 0, grain: 3, grainSize: 3, dust: 0, vignette: 0 }
+        base: { warmth: 1, exposure: 0, contrast: 0, fade: 2, sat: -1, halation: 0, lightLeak: 0, grain: 3, grainSize: 3, dust: 0, vignette: 0 }
       },
       ektar: {
         label: "Kodak Ektar 100",
         description: "Crisp detail with vivid color and a clean finish.",
         frame: { base: "#17130f", tint: "rgba(159, 65, 36, 0.18)", glow: "rgba(230, 91, 44, 0.15)", accent: "#ef673c", grain: "rgba(255,151,91,", gate: "rgba(239, 103, 60, 0.46)" },
+        response: { contrast: 1.025, saturation: 1.05, highlightDesaturation: 0.06, shadows: [-0.4, 0.15, 0.8], highlights: [1.6, 0.35, -0.6] },
         gShift: 1, gSat: 0.02,
         ySat: 0.02, yVal: 0.01,
         bSat: 0.03,
@@ -523,6 +529,7 @@
         label: "CineStill 800T",
         description: "Cool tungsten tones with a cinematic red glow.",
         frame: { base: "#160f10", tint: "rgba(131, 39, 40, 0.2)", glow: "rgba(235, 61, 57, 0.2)", accent: "#f45b50", grain: "rgba(255,139,121,", gate: "rgba(244, 91, 80, 0.48)" },
+        response: { contrast: 1, saturation: 1.02, highlightDesaturation: 0.1, shadows: [-0.8, 0.25, 1.3], highlights: [2.4, 0.2, -1] },
         gShift: 1, gSat: -0.01,
         ySat: 0.01, yVal: 0,
         bSat: 0.02,
@@ -530,12 +537,13 @@
         toe: [0.7, 0.8, 1.1], shoulder: [0.85, 0.83, 0.8],
         hal: [1, 0.15, 0.1], halBoost: 1.8,
         grain: 1.2,
-        base: { warmth: 0, exposure: 0, contrast: 1, fade: 2, sat: 0, halation: 2, lightLeak: 1, grain: 3, grainSize: 6, dust: 0, vignette: 1 }
+        base: { warmth: -1, exposure: 0, contrast: 1, fade: 2, sat: 0, halation: 2, lightLeak: 1, grain: 3, grainSize: 6, dust: 0, vignette: 1 }
       },
       superia: {
         label: "Fuji Superia 400",
         description: "Lively color with a cool, slightly green cast.",
         frame: { base: "#101812", tint: "rgba(93, 133, 67, 0.19)", glow: "rgba(147, 178, 89, 0.17)", accent: "#b0be69", grain: "rgba(208,220,133,", gate: "rgba(176, 190, 105, 0.42)" },
+        response: { contrast: 1.005, saturation: 1.02, highlightDesaturation: 0.08, shadows: [-0.2, 0.8, 0.4], highlights: [0.8, 0.35, -0.4] },
         gShift: 2, gSat: 0.03,
         ySat: 0.01, yVal: 0.01,
         bSat: 0.01,
@@ -543,7 +551,7 @@
         toe: [0.95, 1.0, 1.0], shoulder: [0.88, 0.85, 0.82],
         hal: [1, 0.45, 0.38], halBoost: 0.5,
         grain: 0.8,
-        base: { warmth: 1, exposure: 0, contrast: 2, fade: 1, sat: 0, halation: 0, lightLeak: 0, grain: 3, grainSize: 5, dust: 0, vignette: 0 }
+        base: { warmth: -1, exposure: 0, contrast: 2, fade: 1, sat: 0, halation: 0, lightLeak: 0, grain: 3, grainSize: 5, dust: 0, vignette: 0 }
       }
     };
 
@@ -1218,7 +1226,7 @@
       var lightLeakAmt = p.lightLeak / 10;
 
       var f = fade * 12;
-      var c = 1 + contrast * 0.35;
+      var c = (1 + contrast * 0.35) * st.response.contrast;
       
       for (var i = 0; i < px.length; i += 4) {
         var r = px[i], g = px[i + 1], b = px[i + 2];
@@ -1240,7 +1248,7 @@
           var bw = hmask(hsv[0], 180, 280, 15);
           if (gw + yw + ow + bw > 0.01) {
             hsv[0] = (hsv[0] + st.gShift * 0.45 * gw + st.oShift * 0.45 * ow + 360) % 360;
-            hsv[1] = hsv[1] * (1 + st.gSat * 0.5 * gw + st.ySat * 0.5 * yw + st.oSat * 0.5 * ow + st.bSat * 0.5 * bw);
+            hsv[1] = hsv[1] * st.response.saturation * (1 + st.gSat * 0.5 * gw + st.ySat * 0.5 * yw + st.oSat * 0.5 * ow + st.bSat * 0.5 * bw);
             hsv[2] = hsv[2] * (1 + st.yVal * 0.5 * yw);
             var rgb = hsv2rgb(hsv[0], hsv[1], hsv[2]);
             r = rgb[0]; g = rgb[1]; b = rgb[2];
@@ -1256,6 +1264,18 @@
         g += warmthEffect * 3;
         b -= warmthEffect * 8;
 
+        // Film stocks separate color gently through the toe and shoulder.
+        lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        var shadowResponse = (1 - smooth((lum - 8) / 150)) * 0.65;
+        var highlightResponse = smooth((lum - 105) / 150) * 0.82;
+        var highlightChroma = 1 - highlightResponse * st.response.highlightDesaturation;
+        r = lum + (r - lum) * highlightChroma;
+        g = lum + (g - lum) * highlightChroma;
+        b = lum + (b - lum) * highlightChroma;
+        r += st.response.shadows[0] * shadowResponse + st.response.highlights[0] * highlightResponse;
+        g += st.response.shadows[1] * shadowResponse + st.response.highlights[1] * highlightResponse;
+        b += st.response.shadows[2] * shadowResponse + st.response.highlights[2] * highlightResponse;
+
         px[i] = clamp(r); px[i + 1] = clamp(g); px[i + 2] = clamp(b);
       }
 
@@ -1263,9 +1283,9 @@
 
       if (p.halation > 0) halation(halationAmt * st.halBoost * 0.4, w, h, st.hal);
       if (p.lightLeak > 0) lightLeak(lightLeakAmt, w, h);
+      if (p.vignette > 0) vignette(vignetteAmt * 0.4, w, h);
       if (p.grain > 0) grain(grainAmt * st.grain * 1.5, w, h, p.grainSize);
       if (p.dust > 0) imperfections(dustAmt * 0.4, w, h);
-      if (p.vignette > 0) vignette(vignetteAmt * 0.4, w, h);
       if (p.dateText) stampDate(destCtx, w, h, p.dateText, p.dateFormat);
       if (p.frame) applyFrame(destCtx, st);
       
